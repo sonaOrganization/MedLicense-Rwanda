@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
   images: {
@@ -10,10 +9,13 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    serverActions: { allowedOrigins: ["localhost:3000"] },
-  },
-  turbopack: {
-    root: path.resolve(__dirname),
+    serverActions: {
+      allowedOrigins: [
+        "localhost:3000",
+        process.env.VERCEL_URL ?? "",
+        process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") ?? "",
+      ].filter(Boolean),
+    },
   },
 };
 
