@@ -8,7 +8,7 @@ const testimonials = [
     text: "I passed the RMDC exam on my very first attempt. The exam simulation was almost identical to the real thing — same pressure, same format. I couldn't have done it without this platform.",
     rating: 5,
     initials: "JP",
-    color: "bg-indigo-600",
+    color: "bg-blue-700",
   },
   {
     name: "Marie Claire U.",
@@ -37,7 +37,7 @@ export function TestimonialsSection() {
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400 mb-3">
             Student Stories
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-gray-900 dark:text-white leading-tight mb-4">
@@ -87,7 +87,7 @@ export function TestimonialsSection() {
         {/* Social proof bar */}
         <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
           <div className="flex -space-x-2">
-            {["bg-indigo-500", "bg-purple-500", "bg-pink-500", "bg-emerald-500", "bg-yellow-500"].map((c, i) => (
+            {["bg-blue-600", "bg-cyan-600", "bg-teal-600", "bg-emerald-500", "bg-sky-500"].map((c, i) => (
               <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white dark:border-gray-900 flex items-center justify-center text-xs font-bold text-white`}>
                 {String.fromCharCode(65 + i)}
               </div>

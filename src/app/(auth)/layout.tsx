@@ -16,8 +16,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* ── Left Panel ── */}
       <div className="hidden lg:flex flex-col w-[480px] flex-shrink-0 relative overflow-hidden bg-[#0b0f1e]">
         {/* Background glows */}
-        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-indigo-700/25 rounded-full blur-[80px]" />
-        <div className="absolute bottom-1/4 right-0 w-56 h-56 bg-purple-700/20 rounded-full blur-[80px]" />
+        <div className="absolute top-1/4 -left-20 w-72 h-72 bg-blue-800/25 rounded-full blur-[80px]" />
+        <div className="absolute bottom-1/4 right-0 w-56 h-56 bg-cyan-800/20 rounded-full blur-[80px]" />
 
         {/* Rwanda flag strip */}
         <div className="absolute top-0 left-0 right-0 h-0.5 flex">
@@ -31,32 +31,32 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 mb-auto group">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/50">
+            <div className="w-9 h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/50">
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div className="leading-none">
               <span className="font-bold text-xl text-white tracking-tight">RMDC</span>
-              <span className="font-bold text-xl text-indigo-400 tracking-tight"> Prep</span>
+              <span className="font-bold text-xl text-cyan-300 tracking-tight"> Prep</span>
             </div>
           </Link>
 
           {/* Main copy */}
           <div className="py-12">
-            <div className="inline-flex items-center gap-2 border border-indigo-500/30 bg-indigo-500/10 rounded-full px-3 py-1 mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              <span className="text-xs font-semibold text-indigo-300 tracking-wide">Rwanda's #1 Medical Exam Prep</span>
+            <div className="inline-flex items-center gap-2 border border-cyan-500/30 bg-cyan-500/10 rounded-full px-3 py-1 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="text-xs font-semibold text-cyan-300 tracking-wide">Rwanda's #1 Medical Exam Prep</span>
             </div>
 
             <h2 className="text-3xl font-extrabold text-white leading-snug mb-4">
               Your path to professional{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-cyan-300">
                 licensure
               </span>{" "}
               starts here.
             </h2>
 
             <p className="text-gray-400 text-[15px] leading-relaxed mb-8">
-              Join thousands of future doctors and nurses preparing for the RMDC exam with confidence.
+              Join thousands of aspiring physicians, nurses, and clinical officers preparing for the RMDC exam with confidence.
             </p>
 
             <div className="space-y-3">
@@ -75,7 +75,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               "Passed the RMDC on my first attempt. The exam simulation was almost identical to the real thing."
             </p>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+              <div className="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold">
                 JP
               </div>
               <div>
@@ -95,11 +95,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between px-6 pt-6 pb-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center">
               <Stethoscope className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-[16px] text-gray-900 dark:text-white">
-              RMDC <span className="text-indigo-600">Prep</span>
+              RMDC <span className="text-blue-700">Prep</span>
             </span>
           </Link>
           <Link

@@ -2,21 +2,25 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --primary: #1d4ed8;
+  --primary-dark: #1e40af;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f0f0f;
-    --foreground: #ededed;
+    --background: #0a0f1e;
+    --foreground: #e2e8f0;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 * {
@@ -35,13 +39,21 @@ html { transition: background-color 0.2s, color 0.2s; }
 /* Exam mode - prevent text selection */
 .exam-mode { user-select: none; }
 
-/* Animated gradient hero */
+/* Hero gradient — medical navy to teal */
 .gradient-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0891b2 100%);
 }
 
 /* Focus ring */
 .focus-ring:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #1d4ed8;
   outline-offset: 2px;
+}
+
+/* Professional section divider */
+.section-rule {
+  border-top: 1px solid #e2e8f0;
+}
+.dark .section-rule {
+  border-top: 1px solid #1e293b;
 }

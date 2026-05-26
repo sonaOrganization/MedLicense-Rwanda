@@ -44,12 +44,12 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md group-hover:shadow-indigo-300 dark:group-hover:shadow-indigo-900 transition-shadow">
+            <div className="w-9 h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-md group-hover:shadow-blue-300 dark:group-hover:shadow-blue-900 transition-shadow">
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div className="leading-none">
               <span className="font-bold text-[17px] text-gray-900 dark:text-white tracking-tight">RMDC</span>
-              <span className="font-bold text-[17px] text-indigo-600 dark:text-indigo-400 tracking-tight"> Prep</span>
+              <span className="font-bold text-[17px] text-blue-700 dark:text-blue-400 tracking-tight"> Prep</span>
             </div>
           </Link>
 
@@ -64,13 +64,13 @@ export function Navbar() {
                   className={cn(
                     "relative px-3.5 py-2 text-[13.5px] font-medium rounded-lg transition-colors duration-150",
                     active
-                      ? "text-indigo-600 dark:text-indigo-400"
+                      ? "text-blue-700 dark:text-blue-400"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60"
                   )}
                 >
                   {link.label}
                   {active && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-blue-700 dark:bg-blue-400" />
                   )}
                 </Link>
               );
@@ -103,7 +103,7 @@ export function Navbar() {
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="h-9 px-5 text-[13px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+                  <Button size="sm" className="h-9 px-5 text-[13px] font-semibold bg-blue-700 hover:bg-blue-800 text-white shadow-sm">
                     Get Started Free
                   </Button>
                 </Link>
@@ -136,7 +136,7 @@ export function Navbar() {
                   className={cn(
                     "flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors",
                     active
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   )}
                 >
@@ -156,7 +156,7 @@ export function Navbar() {
                   <Button variant="outline" className="w-full font-medium">Sign In</Button>
                 </Link>
                 <Link href="/register" className="flex-1" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full font-semibold bg-indigo-600 hover:bg-indigo-700 text-white">Get Started</Button>
+                  <Button className="w-full font-semibold bg-blue-700 hover:bg-blue-800 text-white">Get Started</Button>
                 </Link>
               </>
             )}

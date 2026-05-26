@@ -10,9 +10,9 @@ const perks = [
 
 export function CTASection() {
   return (
-    <section className="relative overflow-hidden bg-[#0b0f1e] py-24 lg:py-32">
+    <section className="relative overflow-hidden bg-[#071a2e] py-24 lg:py-32">
       {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-700/20 rounded-full blur-[120px]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-blue-800/25 rounded-full blur-[120px]" />
 
       {/* Rwanda flag accent */}
       <div className="absolute bottom-0 left-0 right-0 h-0.5 flex opacity-50">
@@ -22,14 +22,14 @@ export function CTASection() {
       </div>
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400 mb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400 mb-4">
           Join 5,000+ Candidates
         </p>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-5">
           Ready to Pass the RMDC Exam?
         </h2>
         <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto leading-relaxed">
-          Start your free trial today. Access real exam simulations, expert video tutorials, and the most comprehensive RMDC question bank in Rwanda.
+          Start your free trial today. Access authentic exam simulations, clinician-authored video tutorials, and the most comprehensive RMDC question bank in Rwanda.
         </p>
 
         {/* CTA buttons */}
@@ -37,7 +37,7 @@ export function CTASection() {
           <Link href="/register">
             <Button
               size="lg"
-              className="h-13 px-8 text-[15px] font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-900/50 gap-2"
+              className="h-13 px-8 text-[15px] font-semibold bg-blue-700 hover:bg-blue-600 text-white shadow-xl shadow-blue-900/50 gap-2"
             >
               Start Free Today
               <ArrowRight className="w-4 h-4" />
@@ -49,7 +49,7 @@ export function CTASection() {
               variant="outline"
               className="h-13 px-8 text-[15px] font-medium border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600 hover:text-white gap-2"
             >
-              <PlayCircle className="w-4.5 h-4.5 text-indigo-400" />
+              <PlayCircle className="w-4.5 h-4.5 text-cyan-400" />
               Try Demo Exam
             </Button>
           </Link>

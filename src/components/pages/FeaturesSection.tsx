@@ -6,9 +6,9 @@ const features = [
     icon: Timer,
     title: "Real Exam Simulation",
     description: "Timed, proctored exam sessions that exactly mirror the RMDC format. Auto-submit, flag & review, and randomized shuffling built in.",
-    accent: "from-indigo-500 to-indigo-700",
-    bg: "bg-indigo-50 dark:bg-indigo-950/40",
-    iconColor: "text-indigo-600 dark:text-indigo-400",
+    accent: "from-blue-500 to-blue-700",
+    bg: "bg-blue-50 dark:bg-blue-950/40",
+    iconColor: "text-blue-700 dark:text-blue-400",
   },
   {
     icon: BarChart2,
@@ -59,7 +59,7 @@ export function FeaturesSection() {
 
         {/* Section header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400 mb-3">
             Platform Features
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-gray-900 dark:text-white leading-tight mb-4">
@@ -90,7 +90,7 @@ export function FeaturesSection() {
         <div className="mt-14 text-center">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold hover:underline underline-offset-4"
+            className="inline-flex items-center gap-2 text-blue-700 dark:text-blue-400 font-semibold hover:underline underline-offset-4"
           >
             Start your free trial today
             <ArrowRight className="w-4 h-4" />

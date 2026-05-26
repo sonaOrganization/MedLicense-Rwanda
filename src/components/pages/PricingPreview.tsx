@@ -66,7 +66,7 @@ export function PricingPreview() {
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400 mb-3">
             Pricing
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-gray-900 dark:text-white leading-tight mb-4">
@@ -84,8 +84,8 @@ export function PricingPreview() {
               key={plan.name}
               className={`relative flex flex-col rounded-2xl border transition-all duration-300 ${
                 plan.highlighted
-                  ? "border-indigo-500 dark:border-indigo-500 shadow-2xl shadow-indigo-500/20 bg-indigo-600"
-                  : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-200 dark:hover:border-indigo-900 hover:shadow-lg"
+                  ? "border-blue-600 dark:border-blue-600 shadow-2xl shadow-blue-600/20 bg-blue-700"
+                  : "border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-blue-200 dark:hover:border-blue-900 hover:shadow-lg"
               }`}
             >
               {/* Badge */}
@@ -105,7 +105,7 @@ export function PricingPreview() {
                   <h3 className={`text-lg font-bold mb-1.5 ${plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"}`}>
                     {plan.name}
                   </h3>
-                  <p className={`text-sm ${plan.highlighted ? "text-indigo-200" : "text-gray-500 dark:text-gray-400"}`}>
+                  <p className={`text-sm ${plan.highlighted ? "text-blue-200" : "text-gray-500 dark:text-gray-400"}`}>
                     {plan.description}
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export function PricingPreview() {
                       {plan.price === 0 ? "Free" : plan.price.toLocaleString()}
                     </span>
                     {plan.price > 0 && (
-                      <span className={`text-sm font-medium ${plan.highlighted ? "text-indigo-300" : "text-gray-400 dark:text-gray-500"}`}>
+                      <span className={`text-sm font-medium ${plan.highlighted ? "text-blue-300" : "text-gray-400 dark:text-gray-500"}`}>
                         {plan.currency} {plan.period}
                       </span>
                     )}
@@ -129,11 +129,11 @@ export function PricingPreview() {
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5">
                       <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        plan.highlighted ? "bg-indigo-400/30" : "bg-indigo-100 dark:bg-indigo-900/40"
+                        plan.highlighted ? "bg-blue-400/30" : "bg-blue-100 dark:bg-blue-900/40"
                       }`}>
-                        <Check className={`w-2.5 h-2.5 ${plan.highlighted ? "text-indigo-100" : "text-indigo-600 dark:text-indigo-400"}`} />
+                        <Check className={`w-2.5 h-2.5 ${plan.highlighted ? "text-blue-100" : "text-blue-700 dark:text-blue-400"}`} />
                       </div>
-                      <span className={`text-sm ${plan.highlighted ? "text-indigo-100" : "text-gray-600 dark:text-gray-300"}`}>
+                      <span className={`text-sm ${plan.highlighted ? "text-blue-100" : "text-gray-600 dark:text-gray-300"}`}>
                         {feature}
                       </span>
                     </li>
@@ -145,8 +145,8 @@ export function PricingPreview() {
                   <Button
                     className={`w-full font-semibold ${
                       plan.highlighted
-                        ? "bg-white text-indigo-700 hover:bg-indigo-50"
-                        : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                        ? "bg-white text-blue-700 hover:bg-blue-50"
+                        : "bg-blue-700 hover:bg-blue-800 text-white"
                     }`}
                   >
                     {plan.cta}

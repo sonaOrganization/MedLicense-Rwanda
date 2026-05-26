@@ -49,23 +49,23 @@ export function Footer() {
           {/* Brand col — spans 2 on xl */}
           <div className="xl:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-5 group">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/50">
+              <div className="w-9 h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/50">
                 <Stethoscope className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">
-                RMDC <span className="text-indigo-400">Prep</span>
+                RMDC <span className="text-blue-400">Prep</span>
               </span>
             </Link>
 
             <p className="text-sm leading-relaxed text-gray-400 mb-6 max-w-sm">
-              Rwanda's leading medical and dental licensing exam preparation platform. Built by healthcare professionals, for future healthcare heroes.
+              Rwanda's leading medical and dental licensing exam preparation platform. Built by healthcare professionals, for aspiring medical practitioners.
             </p>
 
             {/* Contact info */}
             <div className="space-y-2 mb-7">
               {contactDetails.map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2.5 text-sm text-gray-500">
-                  <Icon className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+                  <Icon className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                   <span>{text}</span>
                 </div>
               ))}
@@ -78,7 +78,7 @@ export function Footer() {
                   key={label}
                   href={href}
                   title={label}
-                  className="w-9 h-9 rounded-lg bg-gray-800 hover:bg-indigo-600 border border-gray-700 hover:border-indigo-500 flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white transition-all duration-200"
+                  className="w-9 h-9 rounded-lg bg-gray-800 hover:bg-blue-700 border border-gray-700 hover:border-blue-600 flex items-center justify-center text-xs font-bold text-gray-400 hover:text-white transition-all duration-200"
                 >
                   {initial}
                 </a>
@@ -98,7 +98,7 @@ export function Footer() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-400 transition-colors"
+                        className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-blue-400 transition-colors"
                       >
                         {link.label}
                         <ArrowUpRight className="w-3 h-3" />
@@ -106,7 +106,7 @@ export function Footer() {
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-sm text-gray-500 hover:text-indigo-400 transition-colors"
+                        className="text-sm text-gray-500 hover:text-blue-400 transition-colors"
                       >
                         {link.label}
                       </Link>

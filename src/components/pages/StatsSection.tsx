@@ -7,7 +7,7 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="relative bg-indigo-700 dark:bg-indigo-800 overflow-hidden">
+    <section className="relative bg-[#071a2e] overflow-hidden">
       {/* Subtle pattern */}
       <div className="absolute inset-0 opacity-10"
         style={{
@@ -16,12 +16,12 @@ export function StatsSection() {
         }}
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-indigo-500/40">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-blue-700/40">
           {stats.map(({ value, label, sub }) => (
             <div key={label} className="text-center text-white lg:px-8">
               <div className="text-4xl sm:text-5xl font-extrabold mb-1 tabular-nums tracking-tight">{value}</div>
               <div className="text-base font-semibold mb-1">{label}</div>
-              <div className="text-xs text-indigo-300">{sub}</div>
+              <div className="text-xs text-blue-300">{sub}</div>
             </div>
           ))}
         </div>
