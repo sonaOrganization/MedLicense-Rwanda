@@ -1,0 +1,31 @@
+const stats = [
+  { value: "2,500+", label: "Practice Questions", sub: "Across all RMDC categories" },
+  { value: "98%", label: "Pass Rate", sub: "Among premium students" },
+  { value: "5,000+", label: "Students Enrolled", sub: "And growing every month" },
+  { value: "50+", label: "Video Tutorials", sub: "From medical experts" },
+];
+
+export function StatsSection() {
+  return (
+    <section className="relative bg-indigo-700 dark:bg-indigo-800 overflow-hidden">
+      {/* Subtle pattern */}
+      <div className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-indigo-500/40">
+          {stats.map(({ value, label, sub }) => (
+            <div key={label} className="text-center text-white lg:px-8">
+              <div className="text-4xl sm:text-5xl font-extrabold mb-1 tabular-nums tracking-tight">{value}</div>
+              <div className="text-base font-semibold mb-1">{label}</div>
+              <div className="text-xs text-indigo-300">{sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
