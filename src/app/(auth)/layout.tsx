@@ -85,7 +85,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
 
-          <p className="text-xs text-gray-700 mt-6">© {new Date().getFullYear()} RMDC Exam Prep · Kigali, Rwanda</p>
+          <p className="text-xs text-gray-700 mt-6" suppressHydrationWarning>© {new Date().getFullYear()} RMDC Exam Prep · Kigali, Rwanda</p>
         </div>
       </div>
 
