@@ -2,10 +2,8 @@
 import Link from "next/link";
 import { ReadinessGauge } from "@/components/dashboard/overview/ReadinessGauge";
 import { LicenseFocusCard } from "@/components/dashboard/overview/LicenseFocusCard";
-import { StudyStreakCard } from "@/components/dashboard/overview/StudyStreakCard";
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 import { ExamCountdown } from "@/components/dashboard/overview/ExamCountdown";
-import { TopPerformers } from "@/components/dashboard/overview/TopPerformers";
 import { WelcomeBanner } from "@/components/dashboard/overview/WelcomeBanner";
 import { Target, TrendingUp, CheckCircle, BookOpen, ArrowRight, Zap, FileText, Bookmark, Video, BarChart2, CreditCard } from "lucide-react";
 import { useLanguage } from "@/lib/language";
@@ -17,23 +15,19 @@ interface RecentAttempt {
   passingScore: number; submittedAt: Date | null;
   correct: number; wrong: number; timeTaken: number | null;
 }
-interface Performer {
-  rank: number; name: string; score: number; exams: number; isCurrentUser: boolean;
-}
+
 interface Props {
   userName: string; streak: number; subscriptionStatus: string;
   licenseCategory: string | null; totalExams: number; avgScore: number;
   passRate: number; passed: number; readiness: number;
   recentAttempts: RecentAttempt[]; isPremium: boolean; savedCount: number;
   longestStreak: number; points: number; badges: number;
-  performers: Performer[]; currentUserRank?: number;
 }
 
 export function DashboardOverviewClient({
   userName, streak, subscriptionStatus, licenseCategory,
   totalExams, avgScore, passRate, passed, readiness,
   recentAttempts, isPremium, savedCount,
-  longestStreak, points, badges, performers, currentUserRank,
 }: Props) {
   const { language } = useLanguage();
   const T = useT(language);
@@ -182,28 +176,6 @@ export function DashboardOverviewClient({
 
           {/* Exam countdown */}
           <ExamCountdown />
-
-          {/* Study streak */}
-          <div className="bg-white dark:bg-gray-900/80 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{T("dash_streak")}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{T("dash_streak_sub")}</p>
-            </div>
-            <div className="px-4 sm:px-5 py-4">
-              <StudyStreakCard streak={streak} longestStreak={longestStreak} points={points} badges={badges} />
-            </div>
-          </div>
-
-          {/* Leaderboard */}
-          <div className="bg-white dark:bg-gray-900/80 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="px-4 sm:px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{T("dash_top")}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{T("dash_top_sub")}</p>
-            </div>
-            <div className="px-4 sm:px-5 py-3">
-              <TopPerformers performers={performers} currentUserRank={currentUserRank} />
-            </div>
-          </div>
 
           {/* License focus — mobile */}
           <div className="sm:hidden">

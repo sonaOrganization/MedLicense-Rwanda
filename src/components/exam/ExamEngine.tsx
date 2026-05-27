@@ -194,69 +194,80 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* ── Main: question + 2-column answers ── */}
-        <main className="flex-1 min-w-0 flex flex-col p-3 sm:p-6 gap-3 sm:gap-4 overflow-hidden">
+        {/* ── Main panel ── */}
+        <main className="flex-1 min-w-0 overflow-y-auto sm:overflow-hidden sm:flex sm:flex-col sm:p-6 sm:gap-4">
 
-          {/* Question card */}
-          <div className="flex-shrink-0 bg-white dark:bg-[#0d1120] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
+          {/* Scrollable inner on mobile, flex column on desktop */}
+          <div className="flex flex-col gap-0 sm:gap-4 sm:flex-1 sm:min-h-0">
 
-            {/* Card header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50/80 dark:bg-white/5">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                  {T("exam_question")} {currentIndex + 1}
-                  <span className="text-gray-300 dark:text-gray-600 mx-1">/</span>
-                  {exam.questions.length}
-                </span>
-                <span className={cn(
-                  "text-[10px] font-bold uppercase tracking-wide px-2.5 py-0.5 rounded-full",
-                  DIFF_STYLE[q.difficulty as keyof typeof DIFF_STYLE] ?? DIFF_STYLE.MEDIUM
-                )}>
-                  {q.difficulty}
-                </span>
+            {/* Question card */}
+            <div className="flex-shrink-0 bg-white dark:bg-[#0d1120] sm:rounded-2xl border-b sm:border border-slate-200 dark:border-white/10 sm:shadow-sm overflow-hidden">
+
+              {/* Card header */}
+              <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50/80 dark:bg-white/5">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    {T("exam_question")} {currentIndex + 1}
+                    <span className="text-gray-300 dark:text-gray-600 mx-1">/</span>
+                    {exam.questions.length}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-wide px-2.5 py-0.5 rounded-full",
+                    DIFF_STYLE[q.difficulty as keyof typeof DIFF_STYLE] ?? DIFF_STYLE.MEDIUM
+                  )}>
+                    {q.difficulty}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setFlagged((f) => ({ ...f, [q.id]: !f[q.id] }))}
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors",
+                    flagged[q.id]
+                      ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                      : "text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-200"
+                  )}
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                  {flagged[q.id] ? T("exam_flagged") : T("exam_flag")}
+                </button>
               </div>
-              <button
-                onClick={() => setFlagged((f) => ({ ...f, [q.id]: !f[q.id] }))}
-                className={cn(
-                  "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors",
-                  flagged[q.id]
-                    ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400"
-                    : "text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-200"
+
+              {/* Question text */}
+              <div className="px-4 sm:px-7 py-4 sm:py-5 sm:max-h-[30vh] sm:overflow-y-auto">
+                {q.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={q.imageUrl} alt="Clinical image" className="rounded-xl mb-4 max-h-48 object-contain border border-slate-200 dark:border-white/10" />
                 )}
-              >
-                <Flag className="w-3.5 h-3.5" />
-                {flagged[q.id] ? T("exam_flagged") : T("exam_flag")}
-              </button>
+                <p className="text-[15px] sm:text-[15.5px] font-medium text-gray-900 dark:text-white leading-relaxed">
+                  {t(q.textEn, q.textFr, language)}
+                </p>
+              </div>
             </div>
 
-            {/* Question text */}
-            <div className="px-4 sm:px-7 py-4 sm:py-5 max-h-[35vh] overflow-y-auto">
-              {q.imageUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={q.imageUrl} alt="Clinical image" className="rounded-xl mb-4 max-h-48 object-contain border border-slate-200 dark:border-white/10" />
-              )}
-              <p className="text-[15.5px] font-medium text-gray-900 dark:text-white leading-relaxed">
-                {t(q.textEn, q.textFr, language)}
-              </p>
-            </div>
-          </div>
-
-          {/* ── Answer grid: single col on mobile, 2-col on sm+ ── */}
-          <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-
-            {/* Left column: A, B */}
-            <div className="flex flex-col gap-2.5 sm:gap-3">
-              {leftAnswers.map((answer, i) => (
-                <AnswerCard key={answer.id} answer={answer} letterIndex={i} />
+            {/* ── Answers ── */}
+            {/* Mobile: flat single list, full width, scrolls with page */}
+            <div className="flex flex-col gap-0 sm:hidden bg-slate-50 dark:bg-[#090d18]">
+              {q.answers.map((answer, i) => (
+                <div key={answer.id} className="px-3 py-1.5 first:pt-3 last:pb-3">
+                  <AnswerCard answer={answer} letterIndex={i} />
+                </div>
               ))}
             </div>
 
-            {/* Right column: C, D */}
-            <div className="flex flex-col gap-2.5 sm:gap-3">
-              {rightAnswers.map((answer, i) => (
-                <AnswerCard key={answer.id} answer={answer} letterIndex={half + i} />
-              ))}
+            {/* Desktop: 2-column grid */}
+            <div className="hidden sm:grid sm:grid-cols-2 sm:gap-3 sm:flex-1 sm:min-h-0">
+              <div className="flex flex-col gap-3">
+                {leftAnswers.map((answer, i) => (
+                  <AnswerCard key={answer.id} answer={answer} letterIndex={i} />
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                {rightAnswers.map((answer, i) => (
+                  <AnswerCard key={answer.id} answer={answer} letterIndex={half + i} />
+                ))}
+              </div>
             </div>
+
           </div>
         </main>
 

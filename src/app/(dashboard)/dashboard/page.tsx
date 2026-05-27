@@ -108,8 +108,6 @@ export default async function DashboardPage() {
       longestStreak={streak?.longest_streak ?? 0}
       points={streak?.points ?? 0}
       badges={userBadgesCount}
-      performers={performers}
-      currentUserRank={currentUserRank}
     />
   );
 }
