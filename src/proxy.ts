@@ -15,9 +15,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL(dest, req.url));
   }
 
-  // Protect dashboard routes
-  if (!session && PROTECTED_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL(`/login?from=${pathname}`, req.url));
+  // Protect dashboard routes — also redirect admins away from student pages
+  if (PROTECTED_PATHS.some((p) => pathname.startsWith(p))) {
+    if (!session) return NextResponse.redirect(new URL(`/login?from=${pathname}`, req.url));
+    if (session.user.role === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
   }
 
   // Protect admin routes
