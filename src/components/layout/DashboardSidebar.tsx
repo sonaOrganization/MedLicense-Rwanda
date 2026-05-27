@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, FileText, BarChart2, Bookmark,
-  CreditCard, User, LogOut, Stethoscope, BookOpen, Trophy
+  CreditCard, User, LogOut, Stethoscope, Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,11 +12,10 @@ const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Exams", href: "/exams", icon: FileText },
   { label: "Results", href: "/results", icon: Trophy },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
+  { label: "Progress Analytics", href: "/analytics", icon: BarChart2 },
   { label: "Saved Questions", href: "/saved", icon: Bookmark },
-  { label: "Tutorials", href: "/tutorials", icon: BookOpen },
-  { label: "Subscription", href: "/subscription", icon: CreditCard },
-  { label: "Profile", href: "/profile", icon: User },
+  { label: "Subscription Status", href: "/subscription", icon: CreditCard },
+  { label: "Profile Settings", href: "/profile", icon: User },
 ];
 
 export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {

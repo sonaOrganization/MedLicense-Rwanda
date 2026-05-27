@@ -15,11 +15,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": { title: "Dashboard", subtitle: "Your exam readiness at a glance" },
   "/exams": { title: "My Exams", subtitle: "Browse and start practice sessions" },
   "/results": { title: "Results", subtitle: "Review your past exam attempts" },
-  "/analytics": { title: "Analytics", subtitle: "Track your performance over time" },
+  "/analytics": { title: "Progress Analytics", subtitle: "Track your performance over time" },
   "/saved": { title: "Saved Questions", subtitle: "Your personal question bank" },
-  "/tutorials": { title: "Video Tutorials", subtitle: "Learn from medical experts" },
-  "/subscription": { title: "Subscription", subtitle: "Manage your plan" },
-  "/profile": { title: "Profile", subtitle: "Manage your account details" },
+  "/subscription": { title: "Subscription Status", subtitle: "Manage your plan" },
+  "/profile": { title: "Profile Settings", subtitle: "Manage your account details" },
 };
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
