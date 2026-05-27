@@ -197,12 +197,12 @@ export default async function DashboardPage() {
                 }) => ({
                   id: a.id,
                   examTitle: a.exam.title_en,
-                  score: a.score,
+                  score: a.score ?? null,
                   passingScore: a.exam.passing_score,
                   submittedAt: a.submitted_at ? new Date(a.submitted_at) : null,
                   correct: a.correct,
                   wrong: a.wrong,
-                  timeTaken: a.time_taken,
+                  timeTaken: a.time_taken ?? null,
                 }))}
               />
             </CardContent>
