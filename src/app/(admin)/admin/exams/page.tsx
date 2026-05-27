@@ -33,6 +33,7 @@ export default async function AdminExamsPage({ searchParams }: Props) {
     description?: string | null;
     category_id: string;
     license_category?: string | null;
+    target_language?: string | null;
     duration_minutes: number;
     passing_score: number;
     is_published: boolean;
@@ -47,13 +48,14 @@ export default async function AdminExamsPage({ searchParams }: Props) {
     description: e.description,
     category_id: e.category_id,
     license_category: e.license_category ?? null,
+    target_language: e.target_language ?? null,
     duration_minutes: e.duration_minutes,
     passing_score: e.passing_score,
     is_published: e.is_published,
     is_free: e.is_free,
     shuffle_questions: e.shuffle_questions,
     shuffle_answers: e.shuffle_answers,
-    category: { name_en: e.category.name_en },
+    category: { name_en: Array.isArray(e.category) ? e.category[0]?.name_en ?? "" : e.category?.name_en ?? "" },
     exam_question_ids: e.exam_questions.map((eq) => eq.question_id),
     question_count: e.exam_questions.length,
   }));

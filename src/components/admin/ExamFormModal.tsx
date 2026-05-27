@@ -15,6 +15,7 @@ interface Exam {
   description?: string | null;
   category_id: string;
   license_category?: string | null;
+  target_language?: string | null;
   duration_minutes: number;
   passing_score: number;
   is_free: boolean;
@@ -65,6 +66,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
   const [description,     setDescription]     = useState("");
   const [categoryId,      setCategoryId]      = useState("");
   const [licenseCategory, setLicenseCategory] = useState("");
+  const [targetLanguage,  setTargetLanguage]  = useState<"" | "EN" | "FR">("");
   const [duration,        setDuration]        = useState(60);
   const [passingScore,    setPassingScore]     = useState(70);
   const [isFree,          setIsFree]          = useState(false);
@@ -134,6 +136,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
       setDescription(exam.description ?? "");
       setCategoryId(exam.category_id);
       setLicenseCategory(exam.license_category ?? "");
+      setTargetLanguage((exam.target_language as "" | "EN" | "FR") ?? "");
       setDuration(exam.duration_minutes);
       setPassingScore(exam.passing_score);
       setIsFree(exam.is_free);
@@ -147,6 +150,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
       setDescription("");
       setCategoryId(categories[0]?.id ?? "");
       setLicenseCategory("");
+      setTargetLanguage("");
       setDuration(60);
       setPassingScore(70);
       setIsFree(false);
@@ -226,6 +230,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
           description: description.trim() || null,
           category_id: categoryId,
           license_category: licenseCategory || null,
+          target_language: targetLanguage || null,
           duration_minutes: duration,
           passing_score: passingScore,
           is_free: isFree,
@@ -290,6 +295,37 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
               placeholder="Brief description shown to students..."
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
+          </div>
+
+          {/* Target Language */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
+              Student Language Audience
+              <span className="font-normal ml-1 text-gray-400">(who can see this exam)</span>
+            </label>
+            <div className="flex gap-2">
+              {([
+                { value: "",   flag: "🌐", label: "All Students",         desc: "EN + FR"       },
+                { value: "EN", flag: "🇬🇧", label: "English Students Only", desc: "EN only"       },
+                { value: "FR", flag: "🇫🇷", label: "French Students Only",  desc: "FR only"       },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTargetLanguage(opt.value)}
+                  className={cn(
+                    "flex-1 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl border-2 text-xs font-semibold transition-colors",
+                    targetLanguage === opt.value
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300"
+                      : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                  )}
+                >
+                  <span className="text-lg leading-none">{opt.flag}</span>
+                  <span>{opt.label}</span>
+                  <span className="text-[10px] font-normal opacity-70">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* License Category */}

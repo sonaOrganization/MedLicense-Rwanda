@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const {
-    title_en, description, category_id, license_category,
+    title_en, description, category_id, license_category, target_language,
     duration_minutes, passing_score, is_free, is_published,
     shuffle_questions, shuffle_answers, question_ids,
   } = await req.json();
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       description: description?.trim() || null,
       category_id,
       license_category: license_category || null,
+      target_language: target_language || null,
       duration_minutes: Number(duration_minutes) || 60,
       passing_score: Number(passing_score) || 70,
       total_questions: Array.isArray(question_ids) ? question_ids.length : 0,

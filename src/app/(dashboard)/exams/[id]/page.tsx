@@ -42,7 +42,8 @@ export default async function ExamPage({ params }: Props) {
 
   const examData = {
     id: exam.id,
-    title: exam.title_en,
+    titleEn: exam.title_en,
+    titleFr: exam.title_fr ?? null,
     durationMinutes: exam.duration_minutes,
     passingScore: exam.passing_score,
     negativeMarking: exam.negative_marking,

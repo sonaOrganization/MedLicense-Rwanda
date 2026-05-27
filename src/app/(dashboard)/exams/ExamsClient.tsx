@@ -7,16 +7,17 @@ import { Clock, FileText, Star, Lock } from "lucide-react";
 import { useLanguage, t } from "@/lib/language";
 import { useT } from "@/lib/translations";
 
+interface Category { name_en: string; name_fr?: string | null; }
 interface Exam {
   id: string;
   title_en: string;
   title_fr?: string | null;
   description?: string | null;
   description_fr?: string | null;
+  target_language?: string | null;
   is_free: boolean;
   duration_minutes: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  category: any;
+  category: Category | Category[] | null;
   questions: { count: number }[];
 }
 
@@ -39,14 +40,23 @@ export function ExamsClient({ exams, isPremium }: Props) {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {exams.map((exam) => {
           const locked = !exam.is_free && !isPremium;
-          const categoryName = Array.isArray(exam.category) ? exam.category[0]?.name_en : exam.category?.name_en;
+          const cat = Array.isArray(exam.category) ? exam.category[0] : exam.category;
+          const categoryName = t(cat?.name_en ?? "", cat?.name_fr, language);
           const title = t(exam.title_en, exam.title_fr, language);
           const description = language === "FR" && exam.description_fr ? exam.description_fr : exam.description;
           return (
             <Card key={exam.id} className={locked ? "opacity-80" : ""}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
-                  {categoryName && <Badge variant="info">{categoryName}</Badge>}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {categoryName && <Badge variant="info">{categoryName}</Badge>}
+                    {exam.target_language === "FR" && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">🇫🇷 FR</span>
+                    )}
+                    {exam.target_language === "EN" && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">🇬🇧 EN</span>
+                    )}
+                  </div>
                   {exam.is_free ? (
                     <Badge variant="success">{T("exams_free")}</Badge>
                   ) : locked ? (

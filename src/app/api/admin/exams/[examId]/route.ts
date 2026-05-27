@@ -25,9 +25,9 @@ export async function PATCH(
 
   // Full exam update
   const {
-    title_en, description, category_id, license_category, duration_minutes,
-    passing_score, is_free, is_published, shuffle_questions, shuffle_answers,
-    question_ids,
+    title_en, description, category_id, license_category, target_language,
+    duration_minutes, passing_score, is_free, is_published,
+    shuffle_questions, shuffle_answers, question_ids,
   } = body;
 
   const { error: eErr } = await supabase
@@ -38,6 +38,7 @@ export async function PATCH(
       description: description?.trim() || null,
       category_id,
       license_category: license_category || null,
+      target_language: target_language || null,
       duration_minutes: Number(duration_minutes),
       passing_score: Number(passing_score),
       total_questions: Array.isArray(question_ids) ? question_ids.length : 0,

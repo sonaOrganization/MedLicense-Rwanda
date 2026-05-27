@@ -11,7 +11,7 @@ import { useT } from "@/lib/translations";
 interface Answer   { id: string; textEn: string; textFr?: string | null; }
 interface Question { id: string; textEn: string; textFr?: string | null; imageUrl?: string | null; difficulty: string; answers: Answer[]; }
 interface ExamData {
-  id: string; title: string; durationMinutes: number; passingScore: number;
+  id: string; titleEn: string; titleFr?: string | null; durationMinutes: number; passingScore: number;
   negativeMarking: boolean; attemptId: string; questions: Question[];
 }
 
@@ -151,7 +151,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[220px] sm:max-w-sm">{exam.title}</p>
+              <p className="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[220px] sm:max-w-sm">{t(exam.titleEn, exam.titleFr, language)}</p>
               <p className="text-[11px] text-gray-400 leading-none mt-0.5">
                 {totalAnswered} of {exam.questions.length} {T("exam_answered")} · {T("exam_passing")}: {exam.passingScore}%
               </p>
