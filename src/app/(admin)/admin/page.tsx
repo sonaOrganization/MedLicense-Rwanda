@@ -112,7 +112,7 @@ export default async function AdminDashboard() {
       href: "/admin/content",
       icon: Video,
       label: "Content Management",
-      description: "Upload and publish tutorial videos for students preparing for the RMDC exam.",
+      description: "Upload and publish tutorial videos for students preparing for their medical licensing exam.",
       accent: "from-cyan-600 to-sky-600",
       iconBg: "bg-cyan-600",
       stats: [
@@ -128,7 +128,7 @@ export default async function AdminDashboard() {
 
       {/* ── Page heading ── */}
       <div className="border-b border-gray-200 dark:border-gray-800 pb-6">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">RMDC Exam Prep</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">MedLicense</p>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Control Panel</h1>
         <p className="text-sm text-gray-400 mt-1">Manage your platform — select a section below to get started.</p>
       </div>

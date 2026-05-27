@@ -48,8 +48,8 @@ export function Navbar() {
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div className="leading-none">
-              <span className="font-bold text-[17px] text-gray-900 dark:text-white tracking-tight">RMDC</span>
-              <span className="font-bold text-[17px] text-blue-700 dark:text-blue-400 tracking-tight"> Prep</span>
+              <span className="font-bold text-[17px] text-gray-900 dark:text-white tracking-tight">Med</span>
+              <span className="font-bold text-[17px] text-blue-700 dark:text-blue-400 tracking-tight">License</span>
             </div>
           </Link>
 

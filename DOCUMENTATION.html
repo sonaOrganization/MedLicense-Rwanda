@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MedLicense Documentation</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #1a1a2e;
+    padding: 40px 56px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 28px; font-weight: 800; color: #1e40af; margin: 32px 0 8px; padding-bottom: 8px; border-bottom: 3px solid #3b82f6; }
+  h2 { font-size: 20px; font-weight: 700; color: #1e3a8a; margin: 28px 0 6px; padding-bottom: 4px; border-bottom: 1.5px solid #bfdbfe; }
+  h3 { font-size: 15px; font-weight: 700; color: #1e40af; margin: 18px 0 4px; }
+  h4 { font-size: 13px; font-weight: 700; color: #374151; margin: 12px 0 4px; }
+  p  { margin: 6px 0 10px; }
+  a  { color: #2563eb; }
+  ul, ol { margin: 6px 0 10px 22px; }
+  li { margin: 3px 0; }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 11.5px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 1px 5px;
+    color: #0f172a;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 14px;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px;
+    font-size: 12px;
+  }
+  th {
+    background: #1e40af;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  td { border: 1px solid #e2e8f0; padding: 7px 12px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  blockquote {
+    border-left: 4px solid #3b82f6;
+    background: #eff6ff;
+    padding: 8px 14px;
+    margin: 10px 0;
+    border-radius: 0 6px 6px 0;
+    color: #1e40af;
+  }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  strong { font-weight: 700; color: #111827; }
+  .cover {
+    text-align: center;
+    padding: 60px 0 48px;
+    page-break-after: always;
+  }
+  .cover h1 {
+    font-size: 38px;
+    border: none;
+    color: #1e40af;
+    margin-bottom: 12px;
+  }
+  .cover .subtitle { font-size: 16px; color: #6b7280; margin-top: 6px; }
+  .cover .date { font-size: 13px; color: #9ca3af; margin-top: 24px; }
+  @media print {
+    body { padding: 20px 36px; }
+    h1 { page-break-before: auto; }
+    pre, table, blockquote { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="cover">
+  <h1>MedLicense</h1>
+  <div class="subtitle">Technical Documentation</div>
+  <div class="date">Generated May 27, 2026</div>
+</div>
+<h1 id="medlicense--technical-documentation">MedLicense — Technical Documentation</h1>
+<blockquote>
+<p>Rwanda&#39;s professional medical license exam preparation platform.</p>
+</blockquote>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-project-overview">Project Overview</a></li>
+<li><a href="#2-tech-stack">Tech Stack</a></li>
+<li><a href="#3-project-structure">Project Structure</a></li>
+<li><a href="#4-environment-setup">Environment Setup</a></li>
+<li><a href="#5-database-schema">Database Schema</a></li>
+<li><a href="#6-authentication">Authentication</a></li>
+<li><a href="#7-api-reference">API Reference</a></li>
+<li><a href="#8-pages--routing">Pages &amp; Routing</a></li>
+<li><a href="#9-core-features">Core Features</a></li>
+<li><a href="#10-admin-panel">Admin Panel</a></li>
+<li><a href="#11-exam-engine">Exam Engine</a></li>
+<li><a href="#12-localization-enfr">Localization (EN/FR)</a></li>
+<li><a href="#13-payments--subscriptions">Payments &amp; Subscriptions</a></li>
+<li><a href="#14-video-tutorials-mux">Video Tutorials (Mux)</a></li>
+<li><a href="#15-notifications">Notifications</a></li>
+<li><a href="#16-license-categories">License Categories</a></li>
+<li><a href="#17-components-reference">Components Reference</a></li>
+<li><a href="#18-deployment">Deployment</a></li>
+</ol>
+<hr>
+<h2 id="1-project-overview">1. Project Overview</h2>
+<p>MedLicense is a full-stack web application that prepares healthcare professionals in Rwanda for their national licensing exams. The platform supports 16 different medical license types across 5 professional groups.</p>
+<p><strong>Core Value:</strong></p>
+<ul>
+<li>Practice with exam simulations that mirror the real Rwanda medical licensing exams</li>
+<li>Study in English or French</li>
+<li>Track performance over time with detailed analytics</li>
+<li>Access video tutorials by subject area</li>
+<li>Unlock premium content via mobile money or card payment</li>
+</ul>
+<p><strong>User Types:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Access</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>STUDENT</code></td>
+<td>Dashboard, exams, results, analytics, saved questions, subscription</td>
+</tr>
+<tr>
+<td><code>ADMIN</code></td>
+<td>Everything above + full admin panel (questions, exams, users, videos, analytics, payments)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="2-tech-stack">2. Tech Stack</h2>
+<h3 id="framework">Framework</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Next.js</td>
+<td>16.2.6</td>
+<td>Full-stack React framework (App Router, Turbopack)</td>
+</tr>
+<tr>
+<td>React</td>
+<td>19.2.4</td>
+<td>UI rendering</td>
+</tr>
+<tr>
+<td>TypeScript</td>
+<td>5.x</td>
+<td>Type safety</td>
+</tr>
+</tbody></table>
+<h3 id="backend--data">Backend &amp; Data</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Supabase</td>
+<td>^2.49.0</td>
+<td>PostgreSQL database + auth helpers</td>
+</tr>
+<tr>
+<td>NextAuth</td>
+<td>5.0.0-beta.31</td>
+<td>Authentication (JWT strategy)</td>
+</tr>
+<tr>
+<td>bcryptjs</td>
+<td>—</td>
+<td>Password hashing</td>
+</tr>
+<tr>
+<td>Zod</td>
+<td>—</td>
+<td>Schema validation</td>
+</tr>
+</tbody></table>
+<h3 id="styling">Styling</h3>
+<table>
+<thead>
+<tr>
+<th>Technology</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tailwind CSS</td>
+<td>v4</td>
+<td>Utility-first CSS</td>
+</tr>
+<tr>
+<td>Lucide React</td>
+<td>—</td>
+<td>Icon library</td>
+</tr>
+<tr>
+<td>Framer Motion</td>
+<td>—</td>
+<td>Animations</td>
+</tr>
+</tbody></table>
+<h3 id="external-services">External Services</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mux</td>
+<td>Video upload, processing &amp; streaming</td>
+</tr>
+<tr>
+<td>Afripay</td>
+<td>Payment gateway (MoMo, Card, Afripay)</td>
+</tr>
+<tr>
+<td>Nodemailer + SMTP</td>
+<td>Transactional emails (verification, password reset)</td>
+</tr>
+<tr>
+<td>Google OAuth</td>
+<td>Social login</td>
+</tr>
+</tbody></table>
+<h3 id="dev-tools">Dev Tools</h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pnpm</td>
+<td>Package manager</td>
+</tr>
+<tr>
+<td>ESLint 9</td>
+<td>Linting</td>
+</tr>
+<tr>
+<td>tsx</td>
+<td>TypeScript execution</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="3-project-structure">3. Project Structure</h2>
+<pre><code>medlicense/
+├── src/
+│   ├── app/
+│   │   ├── (admin)/admin/       # Admin panel pages
+│   │   ├── (auth)/              # Login, register, verify-email, forgot-password
+│   │   ├── (dashboard)/         # Student dashboard pages
+│   │   ├── (public)/            # Landing, pricing, about, blog, FAQ
+│   │   ├── api/                 # API routes
+│   │   ├── globals.css          # Global styles + Tailwind config
+│   │   ├── layout.tsx           # Root layout (ThemeProvider, Providers)
+│   │   └── providers.tsx        # SessionProvider + LanguageProvider
+│   │
+│   ├── components/
+│   │   ├── admin/               # Admin-only components
+│   │   ├── dashboard/overview/  # Dashboard widget components
+│   │   ├── exam/                # ExamEngine component
+│   │   ├── layout/              # Navbar, Sidebars, Header, Notifications
+│   │   ├── pages/               # Landing page sections
+│   │   └── ui/                  # Reusable UI primitives
+│   │
+│   ├── lib/
+│   │   ├── auth.ts              # NextAuth configuration
+│   │   ├── supabase.ts          # Supabase client
+│   │   ├── mux.ts               # Mux video client
+│   │   ├── email.ts             # Email sending (Nodemailer)
+│   │   ├── language.tsx         # LanguageProvider + useLanguage hook
+│   │   ├── translations.ts      # EN/FR UI string dictionary
+│   │   ├── theme.tsx            # ThemeProvider + useTheme hook
+│   │   ├── license-categories.ts# 16 license type definitions
+│   │   ├── validations.ts       # Zod validation schemas
+│   │   └── utils.ts             # Shared helpers
+│   │
+│   └── types/
+│       ├── index.ts             # Shared TypeScript types
+│       └── next-auth.d.ts       # NextAuth session type extensions
+│
+├── supabase/
+│   ├── migrations/              # SQL migration files
+│   └── seeds/                   # Seed data (categories, demo accounts)
+│
+├── public/                      # Static assets
+├── DOCUMENTATION.md             # This file
+├── CLAUDE.md                    # AI assistant project instructions
+└── AGENTS.md                    # AI agent guidance
+</code></pre>
+<hr>
+<h2 id="4-environment-setup">4. Environment Setup</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Node.js 18+</li>
+<li>pnpm (<code>npm install -g pnpm</code>)</li>
+<li>A Supabase project</li>
+<li>Google OAuth credentials (optional)</li>
+<li>Mux account (optional, for videos)</li>
+<li>SMTP server (for emails)</li>
+</ul>
+<h3 id="installation">Installation</h3>
+<pre><code class="language-bash">git clone &lt;repo-url&gt;
+cd medlicense
+pnpm install
+cp .env.example .env.local
+# Fill in .env.local values (see below)
+pnpm dev
+</code></pre>
+<h3 id="environment-variables">Environment Variables</h3>
+<pre><code class="language-env"># ── Supabase ─────────────────────────────────────────────────────
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+
+# ── NextAuth ──────────────────────────────────────────────────────
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=any-random-32-char-string
+
+# ── Google OAuth (optional) ───────────────────────────────────────
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+
+# ── Email (SMTP) ──────────────────────────────────────────────────
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=&quot;MedLicense &lt;noreply@medlicense.rw&gt;&quot;
+
+# ── Mux (video streaming) ─────────────────────────────────────────
+MUX_TOKEN_ID=your-token-id
+MUX_TOKEN_SECRET=your-token-secret
+MUX_WEBHOOK_SECRET=your-webhook-secret
+
+# ── Afripay (payments) ────────────────────────────────────────────
+AFRIPAY_PUBLIC_KEY=pk_...
+AFRIPAY_SECRET_KEY=sk_...
+AFRIPAY_WEBHOOK_SECRET=whsec_...
+
+# ── App ───────────────────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME=MedLicense
+</code></pre>
+<h3 id="database-setup">Database Setup</h3>
+<p>Run migrations in order:</p>
+<pre><code class="language-bash"># In Supabase SQL editor or via supabase CLI:
+supabase/migrations/001_add_license_category.sql
+supabase/migrations/002_add_license_categories.sql
+supabase/migrations/003_license_category_on_categories.sql
+
+# Seed data:
+supabase/seeds/seed_categories.sql      # 128 subject categories
+supabase/seeds/create_demo_doctor.sql   # demo doctor account
+supabase/seeds/reset_demo.sql           # reset demo data
+</code></pre>
+<h3 id="demo-accounts">Demo Accounts</h3>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Password</th>
+<th>Role</th>
+<th>License</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>admin@demo.com</code></td>
+<td><code>demo1234</code></td>
+<td>ADMIN</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>doctor@demo.com</code></td>
+<td><code>demo1234</code></td>
+<td>STUDENT</td>
+<td>Medical Doctor</td>
+</tr>
+<tr>
+<td><code>student@demo.com</code></td>
+<td><code>demo1234</code></td>
+<td>STUDENT</td>
+<td>Dentist</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="5-database-schema">5. Database Schema</h2>
+<h3 id="users"><code>users</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>Auto-generated</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>TEXT</td>
+<td>Full name</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>TEXT UNIQUE</td>
+<td>Login email</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>TEXT</td>
+<td>bcryptjs <code>$2b$</code> hash</td>
+</tr>
+<tr>
+<td><code>phone</code></td>
+<td>TEXT</td>
+<td>Optional phone</td>
+</tr>
+<tr>
+<td><code>country</code></td>
+<td>TEXT</td>
+<td>Country of residence</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>TEXT</td>
+<td><code>STUDENT</code> or <code>ADMIN</code></td>
+</tr>
+<tr>
+<td><code>is_banned</code></td>
+<td>BOOLEAN</td>
+<td>Account suspension flag</td>
+</tr>
+<tr>
+<td><code>email_verified</code></td>
+<td>TIMESTAMPTZ</td>
+<td>NULL = unverified</td>
+</tr>
+<tr>
+<td><code>license_category</code></td>
+<td>TEXT</td>
+<td>One of 16 license type IDs</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>ENUM(&#39;EN&#39;,&#39;FR&#39;)</td>
+<td>Display language preference</td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td>TEXT</td>
+<td>Profile picture (Google OAuth)</td>
+</tr>
+<tr>
+<td><code>last_login_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>Last successful login</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>Account creation time</td>
+</tr>
+</tbody></table>
+<h3 id="exams"><code>exams</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>title_en</code></td>
+<td>TEXT</td>
+<td>English title</td>
+</tr>
+<tr>
+<td><code>title_fr</code></td>
+<td>TEXT</td>
+<td>French title (optional)</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>TEXT</td>
+<td>Short description</td>
+</tr>
+<tr>
+<td><code>category_id</code></td>
+<td>UUID FK → categories</td>
+<td>Subject category</td>
+</tr>
+<tr>
+<td><code>license_category</code></td>
+<td>TEXT</td>
+<td>NULL = all licenses</td>
+</tr>
+<tr>
+<td><code>duration_minutes</code></td>
+<td>INTEGER</td>
+<td>Time limit</td>
+</tr>
+<tr>
+<td><code>passing_score</code></td>
+<td>INTEGER</td>
+<td>Pass threshold %</td>
+</tr>
+<tr>
+<td><code>total_questions</code></td>
+<td>INTEGER</td>
+<td>Target question count</td>
+</tr>
+<tr>
+<td><code>is_free</code></td>
+<td>BOOLEAN</td>
+<td>Free or premium</td>
+</tr>
+<tr>
+<td><code>is_published</code></td>
+<td>BOOLEAN</td>
+<td>Visible to students</td>
+</tr>
+<tr>
+<td><code>shuffle_questions</code></td>
+<td>BOOLEAN</td>
+<td>Randomize order</td>
+</tr>
+<tr>
+<td><code>shuffle_answers</code></td>
+<td>BOOLEAN</td>
+<td>Randomize answers</td>
+</tr>
+<tr>
+<td><code>negative_marking</code></td>
+<td>BOOLEAN</td>
+<td>−0.25 per wrong answer</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3 id="questions"><code>questions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>text_en</code></td>
+<td>TEXT</td>
+<td>Question text (English) — required</td>
+</tr>
+<tr>
+<td><code>text_fr</code></td>
+<td>TEXT</td>
+<td>Question text (French) — optional</td>
+</tr>
+<tr>
+<td><code>explanation_en</code></td>
+<td>TEXT</td>
+<td>Correct answer explanation (EN)</td>
+</tr>
+<tr>
+<td><code>explanation_fr</code></td>
+<td>TEXT</td>
+<td>Correct answer explanation (FR)</td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td>TEXT</td>
+<td><code>EASY</code>, <code>MEDIUM</code>, or <code>HARD</code></td>
+</tr>
+<tr>
+<td><code>category_id</code></td>
+<td>UUID FK → categories</td>
+<td>Subject category</td>
+</tr>
+<tr>
+<td><code>license_categories</code></td>
+<td>TEXT[]</td>
+<td>Array of applicable license type IDs</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>TEXT</td>
+<td><code>MULTIPLE_CHOICE</code> (only type currently)</td>
+</tr>
+<tr>
+<td><code>image_url</code></td>
+<td>TEXT</td>
+<td>Optional clinical image</td>
+</tr>
+<tr>
+<td><code>is_approved</code></td>
+<td>BOOLEAN</td>
+<td>Admin-approved flag</td>
+</tr>
+<tr>
+<td><code>is_active</code></td>
+<td>BOOLEAN</td>
+<td>Soft-delete flag</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3 id="answers"><code>answers</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>question_id</code></td>
+<td>UUID FK → questions</td>
+<td>Parent question</td>
+</tr>
+<tr>
+<td><code>text_en</code></td>
+<td>TEXT</td>
+<td>Answer text (English)</td>
+</tr>
+<tr>
+<td><code>text_fr</code></td>
+<td>TEXT</td>
+<td>Answer text (French) — optional</td>
+</tr>
+<tr>
+<td><code>is_correct</code></td>
+<td>BOOLEAN</td>
+<td>Exactly one per question is true</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>INTEGER</td>
+<td>Display order (0-based)</td>
+</tr>
+</tbody></table>
+<h3 id="categories"><code>categories</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>name_en</code></td>
+<td>TEXT</td>
+<td>Category name (EN)</td>
+</tr>
+<tr>
+<td><code>name_fr</code></td>
+<td>TEXT</td>
+<td>Category name (FR)</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>TEXT UNIQUE</td>
+<td>URL-safe identifier</td>
+</tr>
+<tr>
+<td><code>license_category</code></td>
+<td>TEXT</td>
+<td>NULL = shared, otherwise scoped</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Slug format:</strong> <code>{license-key}-{subject-slug}</code> e.g. <code>md-internal-medicine</code>, <code>dentist-oral-anatomy-physiology</code></p>
+</blockquote>
+<h3 id="exam_questions"><code>exam_questions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>exam_id</code></td>
+<td>UUID FK → exams</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>question_id</code></td>
+<td>UUID FK → questions</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>INTEGER</td>
+<td>Position in exam</td>
+</tr>
+</tbody></table>
+<h3 id="exam_attempts"><code>exam_attempts</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users</td>
+<td>Who took the exam</td>
+</tr>
+<tr>
+<td><code>exam_id</code></td>
+<td>UUID FK → exams</td>
+<td>Which exam</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>TEXT</td>
+<td><code>IN_PROGRESS</code>, <code>COMPLETED</code>, <code>TIMED_OUT</code></td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>DECIMAL</td>
+<td>Final score % (0–100)</td>
+</tr>
+<tr>
+<td><code>correct</code></td>
+<td>INTEGER</td>
+<td>Correct answers count</td>
+</tr>
+<tr>
+<td><code>wrong</code></td>
+<td>INTEGER</td>
+<td>Wrong answers count</td>
+</tr>
+<tr>
+<td><code>skipped</code></td>
+<td>INTEGER</td>
+<td>Unanswered count</td>
+</tr>
+<tr>
+<td><code>time_taken</code></td>
+<td>INTEGER</td>
+<td>Seconds spent</td>
+</tr>
+<tr>
+<td><code>started_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>Exam start time</td>
+</tr>
+<tr>
+<td><code>submitted_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>Submission time</td>
+</tr>
+<tr>
+<td><code>saved_state</code></td>
+<td>JSONB</td>
+<td>Auto-save state (answers, flagged, index, timeLeft)</td>
+</tr>
+</tbody></table>
+<h3 id="attempt_answers"><code>attempt_answers</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>attempt_id</code></td>
+<td>UUID FK → exam_attempts</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>question_id</code></td>
+<td>UUID FK → questions</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>answer_id</code></td>
+<td>UUID FK → answers</td>
+<td>Student&#39;s chosen answer (NULL = skipped)</td>
+</tr>
+<tr>
+<td><code>is_correct</code></td>
+<td>BOOLEAN</td>
+<td>Pre-computed correctness</td>
+</tr>
+</tbody></table>
+<h3 id="subscriptions"><code>subscriptions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users PK</td>
+<td>One subscription per user</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>TEXT</td>
+<td><code>FREE</code>, <code>TRIAL</code>, <code>ACTIVE</code>, <code>EXPIRED</code></td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>TEXT</td>
+<td><code>monthly</code> or <code>annual</code></td>
+</tr>
+<tr>
+<td><code>start_date</code></td>
+<td>DATE</td>
+<td>Subscription start</td>
+</tr>
+<tr>
+<td><code>end_date</code></td>
+<td>DATE</td>
+<td>Subscription expiry</td>
+</tr>
+<tr>
+<td><code>auto_renew</code></td>
+<td>BOOLEAN</td>
+<td>Auto-renewal flag</td>
+</tr>
+</tbody></table>
+<h3 id="payments"><code>payments</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>amount</code></td>
+<td>DECIMAL</td>
+<td>Amount in RWF</td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td>TEXT</td>
+<td><code>RWF</code></td>
+</tr>
+<tr>
+<td><code>provider</code></td>
+<td>TEXT</td>
+<td><code>afripay</code>, <code>momo</code>, <code>card</code></td>
+</tr>
+<tr>
+<td><code>plan</code></td>
+<td>TEXT</td>
+<td><code>monthly</code> or <code>annual</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>TEXT</td>
+<td><code>pending</code>, <code>completed</code>, <code>failed</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3 id="notifications"><code>notifications</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users</td>
+<td>Recipient</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>TEXT</td>
+<td>Short heading</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>TEXT</td>
+<td>Notification body</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>TEXT</td>
+<td><code>info</code>, <code>success</code>, <code>warning</code>, <code>error</code></td>
+</tr>
+<tr>
+<td><code>is_read</code></td>
+<td>BOOLEAN</td>
+<td>Read status</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3 id="saved_questions"><code>saved_questions</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>question_id</code></td>
+<td>UUID FK → questions</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>saved_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3 id="daily_streaks"><code>daily_streaks</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>user_id</code></td>
+<td>UUID FK → users PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>current_streak</code></td>
+<td>INTEGER</td>
+<td>Consecutive days</td>
+</tr>
+<tr>
+<td><code>longest_streak</code></td>
+<td>INTEGER</td>
+<td>All-time best</td>
+</tr>
+<tr>
+<td><code>points</code></td>
+<td>INTEGER</td>
+<td>Gamification points</td>
+</tr>
+<tr>
+<td><code>last_activity_date</code></td>
+<td>DATE</td>
+<td>Last logged day</td>
+</tr>
+</tbody></table>
+<h3 id="videos"><code>videos</code></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>UUID PK</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>title_en</code></td>
+<td>TEXT</td>
+<td>Video title (EN)</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>TEXT</td>
+<td>Optional description</td>
+</tr>
+<tr>
+<td><code>category_id</code></td>
+<td>UUID FK → categories</td>
+<td>Subject area</td>
+</tr>
+<tr>
+<td><code>mux_asset_id</code></td>
+<td>TEXT</td>
+<td>Mux asset ID (after processing)</td>
+</tr>
+<tr>
+<td><code>mux_playback_id</code></td>
+<td>TEXT</td>
+<td>Mux playback ID</td>
+</tr>
+<tr>
+<td><code>duration</code></td>
+<td>INTEGER</td>
+<td>Video length in seconds</td>
+</tr>
+<tr>
+<td><code>thumbnail</code></td>
+<td>TEXT</td>
+<td>Thumbnail image URL</td>
+</tr>
+<tr>
+<td><code>is_free</code></td>
+<td>BOOLEAN</td>
+<td>Free or premium</td>
+</tr>
+<tr>
+<td><code>is_published</code></td>
+<td>BOOLEAN</td>
+<td>Visible to students</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMPTZ</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="6-authentication">6. Authentication</h2>
+<p>Authentication uses <strong>NextAuth v5 (JWT strategy)</strong> with two providers:</p>
+<h3 id="credentials-email--password">Credentials (Email + Password)</h3>
+<ol>
+<li>User submits email + password</li>
+<li>Supabase query fetches user record</li>
+<li><code>bcryptjs.compare()</code> validates the password (<code>$2b$</code> format)</li>
+<li>Checks: <code>is_banned</code>, <code>email_verified</code></li>
+<li>Updates <code>last_login_at</code></li>
+<li>Returns user object → JWT token</li>
+</ol>
+<h3 id="google-oauth">Google OAuth</h3>
+<ol>
+<li>Google returns user profile</li>
+<li>If new user → auto-creates account in Supabase with <code>email_verified = now()</code></li>
+<li>Existing user → fetches <code>role</code>, <code>license_category</code>, <code>language</code> from DB</li>
+<li>Returns JWT token</li>
+</ol>
+<h3 id="jwt-token-payload">JWT Token Payload</h3>
+<pre><code class="language-typescript">{
+  id: string;
+  email: string;
+  name: string;
+  role: &quot;STUDENT&quot; | &quot;ADMIN&quot;;
+  licenseCategory: string | null;  // e.g. &quot;medical_doctor&quot;
+  language: &quot;EN&quot; | &quot;FR&quot;;
+}
+</code></pre>
+<h3 id="session-object">Session Object</h3>
+<pre><code class="language-typescript">session.user = {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  licenseCategory: string | null;
+  language: string | null;
+}
+</code></pre>
+<h3 id="email-verification-flow">Email Verification Flow</h3>
+<ol>
+<li>Registration → generates 64-char hex token → stores in <code>verification_tokens</code> (24h expiry)</li>
+<li>Sends email via SMTP with <code>/api/auth/verify-email?token=X</code></li>
+<li>On click → marks <code>users.email_verified = now()</code> → deletes token → redirects to login</li>
+</ol>
+<h3 id="password-reset-flow">Password Reset Flow</h3>
+<ol>
+<li>POST <code>/api/auth/forgot-password</code> → generates 64-char token (1h expiry)</li>
+<li>Sends reset link email</li>
+<li>User clicks link → sets new password → token deleted</li>
+</ol>
+<hr>
+<h2 id="7-api-reference">7. API Reference</h2>
+<h3 id="auth-endpoints">Auth Endpoints</h3>
+<h4 id="post-apiauthregister"><code>POST /api/auth/register</code></h4>
+<p>Registers a new student account.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;John Doe&quot;,
+  &quot;email&quot;: &quot;john@example.com&quot;,
+  &quot;phone&quot;: &quot;+250700000000&quot;,
+  &quot;password&quot;: &quot;securepass123&quot;,
+  &quot;licenseCategory&quot;: &quot;medical_doctor&quot;
+}
+</code></pre>
+<p><strong>Response:</strong> <code>{ message: &quot;Verification email sent&quot; }</code> or <code>{ error: &quot;...&quot; }</code></p>
+<hr>
+<h4 id="get-apiauthverify-emailtokentoken"><code>GET /api/auth/verify-email?token=&lt;token&gt;</code></h4>
+<p>Verifies email from the link sent during registration.</p>
+<hr>
+<h4 id="post-apiauthforgot-password"><code>POST /api/auth/forgot-password</code></h4>
+<p>Sends a password reset email. Always returns 200 (silent on unknown email).</p>
+<p><strong>Request body:</strong> <code>{ &quot;email&quot;: &quot;john@example.com&quot; }</code></p>
+<hr>
+<h3 id="user-endpoints">User Endpoints</h3>
+<h4 id="patch-apiusersprofile"><code>PATCH /api/users/profile</code></h4>
+<p>Updates the logged-in user&#39;s profile.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;John Doe&quot;,
+  &quot;phone&quot;: &quot;+250700000000&quot;,
+  &quot;country&quot;: &quot;Rwanda&quot;,
+  &quot;language&quot;: &quot;FR&quot;
+}
+</code></pre>
+<hr>
+<h4 id="patch-apiuserslanguage"><code>PATCH /api/users/language</code></h4>
+<p>Updates only the language preference. Lightweight endpoint used by the language toggle.</p>
+<p><strong>Request body:</strong> <code>{ &quot;language&quot;: &quot;EN&quot; | &quot;FR&quot; }</code></p>
+<hr>
+<h3 id="exam-endpoints">Exam Endpoints</h3>
+<h4 id="patch-apiexamsattemptidsave"><code>PATCH /api/exams/[attemptId]/save</code></h4>
+<p>Auto-saves exam progress every 30 seconds.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;answers&quot;: { &quot;questionId&quot;: &quot;answerId&quot; },
+  &quot;flagged&quot;: { &quot;questionId&quot;: true },
+  &quot;currentIndex&quot;: 5,
+  &quot;timeLeft&quot;: 1500
+}
+</code></pre>
+<hr>
+<h4 id="post-apiexamsattemptidsubmit"><code>POST /api/exams/[attemptId]/submit</code></h4>
+<p>Submits the exam, computes score, and saves all answers.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;answers&quot;: { &quot;questionId&quot;: &quot;answerId&quot; },
+  &quot;timedOut&quot;: false
+}
+</code></pre>
+<p><strong>Response:</strong> <code>{ score, correct, wrong, skipped, passed }</code></p>
+<p><strong>Scoring logic:</strong></p>
+<ul>
+<li>Base: <code>(correct / total) * 100</code></li>
+<li>If <code>negative_marking = true</code>: <code>score -= (wrong * 0.25)</code></li>
+</ul>
+<hr>
+<h3 id="notification-endpoints">Notification Endpoints</h3>
+<h4 id="get-apinotifications"><code>GET /api/notifications</code></h4>
+<p>Returns the 30 most recent notifications for the current user.</p>
+<h4 id="patch-apinotifications"><code>PATCH /api/notifications</code></h4>
+<p>Marks all unread notifications as read.</p>
+<h4 id="patch-apinotificationsid"><code>PATCH /api/notifications/[id]</code></h4>
+<p>Marks a single notification as read.</p>
+<h4 id="delete-apinotificationsid"><code>DELETE /api/notifications/[id]</code></h4>
+<p>Deletes a single notification.</p>
+<hr>
+<h3 id="payment-endpoints">Payment Endpoints</h3>
+<h4 id="post-apipaymentsinitiate"><code>POST /api/payments/initiate</code></h4>
+<p>Creates a pending payment and returns redirect URLs.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;plan&quot;: &quot;monthly&quot;,
+  &quot;provider&quot;: &quot;momo&quot;
+}
+</code></pre>
+<p><strong>Response:</strong> <code>{ paymentId, redirectUrl }</code></p>
+<p><strong>Pricing:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Price</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Monthly</td>
+<td>15,000 RWF</td>
+</tr>
+<tr>
+<td>Annual</td>
+<td>120,000 RWF</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="get-apipaymentscallbackpaymentidxstatuscompleted"><code>GET /api/payments/callback?paymentId=X&amp;status=completed</code></h4>
+<p>Payment provider redirects here after payment. Activates subscription on success.</p>
+<hr>
+<h3 id="admin-questions">Admin: Questions</h3>
+<h4 id="post-apiadminquestions"><code>POST /api/admin/questions</code></h4>
+<p>Creates a new question with multilingual support.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;text_en&quot;: &quot;A 45-year-old patient...&quot;,
+  &quot;text_fr&quot;: &quot;Un patient de 45 ans...&quot;,
+  &quot;explanation_en&quot;: &quot;The correct answer is...&quot;,
+  &quot;explanation_fr&quot;: &quot;La bonne réponse est...&quot;,
+  &quot;difficulty&quot;: &quot;MEDIUM&quot;,
+  &quot;category_id&quot;: &quot;uuid&quot;,
+  &quot;license_categories&quot;: [&quot;medical_doctor&quot;, &quot;specialist_doctor&quot;],
+  &quot;answers&quot;: [
+    { &quot;text_en&quot;: &quot;Option A&quot;, &quot;text_fr&quot;: &quot;Option A en FR&quot;, &quot;is_correct&quot;: true },
+    { &quot;text_en&quot;: &quot;Option B&quot;, &quot;text_fr&quot;: &quot;Option B en FR&quot;, &quot;is_correct&quot;: false }
+  ]
+}
+</code></pre>
+<hr>
+<h4 id="patch-apiadminquestionsid"><code>PATCH /api/admin/questions/[id]</code></h4>
+<p>Updates question and replaces all answers.</p>
+<h4 id="delete-apiadminquestionsid"><code>DELETE /api/admin/questions/[id]</code></h4>
+<p>Permanently deletes question and its answers.</p>
+<hr>
+<h4 id="post-apiadminquestionscsv"><code>POST /api/admin/questions/csv</code></h4>
+<p>Bulk imports questions from a CSV file.</p>
+<p><strong>Required CSV columns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>category_slug</code></td>
+<td>Must match an existing <code>categories.slug</code></td>
+</tr>
+<tr>
+<td><code>difficulty</code></td>
+<td><code>EASY</code>, <code>MEDIUM</code>, or <code>HARD</code></td>
+</tr>
+<tr>
+<td><code>text_en</code></td>
+<td>Question text</td>
+</tr>
+<tr>
+<td><code>explanation_en</code></td>
+<td>Optional explanation</td>
+</tr>
+<tr>
+<td><code>answer_a</code> through <code>answer_d</code></td>
+<td>Answer option texts</td>
+</tr>
+<tr>
+<td><code>correct_letter</code></td>
+<td><code>A</code>, <code>B</code>, <code>C</code>, or <code>D</code></td>
+</tr>
+<tr>
+<td><code>license_categories</code></td>
+<td>Comma-separated license IDs (e.g. <code>md-internal-medicine</code>)</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="admin-exams">Admin: Exams</h3>
+<h4 id="post-apiadminexams"><code>POST /api/admin/exams</code></h4>
+<p>Creates an exam and links a list of question IDs.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;title_en&quot;: &quot;Medical Doctor Mock Exam 1&quot;,
+  &quot;title_fr&quot;: &quot;Examen simulé Médecin 1&quot;,
+  &quot;category_id&quot;: &quot;uuid&quot;,
+  &quot;license_category&quot;: &quot;medical_doctor&quot;,
+  &quot;duration_minutes&quot;: 90,
+  &quot;passing_score&quot;: 60,
+  &quot;is_free&quot;: false,
+  &quot;shuffle_questions&quot;: true,
+  &quot;shuffle_answers&quot;: true,
+  &quot;negative_marking&quot;: false,
+  &quot;questionIds&quot;: [&quot;uuid1&quot;, &quot;uuid2&quot;]
+}
+</code></pre>
+<hr>
+<h4 id="post-apiadminexamsgenerate-questions"><code>POST /api/admin/exams/generate-questions</code></h4>
+<p>Smart question selection for exam building.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;categoryBreakdown&quot;: [
+    { &quot;catId&quot;: &quot;uuid&quot;, &quot;count&quot;: 10 }
+  ],
+  &quot;difficulty&quot;: &quot;balanced&quot;,
+  &quot;licenseCategory&quot;: &quot;medical_doctor&quot;
+}
+</code></pre>
+<p><strong>Difficulty modes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Easy</th>
+<th>Medium</th>
+<th>Hard</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>balanced</code></td>
+<td>30%</td>
+<td>50%</td>
+<td>20%</td>
+</tr>
+<tr>
+<td><code>progressive</code></td>
+<td>20%</td>
+<td>50%</td>
+<td>30%</td>
+</tr>
+<tr>
+<td><code>challenge</code></td>
+<td>10%</td>
+<td>40%</td>
+<td>50%</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="patch-apiadminexamsexamid"><code>PATCH /api/admin/exams/[examId]</code></h4>
+<p>Update exam details or toggle <code>is_published</code>.</p>
+<h4 id="delete-apiadminexamsexamid"><code>DELETE /api/admin/exams/[examId]</code></h4>
+<p>Delete exam and unlink all questions.</p>
+<hr>
+<h3 id="admin-videos">Admin: Videos</h3>
+<h4 id="post-apiadminvideosupload-url"><code>POST /api/admin/videos/upload-url</code></h4>
+<p>Returns a Mux direct upload URL and creates a video DB record.</p>
+<h4 id="patch-apiadminvideosvideoid"><code>PATCH /api/admin/videos/[videoId]</code></h4>
+<p>Updates video title, description, category, free/published flags.</p>
+<h4 id="delete-apiadminvideosvideoid"><code>DELETE /api/admin/videos/[videoId]</code></h4>
+<p>Deletes video record.</p>
+<hr>
+<h3 id="admin-users">Admin: Users</h3>
+<h4 id="patch-apiadminusersuserid"><code>PATCH /api/admin/users/[userId]</code></h4>
+<p>Admin actions on a user account.</p>
+<p><strong>Request body:</strong> <code>{ &quot;action&quot;: &quot;ban&quot; | &quot;unban&quot; | &quot;make_admin&quot; | &quot;make_student&quot; }</code></p>
+<hr>
+<h3 id="admin-notifications">Admin: Notifications</h3>
+<h4 id="post-apiadminnotifications"><code>POST /api/admin/notifications</code></h4>
+<p>Send a notification to one user or broadcast to all students.</p>
+<p><strong>Request body:</strong></p>
+<pre><code class="language-json">{
+  &quot;user_id&quot;: &quot;uuid&quot;,         // optional — omit to broadcast to all students
+  &quot;title&quot;: &quot;New exam added&quot;,
+  &quot;message&quot;: &quot;A new exam is now available...&quot;,
+  &quot;type&quot;: &quot;info&quot;             // info | success | warning | error
+}
+</code></pre>
+<hr>
+<h3 id="webhooks">Webhooks</h3>
+<h4 id="post-apiwebhooksmux"><code>POST /api/webhooks/mux</code></h4>
+<p>Mux sends events here after video processing.</p>
+<ul>
+<li><code>video.asset.ready</code> → updates <code>mux_asset_id</code>, <code>mux_playback_id</code>, <code>duration</code>, <code>thumbnail</code></li>
+<li><code>video.asset.errored</code> → logs error, no DB change</li>
+</ul>
+<hr>
+<h2 id="8-pages--routing">8. Pages &amp; Routing</h2>
+<h3 id="public-pages-public">Public Pages (<code>(public)/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/</code></td>
+<td>Landing page (Hero, Features, Stats, Pricing preview, Testimonials, CTA)</td>
+</tr>
+<tr>
+<td><code>/about</code></td>
+<td>About MedLicense</td>
+</tr>
+<tr>
+<td><code>/pricing</code></td>
+<td>Full pricing plans</td>
+</tr>
+<tr>
+<td><code>/free-trial</code></td>
+<td>Free trial signup</td>
+</tr>
+<tr>
+<td><code>/blog</code></td>
+<td>Blog articles listing</td>
+</tr>
+<tr>
+<td><code>/tutorials</code></td>
+<td>Video tutorials</td>
+</tr>
+<tr>
+<td><code>/contact</code></td>
+<td>Contact form</td>
+</tr>
+<tr>
+<td><code>/faq</code></td>
+<td>Frequently Asked Questions</td>
+</tr>
+</tbody></table>
+<h3 id="auth-pages-auth">Auth Pages (<code>(auth)/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/login</code></td>
+<td>Email/password + Google OAuth login</td>
+</tr>
+<tr>
+<td><code>/register</code></td>
+<td>New account registration</td>
+</tr>
+<tr>
+<td><code>/verify-email</code></td>
+<td>Email verification landing</td>
+</tr>
+<tr>
+<td><code>/forgot-password</code></td>
+<td>Password reset request</td>
+</tr>
+</tbody></table>
+<h3 id="student-dashboard-dashboard">Student Dashboard (<code>(dashboard)/</code>)</h3>
+<p>All routes require authentication (redirect to <code>/login</code> if not signed in).</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Page</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/dashboard</code></td>
+<td>Overview</td>
+<td>Stats, readiness gauge, recent attempts, leaderboard</td>
+</tr>
+<tr>
+<td><code>/exams</code></td>
+<td>Exam list</td>
+<td>All published exams for the user&#39;s license category</td>
+</tr>
+<tr>
+<td><code>/exams/[id]</code></td>
+<td>Exam taker</td>
+<td>Launches the ExamEngine for the selected exam</td>
+</tr>
+<tr>
+<td><code>/results</code></td>
+<td>Results list</td>
+<td>All completed attempts with scores</td>
+</tr>
+<tr>
+<td><code>/results/[attemptId]</code></td>
+<td>Result detail</td>
+<td>Per-question breakdown with correct answers</td>
+</tr>
+<tr>
+<td><code>/analytics</code></td>
+<td>Analytics</td>
+<td>Performance charts by category, score progression</td>
+</tr>
+<tr>
+<td><code>/saved</code></td>
+<td>Saved questions</td>
+<td>Bookmarked questions from past exams</td>
+</tr>
+<tr>
+<td><code>/subscription</code></td>
+<td>Subscription</td>
+<td>Current plan + upgrade options</td>
+</tr>
+<tr>
+<td><code>/profile</code></td>
+<td>Profile</td>
+<td>Name, phone, country, language, license category</td>
+</tr>
+</tbody></table>
+<h3 id="admin-panel-adminadmin">Admin Panel (<code>(admin)/admin/</code>)</h3>
+<p>All routes require <code>role === &quot;ADMIN&quot;</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/admin</code></td>
+<td>KPI dashboard</td>
+</tr>
+<tr>
+<td><code>/admin/questions</code></td>
+<td>Question management</td>
+</tr>
+<tr>
+<td><code>/admin/exams</code></td>
+<td>Exam management</td>
+</tr>
+<tr>
+<td><code>/admin/users</code></td>
+<td>User management</td>
+</tr>
+<tr>
+<td><code>/admin/analytics</code></td>
+<td>Platform analytics</td>
+</tr>
+<tr>
+<td><code>/admin/payments</code></td>
+<td>Payment management</td>
+</tr>
+<tr>
+<td><code>/admin/content</code></td>
+<td>Video content management</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="9-core-features">9. Core Features</h2>
+<h3 id="exam-readiness-score">Exam Readiness Score</h3>
+<p>Computed as a weighted formula on the student&#39;s history:</p>
+<pre><code>readiness = avgScore × 0.6 + passRate × 0.3 + min(totalExams × 5, 10)
+</code></pre>
+<p>Capped at 100. Shown on the dashboard as a visual gauge.</p>
+<h3 id="auto-save">Auto-Save</h3>
+<p>Every 30 seconds during an active exam, the client sends a PATCH to <code>/api/exams/[attemptId]/save</code> with current state (answers, flagged questions, current index, time remaining). Saved to <code>exam_attempts.saved_state</code> as JSONB.</p>
+<h3 id="negative-marking">Negative Marking</h3>
+<p>If <code>exam.negative_marking = true</code>, the final score is reduced by 0.25 points per wrong answer:</p>
+<pre><code>rawScore = (correct / total) * 100
+finalScore = rawScore - (wrong * 0.25)
+</code></pre>
+<h3 id="study-streak">Study Streak</h3>
+<p>Tracked in <code>daily_streaks</code> per user. Increments <code>current_streak</code> when a user completes an exam on a new calendar day. Resets to 0 if a day is missed.</p>
+<h3 id="license-specific-question-filtering">License-Specific Question Filtering</h3>
+<p>Questions store a <code>license_categories TEXT[]</code> array. The generate-questions API filters with:</p>
+<pre><code class="language-sql">WHERE license_categories @&gt; ARRAY[&#39;medical_doctor&#39;]
+</code></pre>
+<p>Exams set <code>license_category</code> to scope them to a user&#39;s profession. Student exam lists filter:</p>
+<pre><code class="language-sql">WHERE license_category = &#39;medical_doctor&#39; OR license_category IS NULL
+</code></pre>
+<hr>
+<h2 id="10-admin-panel">10. Admin Panel</h2>
+<h3 id="question-management">Question Management</h3>
+<ul>
+<li><strong>Create</strong>: Fill EN + FR tabs, assign difficulty, subject category, license types, add 2–6 answer options</li>
+<li><strong>Edit</strong>: Pre-populated form, replace answers on save</li>
+<li><strong>Delete</strong>: Hard delete (cascades to answers)</li>
+<li><strong>Approve</strong>: Toggle <code>is_approved</code> flag</li>
+<li><strong>Filter</strong>: By subject category, approval status</li>
+<li><strong>CSV Import</strong>: Bulk upload with template download</li>
+</ul>
+<p><strong>FR badge on question cards:</strong></p>
+<ul>
+<li>🇫🇷 FR badge = French translation exists</li>
+<li>&quot;EN only&quot; badge = no French version yet</li>
+</ul>
+<h3 id="exam-builder">Exam Builder</h3>
+<ul>
+<li><strong>Manual mode</strong>: Pick individual questions</li>
+<li><strong>Smart Build mode</strong>: Define a per-category count, choose a difficulty profile (balanced/progressive/challenge), generate automatically</li>
+<li><strong>Settings</strong>: Duration, passing score, free/premium, shuffle options, negative marking, license scope</li>
+</ul>
+<h3 id="user-management">User Management</h3>
+<ul>
+<li>View all students with last login, exam count, subscription status</li>
+<li>Actions: Ban, Unban, Promote to Admin, Demote to Student</li>
+</ul>
+<h3 id="broadcast-notifications">Broadcast Notifications</h3>
+<p>Send system notifications to one user or all students via the admin panel or POST <code>/api/admin/notifications</code>.</p>
+<h3 id="analytics-dashboard">Analytics Dashboard</h3>
+<ul>
+<li>Revenue per month</li>
+<li>Subscriptions breakdown (active/trial/expired)</li>
+<li>Top-performing students</li>
+<li>Most-taken exams</li>
+</ul>
+<hr>
+<h2 id="11-exam-engine">11. Exam Engine</h2>
+<p>The exam engine (<code>src/components/exam/ExamEngine.tsx</code>) is a self-contained client component that handles the entire exam-taking experience.</p>
+<h3 id="features">Features</h3>
+<ul>
+<li><strong>Timer</strong> — Countdown with color transitions: normal → warning (under 10 min) → urgent (under 5 min, pulsing)</li>
+<li><strong>Progress bar</strong> — Percentage of questions answered</li>
+<li><strong>Two-column answer grid</strong> — A/B on left, C/D on right</li>
+<li><strong>Flag button</strong> — Mark questions for review; flagged questions show amber in navigator</li>
+<li><strong>Question navigator sidebar</strong> — Grid of all question numbers, color-coded by status</li>
+<li><strong>Auto-save</strong> — Every 30 seconds</li>
+<li><strong>Submit confirmation modal</strong> — Shows answered/unanswered/flagged counts before final submit</li>
+<li><strong>Timeout modal</strong> — Auto-submits when time expires</li>
+<li><strong>Bilingual content</strong> — Renders <code>text_fr</code>/<code>textFr</code> when the user&#39;s language is FR</li>
+</ul>
+<h3 id="question-navigator-colors">Question Navigator Colors</h3>
+<table>
+<thead>
+<tr>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Blue</td>
+<td>Current question</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>Answered</td>
+</tr>
+<tr>
+<td>Amber</td>
+<td>Flagged</td>
+</tr>
+<tr>
+<td>Gray</td>
+<td>Not yet answered</td>
+</tr>
+</tbody></table>
+<h3 id="answer-selection">Answer Selection</h3>
+<p>Clicking an answer circle selects it and shows a blue highlight + checkmark. Clicking another answer replaces the selection. No deselect (must skip by leaving unanswered).</p>
+<hr>
+<h2 id="12-localization-enfr">12. Localization (EN/FR)</h2>
+<h3 id="architecture">Architecture</h3>
+<pre><code>LanguageProvider (src/lib/language.tsx)
+  └─ reads localStorage on mount
+  └─ overrides with session.user.language on first auth
+  └─ persists changes to localStorage + DB (/api/users/language)
+
+useLanguage() hook → { language, setLanguage }
+useT(language) → T(&quot;key&quot;) function from translations.ts
+t(en, fr, language) → picks correct string for bilingual DB content
+</code></pre>
+<h3 id="language-toggle">Language Toggle</h3>
+<p>Located in <code>DashboardHeader.tsx</code>. Shows current inactive language as the button label (e.g. shows &quot;FR&quot; when currently viewing EN). One click switches instantly across all client components.</p>
+<h3 id="what-gets-translated">What Gets Translated</h3>
+<p><strong>Static UI (translations.ts dictionary):</strong></p>
+<ul>
+<li>Sidebar navigation labels</li>
+<li>Dashboard card titles and stat labels</li>
+<li>Exam listing page</li>
+<li>Results and analytics pages</li>
+<li>Saved questions page</li>
+<li>Exam engine (all labels, modals, navigator)</li>
+<li>Notifications dropdown</li>
+<li>Quick Actions widget</li>
+<li>Welcome Banner (including motivational quotes in both languages)</li>
+</ul>
+<p><strong>Dynamic DB content (using <code>t(en, fr, lang)</code> helper):</strong></p>
+<ul>
+<li>Exam titles (<code>title_en</code> / <code>title_fr</code>)</li>
+<li>Question text (<code>text_en</code> / <code>text_fr</code>)</li>
+<li>Answer text (<code>text_en</code> / <code>text_fr</code>)</li>
+<li>Question explanations (<code>explanation_en</code> / <code>explanation_fr</code>)</li>
+<li>Category names (<code>name_en</code> / <code>name_fr</code>)</li>
+</ul>
+<h3 id="adding-a-new-translation-key">Adding a New Translation Key</h3>
+<ol>
+<li>Add to <code>src/lib/translations.ts</code>:</li>
+</ol>
+<pre><code class="language-typescript">my_new_key: { EN: &quot;English text&quot;, FR: &quot;Texte en français&quot; },
+</code></pre>
+<ol start="2">
+<li>Use in a client component:</li>
+</ol>
+<pre><code class="language-typescript">const { language } = useLanguage();
+const T = useT(language);
+// ...
+&lt;p&gt;{T(&quot;my_new_key&quot;)}&lt;/p&gt;
+</code></pre>
+<ol start="3">
+<li>Use for bilingual DB content:</li>
+</ol>
+<pre><code class="language-typescript">import { t } from &quot;@/lib/language&quot;;
+t(item.title_en, item.title_fr, language)
+</code></pre>
+<hr>
+<h2 id="13-payments--subscriptions">13. Payments &amp; Subscriptions</h2>
+<h3 id="plans">Plans</h3>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Price</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Premium Monthly</td>
+<td>15,000 RWF</td>
+<td>30 days</td>
+</tr>
+<tr>
+<td>Premium Annual</td>
+<td>120,000 RWF</td>
+<td>365 days (saves ~33%)</td>
+</tr>
+</tbody></table>
+<h3 id="flow">Flow</h3>
+<pre><code>Student clicks &quot;Upgrade&quot;
+  → POST /api/payments/initiate (creates pending payment)
+  → Redirect to Afripay/MoMo/Card provider
+  → Provider redirects to /api/payments/callback?status=completed
+  → Subscription activated (status = ACTIVE, end_date set)
+</code></pre>
+<h3 id="subscription-status-values">Subscription Status Values</h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>FREE</code></td>
+<td>No active subscription (default)</td>
+</tr>
+<tr>
+<td><code>TRIAL</code></td>
+<td>Free trial period active</td>
+</tr>
+<tr>
+<td><code>ACTIVE</code></td>
+<td>Paid subscription active</td>
+</tr>
+<tr>
+<td><code>EXPIRED</code></td>
+<td>Past subscription, not renewed</td>
+</tr>
+</tbody></table>
+<h3 id="premium-content-gating">Premium Content Gating</h3>
+<p>Exams with <code>is_free = false</code> show a lock icon and &quot;Upgrade to Unlock&quot; button to students without <code>ACTIVE</code> or <code>TRIAL</code> subscriptions.</p>
+<hr>
+<h2 id="14-video-tutorials-mux">14. Video Tutorials (Mux)</h2>
+<h3 id="upload-flow">Upload Flow</h3>
+<pre><code>Admin clicks &quot;Add Video&quot;
+  → POST /api/admin/videos/upload-url
+     → Creates DB record (status: pending)
+     → Mux returns direct upload URL
+  → Frontend uploads video file directly to Mux
+  → Mux processes the video asynchronously
+  → Mux fires webhook: POST /api/webhooks/mux
+     → video.asset.ready → saves asset_id, playback_id, duration, thumbnail
+</code></pre>
+<h3 id="playback">Playback</h3>
+<p>Uses <code>@mux/mux-player-react</code> component with the <code>mux_playback_id</code>. Free videos are accessible to all authenticated users; premium videos require <code>ACTIVE</code> or <code>TRIAL</code> subscription.</p>
+<hr>
+<h2 id="15-notifications">15. Notifications</h2>
+<h3 id="notification-types">Notification Types</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Icon</th>
+<th>Color</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>info</code></td>
+<td>Info circle</td>
+<td>Blue</td>
+</tr>
+<tr>
+<td><code>success</code></td>
+<td>Check circle</td>
+<td>Emerald</td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td>Alert triangle</td>
+<td>Amber</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Alert circle</td>
+<td>Red</td>
+</tr>
+</tbody></table>
+<h3 id="bell-dropdown">Bell Dropdown</h3>
+<ul>
+<li>Auto-refreshes every 60 seconds</li>
+<li>Shows red badge with unread count (up to &quot;9+&quot;)</li>
+<li>Unread notifications have blue background + blue dot</li>
+<li>Click on an unread notification marks it as read</li>
+<li>X button deletes individual notifications</li>
+<li>&quot;Mark all read&quot; button clears the entire unread count</li>
+</ul>
+<h3 id="sending-notifications-admin">Sending Notifications (Admin)</h3>
+<pre><code class="language-bash">POST /api/admin/notifications
+{
+  &quot;title&quot;: &quot;New exam available&quot;,
+  &quot;message&quot;: &quot;A new Medical Doctor mock exam is ready for practice.&quot;,
+  &quot;type&quot;: &quot;success&quot;
+  # omit user_id to broadcast to all non-banned students
+}
+</code></pre>
+<hr>
+<h2 id="16-license-categories">16. License Categories</h2>
+<p>The platform supports <strong>16 license types</strong> across <strong>5 professional groups</strong>:</p>
+<h3 id="medical">Medical</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Label</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>medical_doctor</code></td>
+<td>Medical Doctor (General)</td>
+</tr>
+<tr>
+<td><code>specialist_doctor</code></td>
+<td>Specialist Doctor</td>
+</tr>
+</tbody></table>
+<h3 id="dental">Dental</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Label</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>dentist</code></td>
+<td>Dentist / Dental Surgeon</td>
+</tr>
+<tr>
+<td><code>dental_technician</code></td>
+<td>Dental Technician</td>
+</tr>
+</tbody></table>
+<h3 id="pharmacy">Pharmacy</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Label</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pharmacist</code></td>
+<td>Pharmacist</td>
+</tr>
+<tr>
+<td><code>pharmacy_technician</code></td>
+<td>Pharmacy Technician</td>
+</tr>
+</tbody></table>
+<h3 id="nursing--midwifery">Nursing &amp; Midwifery</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Label</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>nurse_a0</code></td>
+<td>Nurse — A0 (Bachelor)</td>
+</tr>
+<tr>
+<td><code>nurse_a1</code></td>
+<td>Nurse — A1 (Advanced Diploma)</td>
+</tr>
+<tr>
+<td><code>nurse_a2</code></td>
+<td>Nurse — A2 (Certificate)</td>
+</tr>
+<tr>
+<td><code>midwife</code></td>
+<td>Midwife</td>
+</tr>
+</tbody></table>
+<h3 id="allied-health">Allied Health</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Label</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>physiotherapist</code></td>
+<td>Physiotherapist</td>
+</tr>
+<tr>
+<td><code>lab_technician</code></td>
+<td>Laboratory Technician</td>
+</tr>
+<tr>
+<td><code>radiology_technician</code></td>
+<td>Radiology Technician</td>
+</tr>
+<tr>
+<td><code>nutritionist</code></td>
+<td>Nutritionist / Dietitian</td>
+</tr>
+<tr>
+<td><code>env_health</code></td>
+<td>Environmental Health Officer</td>
+</tr>
+<tr>
+<td><code>orthopedic_technician</code></td>
+<td>Orthopedic Technician</td>
+</tr>
+</tbody></table>
+<h3 id="subject-categories">Subject Categories</h3>
+<p>Each license type has <strong>8 subject categories</strong> seeded (128 total). Category slugs follow the pattern: <code>{license-key}-{subject-slug}</code> (e.g. <code>md-internal-medicine</code>, <code>dentist-oral-anatomy-physiology</code>).</p>
+<hr>
+<h2 id="17-components-reference">17. Components Reference</h2>
+<h3 id="layout-components">Layout Components</h3>
+<h4 id="dashboardsidebar"><code>DashboardSidebar</code></h4>
+<p><strong>File:</strong> <code>src/components/layout/DashboardSidebar.tsx</code>
+Student navigation sidebar. Auto-translates navigation labels based on current language. Highlights active route.</p>
+<h4 id="dashboardheader"><code>DashboardHeader</code></h4>
+<p><strong>File:</strong> <code>src/components/layout/DashboardHeader.tsx</code>
+Top bar with page title/subtitle, language toggle (EN↔FR), theme toggle (dark/light), notifications bell, and user avatar.</p>
+<h4 id="notificationsdropdown"><code>NotificationsDropdown</code></h4>
+<p><strong>File:</strong> <code>src/components/layout/NotificationsDropdown.tsx</code>
+Bell icon + dropdown panel. Polls every 60 seconds. Supports mark-as-read and delete. Fully bilingual.</p>
+<h3 id="dashboard-widgets">Dashboard Widgets</h3>
+<h4 id="welcomebanner"><code>WelcomeBanner</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/WelcomeBanner.tsx</code>
+Gradient banner with personalized greeting (morning/afternoon/evening), streak badge, license label, and motivational quote (rotated daily, available in EN and FR per profession).</p>
+<h4 id="readinessgauge"><code>ReadinessGauge</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/ReadinessGauge.tsx</code>
+Circular gauge showing exam readiness score with color coding.</p>
+<h4 id="quickactions"><code>QuickActions</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/QuickActions.tsx</code>
+6-tile grid: Daily Quiz, Mock Exam, Saved, Tutorials, Analytics, Subscription/Premium.</p>
+<h4 id="studystreakcard"><code>StudyStreakCard</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/StudyStreakCard.tsx</code>
+Shows current streak, longest streak, points, and badge count.</p>
+<h4 id="topperformers"><code>TopPerformers</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/TopPerformers.tsx</code>
+Leaderboard of top 5 students this month.</p>
+<h4 id="recentactivity"><code>RecentActivity</code></h4>
+<p><strong>File:</strong> <code>src/components/dashboard/overview/RecentActivity.tsx</code>
+Last 5 exam attempts with scores and pass/fail badges.</p>
+<h3 id="admin-components">Admin Components</h3>
+<h4 id="questionformmodal"><code>QuestionFormModal</code></h4>
+<p><strong>File:</strong> <code>src/components/admin/QuestionFormModal.tsx</code>
+Full question create/edit modal with:</p>
+<ul>
+<li>EN/FR language tab switcher</li>
+<li>License category multi-selector (filters subject categories)</li>
+<li>Subject category dropdown (filtered by license selection)</li>
+<li>Difficulty picker</li>
+<li>2–6 answer options with correct answer marker</li>
+<li>Explanation field</li>
+<li>FR completion indicator in footer</li>
+</ul>
+<h4 id="examformmodal"><code>ExamFormModal</code></h4>
+<p><strong>File:</strong> <code>src/components/admin/ExamFormModal.tsx</code>
+Exam create/edit modal with Smart Build support. Filters categories and questions by license category.</p>
+<h4 id="csvuploadmodal"><code>CSVUploadModal</code></h4>
+<p><strong>File:</strong> <code>src/components/admin/CSVUploadModal.tsx</code>
+CSV bulk import with template download and upload progress.</p>
+<h4 id="videouploadmodal"><code>VideoUploadModal</code></h4>
+<p><strong>File:</strong> <code>src/components/admin/VideoUploadModal.tsx</code>
+Mux direct-upload modal with drag-and-drop.</p>
+<h3 id="exam-component">Exam Component</h3>
+<h4 id="examengine"><code>ExamEngine</code></h4>
+<p><strong>File:</strong> <code>src/components/exam/ExamEngine.tsx</code>
+Full exam experience. Accepts a pre-built <code>ExamData</code> object and manages all state locally. Connects to save and submit APIs. Renders question text and answers in the user&#39;s active language.</p>
+<h3 id="ui-primitives-srccomponentsui">UI Primitives (<code>src/components/ui/</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Badge</code></td>
+<td>Status chips (variants: default, success, danger, warning, info)</td>
+</tr>
+<tr>
+<td><code>Button</code></td>
+<td>Styled button (variants: default, outline, ghost; sizes: default, sm, lg)</td>
+</tr>
+<tr>
+<td><code>Card</code> / <code>CardContent</code> / <code>CardHeader</code> / <code>CardTitle</code></td>
+<td>Container cards</td>
+</tr>
+<tr>
+<td><code>Input</code></td>
+<td>Form input with label and error state</td>
+</tr>
+<tr>
+<td><code>Modal</code></td>
+<td>Generic dialog overlay</td>
+</tr>
+<tr>
+<td><code>Progress</code></td>
+<td>Horizontal progress bar with optional label</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="18-deployment">18. Deployment</h2>
+<h3 id="vercel-recommended">Vercel (Recommended)</h3>
+<pre><code class="language-bash"># Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+</code></pre>
+<p><strong>Required Vercel settings:</strong></p>
+<ul>
+<li>Framework: Next.js</li>
+<li>Build Command: <code>pnpm build</code></li>
+<li>Output Directory: <code>.next</code></li>
+<li>Node.js Version: 18.x</li>
+</ul>
+<p><strong>Environment Variables:</strong> Set all variables from Section 4 in the Vercel dashboard.</p>
+<p><strong>Important:</strong> The <code>NEXTAUTH_URL</code> must be set to your production domain (e.g. <code>https://medlicense.rw</code>).</p>
+<h3 id="mux-webhook-configuration">Mux Webhook Configuration</h3>
+<p>After deploying, register the webhook endpoint in the Mux dashboard:</p>
+<pre><code>https://medlicense.rw/api/webhooks/mux
+</code></pre>
+<h3 id="supabase-rls-policies">Supabase RLS Policies</h3>
+<p>Ensure Row Level Security policies are configured in Supabase to match how the service role key is used server-side. Student-facing queries use the service role key (bypasses RLS) on the server — do not expose the service role key to the client.</p>
+<h3 id="production-checklist">Production Checklist</h3>
+<ul>
+<li><input disabled="" type="checkbox"> All <code>.env.local</code> values set in Vercel environment variables</li>
+<li><input disabled="" type="checkbox"> Database migrations applied to production Supabase project</li>
+<li><input disabled="" type="checkbox"> Seed categories imported (<code>supabase/seeds/seed_categories.sql</code>)</li>
+<li><input disabled="" type="checkbox"> Mux webhook registered and verified</li>
+<li><input disabled="" type="checkbox"> Google OAuth redirect URIs updated to production domain</li>
+<li><input disabled="" type="checkbox"> SMTP email sender verified</li>
+<li><input disabled="" type="checkbox"> <code>NEXTAUTH_SECRET</code> set to a strong random value</li>
+<li><input disabled="" type="checkbox"> Demo accounts created (or removed for production)</li>
+</ul>
+<hr>
+<p><em>Documentation last updated: May 2026</em>
+<em>Platform: MedLicense v1.0 — Built for Rwanda&#39;s healthcare professionals</em></p>
+
+</body>
+</html>

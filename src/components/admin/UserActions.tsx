@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Ban, UserCheck, Shield } from "lucide-react";
+import { MoreHorizontal, Ban, UserCheck, Shield, UserMinus } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
@@ -12,7 +11,7 @@ interface UserActionsProps {
 }
 
 export function UserActions({ userId, isBanned, role }: UserActionsProps) {
-  const [open, setOpen] = useState(false);
+  const [open,    setOpen]    = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -36,31 +35,52 @@ export function UserActions({ userId, isBanned, role }: UserActionsProps) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative inline-block">
       <button
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors"
+        disabled={loading}
+        className="p-1.5 rounded-lg hover:bg-gray-700/60 text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-40"
       >
         <MoreHorizontal className="w-4 h-4" />
       </button>
+
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20 py-1">
+          <div className="absolute right-0 mt-1 w-48 bg-gray-800 border border-gray-700 rounded-xl shadow-xl z-20 py-1 overflow-hidden">
+
+            {/* Ban / Unban */}
             <button
               onClick={() => action(isBanned ? "unban" : "ban")}
-              className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"
+              className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 hover:bg-gray-700/50 transition-colors ${
+                isBanned ? "text-emerald-400" : "text-red-400"
+              }`}
             >
-              {isBanned ? <UserCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-              {isBanned ? "Unban User" : "Ban User"}
+              {isBanned
+                ? <><UserCheck className="w-4 h-4 flex-shrink-0" /> Unban User</>
+                : <><Ban className="w-4 h-4 flex-shrink-0" /> Ban User</>
+              }
             </button>
+
+            <div className="h-px bg-gray-700/60 my-1" />
+
+            {/* Role change */}
             {role !== "ADMIN" && (
               <button
                 onClick={() => action("make_admin")}
-                className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                className="w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 hover:bg-gray-700/50 text-gray-300 transition-colors"
               >
-                <Shield className="w-4 h-4" />
+                <Shield className="w-4 h-4 flex-shrink-0 text-blue-400" />
                 Make Admin
+              </button>
+            )}
+            {role === "ADMIN" && (
+              <button
+                onClick={() => action("make_student")}
+                className="w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 hover:bg-gray-700/50 text-gray-300 transition-colors"
+              >
+                <UserMinus className="w-4 h-4 flex-shrink-0 text-amber-400" />
+                Demote to Student
               </button>
             )}
           </div>

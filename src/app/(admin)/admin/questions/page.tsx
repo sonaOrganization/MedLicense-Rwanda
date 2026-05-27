@@ -27,27 +27,37 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
         questions={questionList.map((q: {
           id: string;
           text_en: string;
+          text_fr?: string | null;
           explanation_en?: string | null;
+          explanation_fr?: string | null;
           difficulty: string;
           is_approved: boolean;
           category_id: string;
-          category: { id: string; name_en: string };
-          answers: { id: string; text_en: string; is_correct: boolean; order: number }[];
+          license_categories?: string[] | null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          category: any;
+          answers: { id: string; text_en: string; text_fr?: string | null; is_correct: boolean; order: number }[];
         }) => ({
           id: q.id,
           text_en: q.text_en,
+          text_fr: q.text_fr ?? null,
           explanation_en: q.explanation_en,
+          explanation_fr: q.explanation_fr ?? null,
           difficulty: q.difficulty,
           is_approved: q.is_approved,
           category_id: q.category_id,
-          category: { id: q.category.id, name_en: q.category.name_en },
+          license_categories: q.license_categories ?? [],
+          category: {
+            id: Array.isArray(q.category) ? q.category[0]?.id ?? "" : q.category?.id ?? "",
+            name_en: Array.isArray(q.category) ? q.category[0]?.name_en ?? "" : q.category?.name_en ?? "",
+          },
           answers: q.answers
             .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
-            .map((a: { id: string; text_en: string; is_correct: boolean }) => ({
-              id: a.id, text_en: a.text_en, is_correct: a.is_correct,
+            .map((a: { id: string; text_en: string; text_fr?: string | null; is_correct: boolean }) => ({
+              id: a.id, text_en: a.text_en, text_fr: a.text_fr ?? null, is_correct: a.is_correct,
             })),
         }))}
-        categories={categoryList.map((c: { id: string; name_en: string }) => ({ id: c.id, name_en: c.name_en }))}
+        categories={categoryList.map((c: { id: string; name_en: string; license_category?: string | null }) => ({ id: c.id, name_en: c.name_en, license_category: c.license_category ?? null }))}
         currentCategory={category ?? ""}
         currentApproved={approved ?? ""}
       />

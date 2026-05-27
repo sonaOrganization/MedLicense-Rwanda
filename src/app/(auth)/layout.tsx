@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Stethoscope, CheckCircle, ArrowLeft } from "lucide-react";
 
 const features = [
-  "2,500+ curated RMDC practice questions",
+  "2,500+ curated medical license practice questions",
   "Full timed mock exam simulations",
   "Performance analytics & competency tracking",
   "HD video tutorials from medical experts",
@@ -11,7 +11,7 @@ const features = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex" suppressHydrationWarning>
 
       {/* ── Left Panel ── */}
       <div className="hidden lg:flex flex-col w-[480px] flex-shrink-0 relative overflow-hidden bg-[#0b0f1e]">
@@ -35,8 +35,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div className="leading-none">
-              <span className="font-bold text-xl text-white tracking-tight">RMDC</span>
-              <span className="font-bold text-xl text-cyan-300 tracking-tight"> Prep</span>
+              <span className="font-bold text-xl text-white tracking-tight">Med</span>
+              <span className="font-bold text-xl text-cyan-300 tracking-tight">License</span>
             </div>
           </Link>
 
@@ -56,7 +56,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </h2>
 
             <p className="text-gray-400 text-[15px] leading-relaxed mb-8">
-              Join thousands of aspiring physicians, nurses, and clinical officers preparing for the RMDC exam with confidence.
+              Join thousands of aspiring physicians, nurses, and clinical officers preparing for their medical licensing exam with confidence.
             </p>
 
             <div className="space-y-3">
@@ -72,7 +72,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Testimonial */}
           <div className="bg-gray-800/40 border border-gray-700/40 rounded-2xl p-5">
             <p className="text-sm text-gray-300 italic leading-relaxed mb-3">
-              "Passed the RMDC on my first attempt. The exam simulation was almost identical to the real thing."
+              "Passed the medical licensing exam on my first attempt. The exam simulation was almost identical to the real thing."
             </p>
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold">
@@ -80,12 +80,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               </div>
               <div>
                 <p className="text-xs font-semibold text-white">Dr. Jean Pierre M.</p>
-                <p className="text-[10px] text-gray-500">RMDC Graduate, 2024</p>
+                <p className="text-[10px] text-gray-500">License Graduate, 2024</p>
               </div>
             </div>
           </div>
 
-          <p className="text-xs text-gray-700 mt-6" suppressHydrationWarning>© {new Date().getFullYear()} RMDC Exam Prep · Kigali, Rwanda</p>
+          <p className="text-xs text-gray-700 mt-6" suppressHydrationWarning>© {new Date().getFullYear()} MedLicense · Kigali, Rwanda</p>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Stethoscope className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-[16px] text-gray-900 dark:text-white">
-              RMDC <span className="text-blue-700">Prep</span>
+              Med<span className="text-blue-700">License</span>
             </span>
           </Link>
           <Link

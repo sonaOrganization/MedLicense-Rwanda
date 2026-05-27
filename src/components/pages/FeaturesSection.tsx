@@ -5,7 +5,7 @@ const features = [
   {
     icon: Timer,
     title: "Real Exam Simulation",
-    description: "Timed, proctored exam sessions that exactly mirror the RMDC format. Auto-submit, flag & review, and randomized shuffling built in.",
+    description: "Timed, proctored exam sessions that exactly mirror the medical licensing exam format. Auto-submit, flag & review, and randomized shuffling built in.",
     accent: "from-blue-500 to-blue-700",
     bg: "bg-blue-50 dark:bg-blue-950/40",
     iconColor: "text-blue-700 dark:text-blue-400",
@@ -21,7 +21,7 @@ const features = [
   {
     icon: BookOpen,
     title: "2,500+ Questions",
-    description: "Expertly curated question bank spanning all six RMDC core competency areas. Each question includes a detailed explanation.",
+    description: "Expertly curated question bank spanning all core medical license competency areas. Each question includes a detailed explanation.",
     accent: "from-emerald-500 to-emerald-700",
     bg: "bg-emerald-50 dark:bg-emerald-950/40",
     iconColor: "text-emerald-600 dark:text-emerald-400",
@@ -66,7 +66,7 @@ export function FeaturesSection() {
             Everything You Need to Pass
           </h2>
           <p className="text-lg text-gray-500 dark:text-gray-400 leading-relaxed">
-            Built specifically for RMDC exam candidates, with every tool needed to study efficiently and walk in on exam day with confidence.
+            Built specifically for medical license exam candidates, with every tool needed to study efficiently and walk in on exam day with confidence.
           </p>
         </div>
 

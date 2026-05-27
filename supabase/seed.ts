@@ -494,7 +494,7 @@ async function seed() {
       title: "Internal Medicine — Mock Exam",
       title_en: "Internal Medicine — Mock Exam",
       title_fr: "Médecine Interne — Examen Simulé",
-      description: "A 10-question timed simulation covering core Internal Medicine topics tested in the RMDC exam.",
+      description: "A 10-question timed simulation covering core Internal Medicine topics tested in the medical licensing exam.",
       category_id: CAT.internal,
       duration_minutes: 20,
       passing_score: 70,
@@ -509,7 +509,7 @@ async function seed() {
       title: "Pediatrics — Mock Exam",
       title_en: "Pediatrics — Mock Exam",
       title_fr: "Pédiatrie — Examen Simulé",
-      description: "A 10-question timed simulation covering Pediatrics topics tested in the RMDC exam.",
+      description: "A 10-question timed simulation covering Pediatrics topics tested in the medical licensing exam.",
       category_id: CAT.pediatrics,
       duration_minutes: 20,
       passing_score: 70,
@@ -521,9 +521,9 @@ async function seed() {
     },
     {
       id: EXAM.mixed,
-      title: "RMDC Full Mixed Mock — 40 Questions",
-      title_en: "RMDC Full Mixed Mock — 40 Questions",
-      title_fr: "Simulé Complet RMDC — 40 Questions",
+      title: "MedLicense Full Mixed Mock — 40 Questions",
+      title_en: "MedLicense Full Mixed Mock — 40 Questions",
+      title_fr: "Simulé Complet MedLicense — 40 Questions",
       description: "A comprehensive 40-question mock exam across Internal Medicine, Pediatrics, Obstetrics & Gynecology, and Community Health.",
       category_id: CAT.internal,
       duration_minutes: 60,
@@ -578,7 +578,7 @@ async function seed() {
   ───────────────────────────────────────
   • Internal Medicine Mock        (10 Qs, 20 min, FREE)
   • Pediatrics Mock               (10 Qs, 20 min, FREE)
-  • RMDC Full Mixed Mock          (40 Qs, 60 min, Premium)
+  • MedLicense Full Mixed Mock    (40 Qs, 60 min, Premium)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 }
 

@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { X, Upload, FileText, CheckCircle, AlertCircle, Download } from "lucide-react";
 import toast from "react-hot-toast";
 
-const TEMPLATE = `category_slug,difficulty,text_en,explanation_en,answer_a,answer_b,answer_c,answer_d,correct_letter
-internal-medicine,MEDIUM,"A 30-year-old presents with fever and cough. The most likely diagnosis is:","Pneumonia is caused by S. pneumoniae in most cases.","Community-acquired pneumonia","Pulmonary embolism","Lung cancer","Asthma",A
-pediatrics,EASY,"At what age is the MMR vaccine first given?","MMR is given at 9 months in Rwanda.","9 months","6 months","12 months","18 months",A`;
+const TEMPLATE = `category_slug,difficulty,text_en,explanation_en,answer_a,answer_b,answer_c,answer_d,correct_letter,license_categories
+md-internal-medicine,MEDIUM,"A 30-year-old presents with fever and cough. The most likely diagnosis is:","Pneumonia is caused by S. pneumoniae in most cases.","Community-acquired pneumonia","Pulmonary embolism","Lung cancer","Asthma",A,medical_doctor
+dentist-oral-anatomy-physiology,EASY,"Which nerve supplies the mandibular teeth?","The inferior alveolar nerve (branch of V3) supplies the lower teeth.","Inferior alveolar nerve","Lingual nerve","Buccal nerve","Mental nerve",A,dentist`;
 
 interface CSVUploadModalProps {
   open: boolean;
@@ -121,12 +121,13 @@ export function CSVUploadModal({ open, onClose }: CSVUploadModalProps) {
             </div>
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {[
-                { col: "category_slug",   desc: "e.g. internal-medicine, pediatrics" },
-                { col: "difficulty",      desc: "EASY, MEDIUM, or HARD" },
-                { col: "text_en",         desc: "The full question text" },
-                { col: "answer_a/b/c/d",  desc: "Answer options (a & b are required)" },
-                { col: "correct_letter",  desc: "A, B, C, or D" },
-                { col: "explanation_en",  desc: "Optional — shown after exam" },
+                { col: "category_slug",      desc: "e.g. md-internal-medicine, dentist-oral-surgery-anaesthesia" },
+                { col: "difficulty",         desc: "EASY, MEDIUM, or HARD" },
+                { col: "text_en",            desc: "The full question text" },
+                { col: "answer_a/b/c/d",     desc: "Answer options (a & b are required)" },
+                { col: "correct_letter",     desc: "A, B, C, or D" },
+                { col: "license_categories", desc: "e.g. medical_doctor  or  dentist,nurse_a0  (comma-separated)" },
+                { col: "explanation_en",     desc: "Optional — shown after exam" },
               ].map(({ col, desc }) => (
                 <div key={col} className="flex items-center gap-3 px-4 py-2">
                   <code className="text-xs font-mono bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded w-36 flex-shrink-0">{col}</code>

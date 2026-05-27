@@ -45,9 +45,11 @@ export default async function AdminAnalyticsPage() {
 
   // Tally attempts per exam
   const examAttemptMap: Record<string, { title: string; count: number }> = {};
-  (topExams ?? []).forEach((a: { exam_id: string; exam: { title_en: string } }) => {
+  (topExams ?? []).forEach((a: { exam_id: string; exam: { title_en: string } | { title_en: string }[] }) => {
+    const exam = Array.isArray(a.exam) ? a.exam[0] : a.exam;
+    if (!exam) return;
     if (!examAttemptMap[a.exam_id]) {
-      examAttemptMap[a.exam_id] = { title: a.exam.title_en, count: 0 };
+      examAttemptMap[a.exam_id] = { title: exam.title_en, count: 0 };
     }
     examAttemptMap[a.exam_id].count++;
   });

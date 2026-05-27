@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, PlayCircle, ArrowRight, ShieldCheck, Users, Star } from "lucide-react";
 
 const highlights = [
-  "Real RMDC exam simulation with timer",
+  "Real medical licensing exam simulation with timer",
   "2,500+ curated practice questions",
   "AI-powered performance analytics",
   "Expert video tutorials & study notes",
@@ -12,7 +12,7 @@ const highlights = [
 const trustBadges = [
   { icon: Users, label: "5,000+ students" },
   { icon: Star, label: "98% pass rate" },
-  { icon: ShieldCheck, label: "RMDC aligned" },
+  { icon: ShieldCheck, label: "License aligned" },
 ];
 
 export function HeroSection() {
@@ -41,7 +41,7 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 border border-cyan-500/30 bg-cyan-500/10 rounded-full px-4 py-1.5 mb-7">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
               <span className="text-xs font-semibold text-cyan-300 tracking-wider uppercase">
-                #1 RMDC Exam Platform in Rwanda
+                #1 Medical License Exam Platform in Rwanda
               </span>
             </div>
 
@@ -49,7 +49,7 @@ export function HeroSection() {
               Prepare Smarter.{" "}
               <span className="relative">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-cyan-300 to-teal-300">
-                  Pass Your RMDC
+                  Pass Your Licensing
                 </span>
               </span>{" "}
               Exam with Confidence.
@@ -113,7 +113,7 @@ export function HeroSection() {
                 {/* Card header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800/80 bg-gray-900/60">
                   <div>
-                    <p className="text-xs text-gray-500 mb-0.5">RMDC Mock Exam</p>
+                    <p className="text-xs text-gray-500 mb-0.5">MedLicense Mock Exam</p>
                     <p className="text-sm font-semibold text-white">Clinical Medicine — Session 1</p>
                   </div>
                   <div className="flex items-center gap-2 bg-red-950/60 border border-red-800/50 rounded-xl px-3 py-1.5">

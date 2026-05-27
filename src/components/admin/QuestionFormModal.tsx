@@ -1,89 +1,125 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { X, Plus, Trash2, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categories";
 
-interface Category { id: string; name_en: string; }
-interface AnswerField { text_en: string; is_correct: boolean; }
+interface Category { id: string; name_en: string; license_category?: string | null; }
+interface AnswerField { text_en: string; text_fr: string; is_correct: boolean; }
 
 interface QuestionFormModalProps {
   open: boolean;
   onClose: () => void;
   categories: Category[];
-  /** Pass existing question to edit, omit for create */
   question?: {
     id: string;
     text_en: string;
+    text_fr?: string | null;
     explanation_en?: string | null;
+    explanation_fr?: string | null;
     difficulty: string;
     category_id: string;
-    answers: { id?: string; text_en: string; is_correct: boolean }[];
+    license_categories?: string[] | null;
+    answers: { id?: string; text_en: string; text_fr?: string | null; is_correct: boolean }[];
   };
 }
 
 const EMPTY_ANSWERS: AnswerField[] = [
-  { text_en: "", is_correct: true  },
-  { text_en: "", is_correct: false },
-  { text_en: "", is_correct: false },
-  { text_en: "", is_correct: false },
+  { text_en: "", text_fr: "", is_correct: true  },
+  { text_en: "", text_fr: "", is_correct: false },
+  { text_en: "", text_fr: "", is_correct: false },
+  { text_en: "", text_fr: "", is_correct: false },
 ];
+
+type Lang = "EN" | "FR";
 
 export function QuestionFormModal({ open, onClose, categories, question }: QuestionFormModalProps) {
   const router = useRouter();
   const isEdit = !!question;
 
-  const [textEn,       setTextEn]       = useState("");
-  const [explanationEn, setExplanationEn] = useState("");
-  const [difficulty,   setDifficulty]   = useState("MEDIUM");
-  const [categoryId,   setCategoryId]   = useState("");
-  const [answers,      setAnswers]      = useState<AnswerField[]>(EMPTY_ANSWERS);
-  const [saving,       setSaving]       = useState(false);
+  const [lang,              setLang]              = useState<Lang>("EN");
+  const [textEn,            setTextEn]            = useState("");
+  const [textFr,            setTextFr]            = useState("");
+  const [explanationEn,     setExplanationEn]     = useState("");
+  const [explanationFr,     setExplanationFr]     = useState("");
+  const [difficulty,        setDifficulty]        = useState("MEDIUM");
+  const [categoryId,        setCategoryId]        = useState("");
+  const [licenseCategories, setLicenseCategories] = useState<string[]>([]);
+  const [answers,           setAnswers]           = useState<AnswerField[]>(EMPTY_ANSWERS);
+  const [saving,            setSaving]            = useState(false);
 
-  // Populate form when editing
   useEffect(() => {
     if (question) {
       setTextEn(question.text_en);
+      setTextFr(question.text_fr ?? "");
       setExplanationEn(question.explanation_en ?? "");
+      setExplanationFr(question.explanation_fr ?? "");
       setDifficulty(question.difficulty);
       setCategoryId(question.category_id);
-      setAnswers(question.answers.map((a) => ({ text_en: a.text_en, is_correct: a.is_correct })));
+      setLicenseCategories(question.license_categories ?? []);
+      setAnswers(question.answers.map((a) => ({
+        text_en: a.text_en,
+        text_fr: a.text_fr ?? "",
+        is_correct: a.is_correct,
+      })));
     } else {
-      setTextEn("");
-      setExplanationEn("");
+      setTextEn(""); setTextFr("");
+      setExplanationEn(""); setExplanationFr("");
       setDifficulty("MEDIUM");
       setCategoryId(categories[0]?.id ?? "");
+      setLicenseCategories([]);
       setAnswers(EMPTY_ANSWERS.map((a) => ({ ...a })));
     }
+    setLang("EN");
   }, [question, categories, open]);
+
+  const visibleCategories = useMemo(() => {
+    if (licenseCategories.length === 0) return categories;
+    return categories.filter(
+      (c) => !c.license_category || licenseCategories.includes(c.license_category)
+    );
+  }, [categories, licenseCategories]);
+
+  useEffect(() => {
+    if (!categoryId) return;
+    if (visibleCategories.length > 0 && !visibleCategories.some((c) => c.id === categoryId)) {
+      setCategoryId(visibleCategories[0]?.id ?? "");
+    }
+  }, [visibleCategories]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggleLicCat(id: string) {
+    setLicenseCategories((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   function setCorrect(idx: number) {
     setAnswers((prev) => prev.map((a, i) => ({ ...a, is_correct: i === idx })));
   }
 
-  function updateAnswer(idx: number, text: string) {
-    setAnswers((prev) => prev.map((a, i) => i === idx ? { ...a, text_en: text } : a));
+  function updateAnswer(idx: number, field: "text_en" | "text_fr", value: string) {
+    setAnswers((prev) => prev.map((a, i) => i === idx ? { ...a, [field]: value } : a));
   }
 
   function addAnswer() {
     if (answers.length >= 6) return;
-    setAnswers((prev) => [...prev, { text_en: "", is_correct: false }]);
+    setAnswers((prev) => [...prev, { text_en: "", text_fr: "", is_correct: false }]);
   }
 
   function removeAnswer(idx: number) {
     if (answers.length <= 2) return;
     const next = answers.filter((_, i) => i !== idx);
-    // ensure one correct
     if (!next.some((a) => a.is_correct)) next[0].is_correct = true;
     setAnswers(next);
   }
 
   async function handleSave() {
-    if (!textEn.trim()) return toast.error("Question text is required");
+    if (!textEn.trim()) return toast.error("English question text is required");
     if (!categoryId)    return toast.error("Select a category");
     if (!answers.some((a) => a.is_correct)) return toast.error("Mark one answer as correct");
-    if (answers.some((a) => !a.text_en.trim())) return toast.error("All answer fields must be filled in");
+    if (answers.some((a) => !a.text_en.trim())) return toast.error("All English answer fields must be filled in");
 
     setSaving(true);
     try {
@@ -92,7 +128,20 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text_en: textEn.trim(), explanation_en: explanationEn.trim() || null, difficulty, category_id: categoryId, answers }),
+        body: JSON.stringify({
+          text_en: textEn.trim(),
+          text_fr: textFr.trim() || null,
+          explanation_en: explanationEn.trim() || null,
+          explanation_fr: explanationFr.trim() || null,
+          difficulty,
+          category_id: categoryId,
+          license_categories: licenseCategories,
+          answers: answers.map((a) => ({
+            text_en: a.text_en,
+            text_fr: a.text_fr.trim() || null,
+            is_correct: a.is_correct,
+          })),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -106,7 +155,13 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
     }
   }
 
+  // Derived completeness indicators
+  const frComplete = textFr.trim() !== "" && answers.every((a) => a.text_fr.trim() !== "");
+  const frPartial  = !frComplete && (textFr.trim() !== "" || answers.some((a) => a.text_fr.trim() !== ""));
+
   if (!open) return null;
+
+  const isFr = lang === "FR";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -122,44 +177,128 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           </button>
         </div>
 
+        {/* Language tab bar */}
+        <div className="flex gap-0 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 px-6">
+          {(["EN", "FR"] as Lang[]).map((l) => {
+            const active = lang === l;
+            const showDot = l === "FR" && frPartial;
+            const showCheck = l === "FR" && frComplete;
+            return (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={cn(
+                  "flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px",
+                  active
+                    ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                )}
+              >
+                {l === "EN" ? "🇬🇧 English" : "🇫🇷 Français"}
+                {l === "EN" && <span className="text-[10px] text-red-500 font-bold">*</span>}
+                {showCheck && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                {showDot   && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+              </button>
+            );
+          })}
+          {isFr && (
+            <span className="ml-auto self-center text-[11px] text-gray-400 italic">
+              Optional — shown to French students
+            </span>
+          )}
+        </div>
+
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-          {/* Category + Difficulty */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* License Categories — only show on EN tab (structural, not language-specific) */}
+          {!isFr && (
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Category *</label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select category</option>
-                {categories.map((c) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
-              </select>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                License Categories *
+                <span className="font-normal ml-1 text-gray-400">(select all that apply)</span>
+              </label>
+              <div className="space-y-3">
+                {LICENSE_CATEGORY_GROUPS.map((group) => (
+                  <div key={group}>
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1.5">{group}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {LICENSE_CATEGORIES.filter((c) => c.group === group).map((c) => {
+                        const checked = licenseCategories.includes(c.id);
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => toggleLicCat(c.id)}
+                            className={cn(
+                              "px-2.5 py-1 text-xs font-medium rounded-full border-2 transition-colors",
+                              checked
+                                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
+                                : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300"
+                            )}
+                          >
+                            {c.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {licenseCategories.length === 0 && (
+                <p className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+                  No license selected — this question won&apos;t appear in any license-specific exam.
+                </p>
+              )}
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Difficulty *</label>
-              <select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="EASY">Easy</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HARD">Hard</option>
-              </select>
+          )}
+
+          {/* Category + Difficulty — only on EN tab */}
+          {!isFr && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
+                  Subject Category *
+                  {licenseCategories.length > 0 && (
+                    <span className="font-normal ml-1 text-purple-500">({visibleCategories.length} available)</span>
+                  )}
+                </label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select category</option>
+                  {visibleCategories.map((c) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Difficulty *</label>
+                <select
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="EASY">Easy</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HARD">Hard</option>
+                </select>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Question text */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Question Text *</label>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
+              {isFr ? "Question Text (French)" : "Question Text *"}
+            </label>
             <textarea
-              value={textEn}
-              onChange={(e) => setTextEn(e.target.value)}
+              value={isFr ? textFr : textEn}
+              onChange={(e) => isFr ? setTextFr(e.target.value) : setTextEn(e.target.value)}
               rows={3}
-              placeholder="A 45-year-old patient presents with..."
+              placeholder={isFr
+                ? "Un patient de 45 ans se présente avec..."
+                : "A 45-year-old patient presents with..."}
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
@@ -167,8 +306,11 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           {/* Answers */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Answer Options * <span className="font-normal text-gray-400">(click circle to mark correct)</span></label>
-              {answers.length < 6 && (
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                {isFr ? "Answer Options (French)" : "Answer Options *"}
+                {!isFr && <span className="font-normal text-gray-400 ml-1">(click circle to mark correct)</span>}
+              </label>
+              {!isFr && answers.length < 6 && (
                 <button onClick={addAnswer} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium">
                   <Plus className="w-3.5 h-3.5" /> Add option
                 </button>
@@ -182,26 +324,34 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                     ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10"
                     : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
                 )}>
+                  {/* Correct indicator — always visible, only clickable on EN tab */}
                   <button
                     type="button"
-                    onClick={() => setCorrect(i)}
-                    title="Mark as correct answer"
+                    onClick={() => !isFr && setCorrect(i)}
+                    title={isFr ? undefined : "Mark as correct answer"}
                     className={cn(
                       "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors",
                       ans.is_correct
                         ? "border-emerald-500 bg-emerald-500 text-white"
-                        : "border-gray-300 dark:border-gray-600 text-gray-400 hover:border-emerald-400"
+                        : "border-gray-300 dark:border-gray-600 text-gray-400",
+                      !isFr && !ans.is_correct && "hover:border-emerald-400 cursor-pointer",
+                      isFr && "cursor-default"
                     )}
                   >
-                    {ans.is_correct ? <CheckCircle className="w-3.5 h-3.5" /> : <span className="text-xs font-bold">{String.fromCharCode(65 + i)}</span>}
+                    {ans.is_correct
+                      ? <CheckCircle className="w-3.5 h-3.5" />
+                      : <span className="text-xs font-bold">{String.fromCharCode(65 + i)}</span>}
                   </button>
+
                   <input
-                    value={ans.text_en}
-                    onChange={(e) => updateAnswer(i, e.target.value)}
-                    placeholder={`Option ${String.fromCharCode(65 + i)}`}
+                    value={isFr ? ans.text_fr : ans.text_en}
+                    onChange={(e) => updateAnswer(i, isFr ? "text_fr" : "text_en", e.target.value)}
+                    placeholder={isFr
+                      ? `Option ${String.fromCharCode(65 + i)} en français`
+                      : `Option ${String.fromCharCode(65 + i)}`}
                     className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
                   />
-                  {answers.length > 2 && (
+                  {!isFr && answers.length > 2 && (
                     <button onClick={() => removeAnswer(i)} className="text-gray-300 hover:text-red-400 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -213,29 +363,44 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
 
           {/* Explanation */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">Explanation <span className="font-normal">(shown after submission)</span></label>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
+              {isFr ? "Explanation (French)" : "Explanation"}
+              {!isFr && <span className="font-normal ml-1">(shown after submission)</span>}
+            </label>
             <textarea
-              value={explanationEn}
-              onChange={(e) => setExplanationEn(e.target.value)}
+              value={isFr ? explanationFr : explanationEn}
+              onChange={(e) => isFr ? setExplanationFr(e.target.value) : setExplanationEn(e.target.value)}
               rows={2}
-              placeholder="Explain why the correct answer is right..."
+              placeholder={isFr
+                ? "Expliquez pourquoi la bonne réponse est correcte..."
+                : "Explain why the correct answer is right..."}
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-900">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2 text-sm font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition-colors disabled:opacity-60"
-          >
-            {saving ? "Saving…" : isEdit ? "Save Changes" : "Add Question"}
-          </button>
+        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-900">
+          {/* FR completion hint */}
+          <p className="text-[11px] text-gray-400 min-w-0">
+            {frComplete
+              ? <span className="text-emerald-600 dark:text-emerald-400">✓ French translation complete</span>
+              : frPartial
+              ? <span className="text-amber-500">⚠ French translation incomplete</span>
+              : <span>French translation optional</span>}
+          </p>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button onClick={onClose} className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 text-sm font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition-colors disabled:opacity-60"
+            >
+              {saving ? "Saving…" : isEdit ? "Save Changes" : "Add Question"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

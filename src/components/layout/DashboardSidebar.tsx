@@ -7,19 +7,23 @@ import {
   CreditCard, User, LogOut, Stethoscope, Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Exams", href: "/exams", icon: FileText },
-  { label: "Results", href: "/results", icon: Trophy },
-  { label: "Progress Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Saved Questions", href: "/saved", icon: Bookmark },
-  { label: "Subscription Status", href: "/subscription", icon: CreditCard },
-  { label: "Profile Settings", href: "/profile", icon: User },
-];
+import { useLanguage } from "@/lib/language";
+import { useT } from "@/lib/translations";
 
 export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const T = useT(language);
+
+  const navItems = [
+    { label: T("nav_dashboard"),    href: "/dashboard",    icon: LayoutDashboard },
+    { label: T("nav_exams"),        href: "/exams",        icon: FileText },
+    { label: T("nav_results"),      href: "/results",      icon: Trophy },
+    { label: T("nav_analytics"),    href: "/analytics",    icon: BarChart2 },
+    { label: T("nav_saved"),        href: "/saved",        icon: Bookmark },
+    { label: T("nav_subscription"), href: "/subscription", icon: CreditCard },
+    { label: T("nav_profile"),      href: "/profile",      icon: User },
+  ];
 
   return (
     <aside
@@ -35,15 +39,15 @@ export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
             <Stethoscope className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="leading-none">
-            <span className="font-bold text-[15px] text-white tracking-tight">RMDC</span>
-            <span className="font-bold text-[15px] text-indigo-400 tracking-tight"> Prep</span>
+            <span className="font-bold text-[15px] text-white tracking-tight">Med</span>
+            <span className="font-bold text-[15px] text-indigo-400 tracking-tight">License</span>
           </div>
         </Link>
       </div>
 
       {/* Nav section label */}
       <div className="px-5 pt-5 pb-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-600">Navigation</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-600">{T("nav_section")}</p>
       </div>
 
       {/* Nav items */}
@@ -76,7 +80,7 @@ export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13.5px] font-medium text-gray-500 hover:bg-red-950/40 hover:text-red-400 transition-all duration-150"
         >
           <LogOut className="w-4.5 h-4.5" />
-          Sign Out
+          {T("nav_logout")}
         </button>
       </div>
     </aside>

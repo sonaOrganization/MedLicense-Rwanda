@@ -1,5 +1,8 @@
+"use client";
 import Link from "next/link";
 import { FileText, Zap, Bookmark, Video, BarChart2, CreditCard } from "lucide-react";
+import { useLanguage } from "@/lib/language";
+import { useT } from "@/lib/translations";
 
 interface QuickActionsProps {
   isPremium: boolean;
@@ -7,46 +10,49 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ isPremium, savedCount }: QuickActionsProps) {
+  const { language } = useLanguage();
+  const T = useT(language);
+
   const actions = [
     {
       icon: Zap,
-      label: "Daily Quiz",
-      desc: "5-min practice",
+      label: T("qa_daily"),
+      desc: T("qa_daily_desc"),
       href: "/exams?mode=daily",
       color: "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
     },
     {
       icon: FileText,
-      label: "Mock Exam",
-      desc: "Full simulation",
+      label: T("qa_mock"),
+      desc: T("qa_mock_desc"),
       href: "/exams",
       color: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
     },
     {
       icon: Bookmark,
-      label: "Saved",
-      desc: `${savedCount} questions`,
+      label: T("qa_saved"),
+      desc: `${savedCount} ${T("qa_saved_desc")}`,
       href: "/saved",
       color: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800",
     },
     {
       icon: Video,
-      label: "Tutorials",
-      desc: "Watch & learn",
+      label: T("qa_tutorials"),
+      desc: T("qa_tutorials_desc"),
       href: "/tutorials",
       color: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
     },
     {
       icon: BarChart2,
-      label: "Analytics",
-      desc: "Your progress",
+      label: T("qa_analytics"),
+      desc: T("qa_analytics_desc"),
       href: "/analytics",
       color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
     },
     {
       icon: CreditCard,
-      label: isPremium ? "Subscription" : "Go Premium",
-      desc: isPremium ? "Active plan" : "Unlock all",
+      label: isPremium ? T("qa_subscription") : T("qa_premium"),
+      desc:  isPremium ? T("qa_active_plan") : T("qa_unlock_all"),
       href: "/subscription",
       color: isPremium
         ? "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700"

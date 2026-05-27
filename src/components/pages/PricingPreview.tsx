@@ -8,7 +8,7 @@ const plans = [
     price: 0,
     currency: "RWF",
     period: "forever",
-    description: "Begin your RMDC prep journey at no cost",
+    description: "Begin your MedLicense preparation journey at no cost",
     features: [
       "50 free practice questions",
       "1 sample mock exam",
@@ -25,7 +25,7 @@ const plans = [
     price: 15000,
     currency: "RWF",
     period: "/ month",
-    description: "Full access for serious RMDC candidates",
+    description: "Full access for serious medical license candidates",
     features: [
       "2,500+ practice questions",
       "Unlimited mock exams",
@@ -73,7 +73,7 @@ export function PricingPreview() {
             Simple, Transparent Pricing
           </h2>
           <p className="text-lg text-gray-500 dark:text-gray-400">
-            Start free and upgrade when you're ready for the full RMDC prep experience.
+            Start free and upgrade when you're ready for the full MedLicense preparation experience.
           </p>
         </div>
 

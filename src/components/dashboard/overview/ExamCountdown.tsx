@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Calendar, Clock } from "lucide-react";
 
-// Rwanda RMDC exam schedule (approximate)
+// Rwanda license exam schedule (approximate)
 const NEXT_EXAM_DATES = [
   { session: "Session 1 – 2026", date: new Date("2026-03-15"), type: "Written" },
   { session: "Session 2 – 2026", date: new Date("2026-07-20"), type: "Written" },
@@ -36,7 +36,7 @@ export function ExamCountdown() {
     <div className="p-4 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 text-white">
       <div className="flex items-center gap-2 mb-3">
         <Calendar className="w-4 h-4 text-indigo-400" />
-        <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">Next RMDC Exam</span>
+        <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">Next License Exam</span>
       </div>
 
       <p className="font-bold text-white mb-3">{target.session}</p>

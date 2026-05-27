@@ -11,7 +11,7 @@ export default function FreeTrialPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Try a Free Sample Exam</h1>
         <p className="text-xl text-gray-500 dark:text-gray-400">
-          Experience the real RMDC exam format with our free 20-question sample test.
+          Experience the real medical licensing exam format with our free 20-question sample test.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function FreeTrialPage() {
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">What to expect</h3>
           {[
-            { title: "Real Exam Format", desc: "Questions are formatted exactly like the official RMDC exam." },
+            { title: "Real Exam Format", desc: "Questions are formatted exactly like the official medical licensing exam." },
             { title: "Timed Environment", desc: "Experience the pressure of a timed exam before test day." },
             { title: "Immediate Feedback", desc: "See which answers were right or wrong with full explanations." },
             { title: "No Registration Required", desc: "Take the free trial without creating an account." },

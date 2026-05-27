@@ -1,5 +1,5 @@
 const stats = [
-  { value: "2,500+", label: "Practice Questions", sub: "Across all RMDC categories" },
+  { value: "2,500+", label: "Practice Questions", sub: "Across all license categories" },
   { value: "98%", label: "Pass Rate", sub: "Among premium students" },
   { value: "5,000+", label: "Students Enrolled", sub: "And growing every month" },
   { value: "50+", label: "Video Tutorials", sub: "From medical experts" },

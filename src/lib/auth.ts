@@ -20,7 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         const { data: user } = await supabase
           .from("users")
-          .select("*")
+          .select("id, email, name, role, password, is_banned, email_verified, license_category, language")
           .eq("email", credentials.email as string)
           .single();
 
@@ -28,10 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (user.is_banned) throw new Error("Account suspended");
         if (!user.email_verified) throw new Error("Email not verified");
 
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const valid = await bcrypt.compare(credentials.password as string, user.password);
         if (!valid) return null;
 
         await supabase
@@ -39,7 +36,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .update({ last_login_at: new Date().toISOString() })
           .eq("id", user.id);
 
-        return { id: user.id, email: user.email, name: user.name, role: user.role };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          licenseCategory: user.license_category ?? null,
+          language: (user.language as string | null) ?? "EN",
+        };
       },
     }),
   ],
@@ -49,17 +53,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (account.provider === "google") {
           const { data: dbUser } = await supabase
             .from("users")
-            .select("id, role")
+            .select("id, role, license_category, language")
             .eq("email", token.email!)
             .single();
 
           if (dbUser) {
             token.id = dbUser.id;
             token.role = dbUser.role;
+            token.licenseCategory = dbUser.license_category ?? null;
+            token.language = (dbUser.language as string | null) ?? "EN";
           }
         } else {
           token.id = user.id;
           token.role = (user as { role?: string }).role ?? "STUDENT";
+          token.licenseCategory = (user as { licenseCategory?: string | null }).licenseCategory ?? null;
+          token.language = (user as { language?: string | null }).language ?? "EN";
         }
       }
       return token;
@@ -68,6 +76,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.licenseCategory = (token.licenseCategory as string | null) ?? null;
+        session.user.language = (token.language as string | null) ?? "EN";
       }
       return session;
     },

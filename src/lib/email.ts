@@ -15,7 +15,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to: email,
-    subject: "Verify your RMDC Exam Prep account",
+    subject: "Verify your MedLicense account",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
         <h2>Verify your email</h2>
@@ -32,7 +32,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to: email,
-    subject: "Reset your RMDC Exam Prep password",
+    subject: "Reset your MedLicense password",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
         <h2>Reset your password</h2>

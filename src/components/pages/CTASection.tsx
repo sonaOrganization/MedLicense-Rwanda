@@ -26,10 +26,10 @@ export function CTASection() {
           Join 5,000+ Candidates
         </p>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-5">
-          Ready to Pass the RMDC Exam?
+          Ready to Pass Your Medical Licensing Exam?
         </h2>
         <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto leading-relaxed">
-          Start your free trial today. Access authentic exam simulations, clinician-authored video tutorials, and the most comprehensive RMDC question bank in Rwanda.
+          Start your free trial today. Access authentic exam simulations, clinician-authored video tutorials, and the most comprehensive medical license question bank in Rwanda.
         </p>
 
         {/* CTA buttons */}

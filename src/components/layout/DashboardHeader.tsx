@@ -1,7 +1,10 @@
 "use client";
-import { Bell, Moon, Sun, Search, ChevronDown } from "lucide-react";
+import { Moon, Sun, ChevronDown } from "lucide-react";
 import { useTheme } from "@/lib/theme";
+import { useLanguage } from "@/lib/language";
+import { useT } from "@/lib/translations";
 import { usePathname } from "next/navigation";
+import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown";
 
 interface DashboardHeaderProps {
   user: {
@@ -11,24 +14,26 @@ interface DashboardHeaderProps {
   };
 }
 
-const pageTitles: Record<string, { title: string; subtitle: string }> = {
-  "/dashboard": { title: "Dashboard", subtitle: "Your exam readiness at a glance" },
-  "/exams": { title: "My Exams", subtitle: "Browse and start practice sessions" },
-  "/results": { title: "Results", subtitle: "Review your past exam attempts" },
-  "/analytics": { title: "Progress Analytics", subtitle: "Track your performance over time" },
-  "/saved": { title: "Saved Questions", subtitle: "Your personal question bank" },
-  "/subscription": { title: "Subscription Status", subtitle: "Manage your plan" },
-  "/profile": { title: "Profile Settings", subtitle: "Manage your account details" },
-};
-
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const { theme, setTheme } = useTheme();
+  const { language, setLanguage } = useLanguage();
+  const T = useT(language);
   const pathname = usePathname();
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
-  const page = pageTitles[pathname] ?? { title: "Dashboard", subtitle: "" };
+  const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
+    "/dashboard":   { title: T("nav_dashboard"),    subtitle: T("sub_dashboard")    },
+    "/exams":       { title: T("nav_exams"),         subtitle: T("sub_exams")        },
+    "/results":     { title: T("nav_results"),       subtitle: T("sub_results")      },
+    "/analytics":   { title: T("nav_analytics"),     subtitle: T("sub_analytics")    },
+    "/saved":       { title: T("nav_saved"),         subtitle: T("sub_saved")        },
+    "/subscription":{ title: T("nav_subscription"),  subtitle: T("sub_subscription") },
+    "/profile":     { title: T("nav_profile"),       subtitle: T("sub_profile")      },
+  };
+
+  const page = PAGE_TITLES[pathname] ?? { title: T("nav_dashboard"), subtitle: "" };
 
   return (
     <header className="h-[64px] flex items-center justify-between px-6 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800/60 flex-shrink-0">
@@ -44,6 +49,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       {/* Right — controls */}
       <div className="flex items-center gap-1.5">
 
+        {/* Language toggle */}
+        <button
+          onClick={() => setLanguage(language === "EN" ? "FR" : "EN")}
+          className="px-2.5 py-1 text-[11px] font-bold rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors leading-none"
+          aria-label="Toggle language"
+        >
+          {language === "EN" ? "FR" : "EN"}
+        </button>
+
         {/* Theme toggle */}
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -54,10 +68,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </button>
 
         {/* Notifications */}
-        <button className="relative p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-          <Bell className="w-4.5 h-4.5" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-950" />
-        </button>
+        <NotificationsDropdown />
 
         <div className="h-5 w-px bg-gray-200 dark:bg-gray-800 mx-1" />
 

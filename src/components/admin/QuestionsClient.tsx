@@ -5,13 +5,16 @@ import { Plus, Upload, Edit, Trash2, CheckCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { QuestionFormModal } from "./QuestionFormModal";
 import { CSVUploadModal } from "./CSVUploadModal";
+import { getLicenseCategoryLabel } from "@/lib/license-categories";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-interface Answer   { id?: string; text_en: string; is_correct: boolean; }
+interface Answer   { id?: string; text_en: string; text_fr?: string | null; is_correct: boolean; }
 interface Question {
-  id: string; text_en: string; explanation_en?: string | null;
+  id: string; text_en: string; text_fr?: string | null;
+  explanation_en?: string | null; explanation_fr?: string | null;
   difficulty: string; is_approved: boolean; category_id: string;
+  license_categories?: string[] | null;
   category: { id: string; name_en: string };
   answers: Answer[];
 }
@@ -131,6 +134,10 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
                       ? <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"><CheckCircle className="w-3 h-3" />Approved</span>
                       : <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400"><Clock className="w-3 h-3" />Pending</span>
                     }
+                    {q.text_fr
+                      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">🇫🇷 FR</span>
+                      : <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700">EN only</span>
+                    }
                   </div>
 
                   {/* Question text */}
@@ -152,6 +159,17 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
                       </span>
                     ))}
                   </div>
+
+                  {/* License categories */}
+                  {q.license_categories && q.license_categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {q.license_categories.map((lc) => (
+                        <span key={lc} className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40">
+                          {getLicenseCategoryLabel(lc)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

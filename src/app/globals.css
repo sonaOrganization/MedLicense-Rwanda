@@ -1,17 +1,23 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode so .dark on <html> drives all dark: variants */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  /* Light mode — soft warm gray, not pure white */
+  --background: #f1f5f9;
+  --foreground: #1e293b;
   --primary: #1d4ed8;
   --primary-dark: #1e40af;
+  --surface: #ffffff;
+  --border: #e2e8f0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0f1e;
-    --foreground: #e2e8f0;
-  }
+.dark {
+  --background: #0a0f1e;
+  --foreground: #e2e8f0;
+  --surface: #111827;
+  --border: #1e293b;
 }
 
 body {

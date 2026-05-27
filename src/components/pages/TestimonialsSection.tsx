@@ -3,9 +3,9 @@ import { Star, Quote } from "lucide-react";
 const testimonials = [
   {
     name: "Dr. Jean Pierre M.",
-    role: "RMDC Graduate",
+    role: "License Graduate",
     year: "2024",
-    text: "I passed the RMDC exam on my very first attempt. The exam simulation was almost identical to the real thing — same pressure, same format. I couldn't have done it without this platform.",
+    text: "I passed the medical licensing exam on my very first attempt. The exam simulation was almost identical to the real thing — same pressure, same format. I couldn't have done it without this platform.",
     rating: 5,
     initials: "JP",
     color: "bg-blue-700",
@@ -44,7 +44,7 @@ export function TestimonialsSection() {
             Trusted by Medical Professionals
           </h2>
           <p className="text-lg text-gray-500 dark:text-gray-400">
-            Join thousands of RMDC candidates who studied smarter and passed.
+            Join thousands of medical license candidates who studied smarter and passed.
           </p>
         </div>
 

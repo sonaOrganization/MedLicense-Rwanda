@@ -13,19 +13,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
     }
 
-    const { name, email, password } = parsed.data;
+    const { name, email, password, phone, licenseCategory } = parsed.data;
 
     const { data: existing } = await supabase.from("users").select("id").eq("email", email).single();
     if (existing) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
 
-    const hashed = await bcrypt.hash(password, 12);
-    const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 86400000); // 24h
+    const hashed  = await bcrypt.hash(password, 12);
+    const token   = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 86400000); // 24 h
 
-    await supabase.from("users").insert({ name, email, password: hashed });
-    await supabase.from("verification_tokens").insert({ identifier: email, token, expires: expires.toISOString() });
+    await supabase.from("users").insert({
+      name,
+      email,
+      password: hashed,
+      phone: phone ?? null,
+      license_category: licenseCategory,
+    });
+
+    await supabase.from("verification_tokens").insert({
+      identifier: email,
+      token,
+      expires: expires.toISOString(),
+    });
 
     await sendVerificationEmail(email, token);
     return NextResponse.json({ ok: true });

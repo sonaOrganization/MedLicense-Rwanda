@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session) redirect("/login");
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-[#0a0d16] overflow-hidden">
+    <div className="flex h-screen bg-gray-50 dark:bg-[#0a0d16] overflow-hidden" suppressHydrationWarning>
       {/* Sidebar */}
       <div className="hidden md:flex flex-shrink-0">
         <DashboardSidebar />

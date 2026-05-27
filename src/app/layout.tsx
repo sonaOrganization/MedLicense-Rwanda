@@ -8,17 +8,17 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: {
-    default: "RMDC Exam Prep – Professional Medical License Preparation",
-    template: "%s | RMDC Exam Prep",
+    default: "MedLicense – Professional Medical License Preparation",
+    template: "%s | MedLicense",
   },
   description:
-    "Rwanda's leading platform for professional medical license (RMDC) exam preparation. Practice with real exam simulations, video tutorials, and analytics.",
-  keywords: ["RMDC", "Rwanda Medical", "License Exam", "Medical Prep", "Exam Simulation"],
-  authors: [{ name: "RMDC Exam Prep" }],
+    "Rwanda's leading platform for professional medical license exam preparation. Practice with real exam simulations, video tutorials, and analytics.",
+  keywords: ["MedLicense", "Rwanda Medical", "License Exam", "Medical Prep", "Exam Simulation"],
+  authors: [{ name: "MedLicense" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "RMDC Exam Prep",
+    siteName: "MedLicense",
   },
 };
 
@@ -32,7 +32,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <body className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning>
+      <head>
+        {/* Apply theme class before paint to prevent light-mode flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem('theme')!=='light'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-slate-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <Providers>{children}</Providers>
         </ThemeProvider>

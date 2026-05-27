@@ -32,8 +32,8 @@ export function AdminSidebar() {
             <Stethoscope className="w-4.5 h-4.5 text-white" />
           </div>
           <div className="leading-none">
-            <span className="font-bold text-[15px] text-white tracking-tight">RMDC</span>
-            <span className="font-bold text-[15px] text-indigo-400 tracking-tight"> Admin</span>
+            <span className="font-bold text-[15px] text-white tracking-tight">Med</span>
+            <span className="font-bold text-[15px] text-indigo-400 tracking-tight">License Admin</span>
           </div>
         </Link>
       </div>

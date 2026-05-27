@@ -52,6 +52,9 @@ export async function POST(req: NextRequest) {
     const c         = get(row, "answer_c");
     const d         = get(row, "answer_d");
     const correct   = get(row, "correct_letter").toUpperCase();
+    // Optional: comma-separated license category IDs e.g. "medical_doctor,nurse_a0"
+    const licCats   = get(row, "license_categories")
+      .split(",").map((s: string) => s.trim()).filter(Boolean);
 
     if (!text || !slug || !a || !b || !correct) {
       failed.push({ row: i + 1, reason: "Missing required fields (text_en, category_slug, answer_a/b, correct_letter)" });
@@ -63,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     const { data: question, error: qErr } = await supabase
       .from("questions")
-      .insert({ text_en: text, explanation_en: expl || null, difficulty: diff, category_id: catId, type: "MULTIPLE_CHOICE", is_approved: true, is_active: true })
+      .insert({ text_en: text, explanation_en: expl || null, difficulty: diff, category_id: catId, license_categories: licCats, type: "MULTIPLE_CHOICE", is_approved: true, is_active: true })
       .select()
       .single();
 

@@ -12,20 +12,30 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const { id } = await params;
-  const { text_en, explanation_en, difficulty, category_id, answers } = await req.json();
+  const { text_en, text_fr, explanation_en, explanation_fr, difficulty, category_id, answers, license_categories } = await req.json();
 
   const { error: qErr } = await supabase
     .from("questions")
-    .update({ text_en, explanation_en: explanation_en || null, difficulty, category_id, updated_at: new Date().toISOString() })
+    .update({
+      text_en,
+      text_fr: text_fr || null,
+      explanation_en: explanation_en || null,
+      explanation_fr: explanation_fr || null,
+      difficulty,
+      category_id,
+      license_categories: Array.isArray(license_categories) ? license_categories : [],
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", id);
 
   if (qErr) return NextResponse.json({ error: qErr.message }, { status: 500 });
 
   if (Array.isArray(answers)) {
     await supabase.from("answers").delete().eq("question_id", id);
-    const rows = answers.map((a: { text_en: string; is_correct: boolean }, i: number) => ({
+    const rows = answers.map((a: { text_en: string; text_fr?: string | null; is_correct: boolean }, i: number) => ({
       question_id: id,
       text_en: a.text_en,
+      text_fr: a.text_fr || null,
       is_correct: a.is_correct,
       order: i,
     }));

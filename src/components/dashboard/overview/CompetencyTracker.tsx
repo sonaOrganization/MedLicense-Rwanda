@@ -14,7 +14,7 @@ interface CompetencyTrackerProps {
   data: CompetencyItem[];
 }
 
-// Rwanda RMDC core competency areas
+// Rwanda license core competency areas
 const CORE_COMPETENCIES = [
   { slug: "anatomy", name: "Anatomy", nameFr: "Anatomie", icon: "🫀" },
   { slug: "physiology", name: "Physiology", nameFr: "Physiologie", icon: "🧬" },

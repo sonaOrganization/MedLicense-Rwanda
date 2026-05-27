@@ -3,7 +3,7 @@ import { Stethoscope, MessageCircle, Mail, MapPin, Phone, ArrowUpRight } from "l
 
 const footerLinks = {
   Platform: [
-    { label: "About RMDC", href: "/about" },
+    { label: "About MedLicense", href: "/about" },
     { label: "Pricing Plans", href: "/pricing" },
     { label: "Free Trial", href: "/free-trial" },
     { label: "Video Tutorials", href: "/tutorials" },
@@ -53,7 +53,7 @@ export function Footer() {
                 <Stethoscope className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-white tracking-tight">
-                RMDC <span className="text-blue-400">Prep</span>
+                Med<span className="text-blue-400">License</span>
               </span>
             </Link>
 
@@ -121,7 +121,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-gray-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-xs text-gray-600">
-            <span>© {new Date().getFullYear()} RMDC Exam Prep. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} MedLicense. All rights reserved.</span>
             <span className="hidden sm:inline text-gray-700">·</span>
             <span className="hidden sm:inline">Kigali, Rwanda 🇷🇼</span>
           </div>

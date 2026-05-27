@@ -23,7 +23,7 @@ export default async function TutorialsPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Video Tutorials</h1>
         <p className="text-xl text-gray-500 dark:text-gray-400">
-          Expert-led video tutorials covering all RMDC exam topics.
+          Expert-led video tutorials covering all medical license exam topics.
         </p>
       </div>
 

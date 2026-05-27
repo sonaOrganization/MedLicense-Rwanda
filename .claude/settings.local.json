@@ -4,7 +4,14 @@
       "Bash(git remote *)",
       "PowerShell(Set-Location \"c:\\\\Users\\\\byiri\\\\Documents\\\\MedLicense\\\\medlicense\"; Get-ChildItem -Path . -Recurse -Exclude node_modules -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @\\('.tsx', '.ts', '.jsx', '.js', '.css', '.scss'\\) } | Select-Object -ExpandProperty FullName | head -100)",
       "Bash(node -e \"const src = require\\('fs'\\).readFileSync\\('c:/Users/byiri/Documents/MedLicense/medlicense/node_modules/next-themes/dist/index.js', 'utf8'\\); const idx = src.indexOf\\('createElement\\(\\\\\"script\\\\\"'\\); console.log\\(src.slice\\(Math.max\\(0, idx-200\\), idx+500\\)\\)\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git rm *)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\byiri\\\\Documents\\\\MedLicense\\\\medlicense\\\\.next\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\byiri\\\\Documents\\\\MedLicense\\\\medlicense\\\\pnpm-workspace.yaml\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\byiri\\\\Documents\\\\MedLicense\\\\medlicense\\\\pnpm-lock.yaml\" -ErrorAction SilentlyContinue)",
+      "Bash(Write-Host \"Done\")",
+      "Bash(npx tsc *)",
+      "Bash(git mv *)"
     ]
   }
 }
