@@ -1,19 +1,23 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Flag, ChevronLeft, ChevronRight, Clock, AlertTriangle, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Flag, ChevronLeft, ChevronRight, Clock, AlertTriangle, CheckCircle, BookOpen } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
-interface Answer { id: string; textEn: string; textFr?: string | null; }
+interface Answer  { id: string; textEn: string; textFr?: string | null; }
 interface Question { id: string; textEn: string; textFr?: string | null; imageUrl?: string | null; difficulty: string; answers: Answer[]; }
 interface ExamData {
   id: string; title: string; durationMinutes: number; passingScore: number;
   negativeMarking: boolean; attemptId: string; questions: Question[];
 }
+
+const DIFF_STYLE = {
+  EASY: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  MEDIUM: "bg-amber-100 text-amber-700 border border-amber-200",
+  HARD: "bg-red-100 text-red-700 border border-red-200",
+} as const;
 
 export function ExamEngine({ exam }: { exam: ExamData }) {
   const router = useRouter();
@@ -30,6 +34,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
   const currentQuestion = exam.questions[currentIndex];
   const totalAnswered = Object.values(answers).filter(Boolean).length;
   const totalFlagged = Object.values(flagged).filter(Boolean).length;
+  const progressPct = Math.round((totalAnswered / exam.questions.length) * 100);
 
   // Save progress periodically
   useEffect(() => {
@@ -48,11 +53,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(timerRef.current!);
-          setShowTimeoutModal(true);
-          return 0;
-        }
+        if (t <= 1) { clearInterval(timerRef.current!); setShowTimeoutModal(true); return 0; }
         return t - 1;
       });
     }, 1000);
@@ -63,7 +64,6 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
     if (submitting || submitted) return;
     setSubmitting(true);
     clearInterval(timerRef.current!);
-
     try {
       const res = await fetch(`/api/exams/${exam.attemptId}/submit`, {
         method: "POST",
@@ -74,8 +74,8 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       if (!res.ok) throw new Error(data.error);
       setSubmitted(true);
       router.push(`/results/${exam.attemptId}`);
-    } catch (err) {
-      toast.error("Failed to submit exam. Please try again.");
+    } catch {
+      toast.error("Failed to submit. Please try again.");
       setSubmitting(false);
     }
   }, [submitting, submitted, exam.attemptId, answers, router]);
@@ -86,209 +86,323 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
     return `${m}:${s}`;
   };
 
-  const timerColor = timeLeft <= 300 ? "text-red-500" : timeLeft <= 600 ? "text-yellow-500" : "text-gray-700 dark:text-gray-300";
+  const isUrgent = timeLeft <= 300;
+  const isWarning = timeLeft > 300 && timeLeft <= 600;
 
   return (
-    <div className="fixed inset-0 bg-gray-50 dark:bg-gray-950 flex flex-col exam-mode">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-1 max-w-xs">{exam.title}</span>
-          <span className="text-xs text-gray-400 hidden sm:block">{totalAnswered}/{exam.questions.length} answered</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className={cn("flex items-center gap-1.5 font-mono text-lg font-bold", timerColor)}>
-            <Clock className="w-5 h-5" />
-            {formatTime(timeLeft)}
+    <div className="fixed inset-0 bg-slate-50 dark:bg-gray-950 flex flex-col">
+
+      {/* ── Top Bar ─────────────────────────────────────────────────────── */}
+      <header className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-gray-800 shadow-sm">
+        <div className="flex items-center justify-between px-4 sm:px-6 h-14">
+
+          {/* Left — exam title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm truncate max-w-[240px] sm:max-w-xs">{exam.title}</p>
+              <p className="text-[11px] text-gray-400 hidden sm:block">
+                {totalAnswered} of {exam.questions.length} answered · Passing: {exam.passingScore}%
+              </p>
+            </div>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setShowSubmitModal(true)}>
-            Submit Exam
-          </Button>
+
+          {/* Right — timer + submit */}
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition-colors",
+              isUrgent  ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 animate-pulse" :
+              isWarning ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400" :
+                          "bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300"
+            )}>
+              <Clock className="w-3.5 h-3.5" />
+              {formatTime(timeLeft)}
+            </div>
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="px-4 py-1.5 text-sm font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition-colors shadow-sm"
+            >
+              Submit Exam
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Progress */}
-      <div className="px-4 sm:px-6 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <Progress value={totalAnswered} max={exam.questions.length} barClassName="bg-indigo-500" />
-      </div>
+        {/* Progress bar */}
+        <div className="px-4 sm:px-6 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1.5 bg-slate-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-medium text-gray-400 w-8 text-right">{progressPct}%</span>
+          </div>
+        </div>
+      </header>
 
+      {/* ── Body ────────────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Question panel */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
-          <div className="max-w-3xl mx-auto">
-            {/* Question header */}
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                  Question {currentIndex + 1} of {exam.questions.length}
-                </span>
-                <span className={cn(
-                  "ml-3 text-xs font-medium px-2 py-0.5 rounded-full",
-                  currentQuestion.difficulty === "EASY" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : currentQuestion.difficulty === "HARD" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                )}>
-                  {currentQuestion.difficulty}
-                </span>
+
+        {/* Question + answers */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8">
+
+            {/* Question card */}
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-slate-200 dark:border-gray-800 shadow-sm overflow-hidden mb-5">
+
+              {/* Card header */}
+              <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 dark:border-gray-800 bg-slate-50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Question {currentIndex + 1} <span className="text-gray-300 dark:text-gray-600">/</span> {exam.questions.length}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full",
+                    DIFF_STYLE[currentQuestion.difficulty as keyof typeof DIFF_STYLE] ?? DIFF_STYLE.MEDIUM
+                  )}>
+                    {currentQuestion.difficulty}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setFlagged((f) => ({ ...f, [currentQuestion.id]: !f[currentQuestion.id] }))}
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors",
+                    flagged[currentQuestion.id]
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                      : "text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+                  )}
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                  {flagged[currentQuestion.id] ? "Flagged" : "Flag"}
+                </button>
               </div>
-              <button
-                onClick={() => setFlagged((f) => ({ ...f, [currentQuestion.id]: !f[currentQuestion.id] }))}
-                className={cn(
-                  "flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors",
-                  flagged[currentQuestion.id]
-                    ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                    : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+
+              {/* Question body */}
+              <div className="px-6 py-6">
+                {currentQuestion.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={currentQuestion.imageUrl} alt="Clinical image" className="rounded-xl mb-5 max-h-60 object-contain border border-slate-200 dark:border-gray-700" />
                 )}
-              >
-                <Flag className="w-4 h-4" />
-                {flagged[currentQuestion.id] ? "Flagged" : "Flag"}
-              </button>
+                <p className="text-[16px] font-medium text-gray-900 dark:text-white leading-relaxed">
+                  {currentQuestion.textEn}
+                </p>
+              </div>
             </div>
 
-            {/* Question image */}
-            {currentQuestion.imageUrl && (
-              <img src={currentQuestion.imageUrl} alt="Question" className="rounded-lg mb-6 max-h-64 object-contain" />
-            )}
-
-            {/* Question text */}
-            <p className="text-lg font-medium text-gray-900 dark:text-white mb-6 leading-relaxed">
-              {currentQuestion.textEn}
-            </p>
-
-            {/* Answers */}
-            <div className="space-y-3">
+            {/* Answer options */}
+            <div className="space-y-2.5">
               {currentQuestion.answers.map((answer, i) => {
                 const selected = answers[currentQuestion.id] === answer.id;
+                const letter = String.fromCharCode(65 + i);
                 return (
                   <button
                     key={answer.id}
                     onClick={() => setAnswers((a) => ({ ...a, [currentQuestion.id]: answer.id }))}
                     className={cn(
-                      "w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-150",
+                      "w-full text-left rounded-xl border-2 transition-all duration-150 group",
                       selected
-                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10"
+                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-sm shadow-blue-100 dark:shadow-none"
+                        : "border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm"
                     )}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-center gap-4 px-5 py-3.5">
                       <span className={cn(
-                        "flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center text-sm font-bold",
-                        selected ? "border-indigo-500 bg-indigo-500 text-white" : "border-gray-300 dark:border-gray-600 text-gray-400"
+                        "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all",
+                        selected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 group-hover:border-blue-400 dark:group-hover:border-blue-500"
                       )}>
-                        {String.fromCharCode(65 + i)}
+                        {letter}
                       </span>
-                      <span className="leading-relaxed">{answer.textEn}</span>
+                      <span className={cn(
+                        "text-[14.5px] leading-snug font-medium",
+                        selected ? "text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-300"
+                      )}>
+                        {answer.textEn}
+                      </span>
+                      {selected && (
+                        <span className="ml-auto flex-shrink-0">
+                          <CheckCircle className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
               })}
             </div>
           </div>
-        </div>
+        </main>
 
-        {/* Question grid sidebar */}
-        <div className="hidden xl:flex flex-col w-64 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 overflow-y-auto">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Question Navigator</h3>
-          <div className="grid grid-cols-5 gap-1.5 mb-6">
-            {exam.questions.map((q, i) => {
-              const answered = !!answers[q.id];
-              const isFlagged = !!flagged[q.id];
-              const isCurrent = i === currentIndex;
+        {/* ── Right sidebar — question navigator ── */}
+        <aside className="hidden xl:flex flex-col w-64 border-l border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-y-auto flex-shrink-0">
+          <div className="p-5">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Navigator</p>
+
+            <div className="grid grid-cols-5 gap-1.5 mb-5">
+              {exam.questions.map((q, i) => {
+                const answered  = !!answers[q.id];
+                const isFlagged = !!flagged[q.id];
+                const isCurrent = i === currentIndex;
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => setCurrentIndex(i)}
+                    className={cn(
+                      "aspect-square rounded-lg text-xs font-bold transition-all",
+                      isCurrent  ? "bg-blue-700 text-white shadow-sm shadow-blue-200 dark:shadow-none ring-2 ring-blue-700 ring-offset-1 dark:ring-offset-gray-900" :
+                      isFlagged  ? "bg-amber-400 text-amber-900" :
+                      answered   ? "bg-emerald-500 text-white" :
+                                   "bg-slate-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400 mb-5">
+              {[
+                { color: "bg-emerald-500", label: "Answered" },
+                { color: "bg-amber-400",   label: "Flagged" },
+                { color: "bg-blue-700",    label: "Current" },
+                { color: "bg-slate-200 dark:bg-gray-700", label: "Not answered" },
+              ].map(({ color, label }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className={cn("w-3 h-3 rounded flex-shrink-0", color)} />
+                  {label}
+                </div>
+              ))}
+            </div>
+
+            {/* Stats */}
+            <div className="rounded-xl bg-slate-50 dark:bg-gray-800/60 p-3.5 space-y-2 text-sm">
+              {[
+                { label: "Answered",    value: totalAnswered,                              color: "text-emerald-600 dark:text-emerald-400" },
+                { label: "Unanswered",  value: exam.questions.length - totalAnswered,      color: "text-gray-700 dark:text-gray-300" },
+                { label: "Flagged",     value: totalFlagged,                               color: "text-amber-500" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="flex justify-between">
+                  <span className="text-gray-400">{label}</span>
+                  <span className={cn("font-bold", color)}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* ── Bottom nav ──────────────────────────────────────────────────── */}
+      <footer className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-800 px-4 sm:px-6 py-3">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <button
+            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+            disabled={currentIndex === 0}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-slate-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> Previous
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            {exam.questions.slice(Math.max(0, currentIndex - 2), Math.min(exam.questions.length, currentIndex + 3)).map((q, _, arr) => {
+              const absIdx = exam.questions.indexOf(q);
+              const isCurrent = absIdx === currentIndex;
               return (
                 <button
                   key={q.id}
-                  onClick={() => setCurrentIndex(i)}
+                  onClick={() => setCurrentIndex(absIdx)}
                   className={cn(
-                    "w-full aspect-square rounded-lg text-xs font-medium transition-colors",
-                    isCurrent ? "bg-indigo-600 text-white" :
-                    isFlagged ? "bg-yellow-400 text-yellow-900" :
-                    answered ? "bg-green-500 text-white" :
-                    "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    "w-7 h-7 rounded-full text-xs font-bold transition-colors",
+                    isCurrent
+                      ? "bg-blue-700 text-white"
+                      : answers[q.id]
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        : "text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800"
                   )}
                 >
-                  {i + 1}
+                  {absIdx + 1}
                 </button>
               );
             })}
           </div>
-          <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-green-500 inline-block" />Answered</div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-yellow-400 inline-block" />Flagged</div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-indigo-600 inline-block" />Current</div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded bg-gray-200 dark:bg-gray-700 inline-block" />Not answered</div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-1 text-sm">
-            <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Answered</span><span className="font-medium text-gray-900 dark:text-white">{totalAnswered}</span></div>
-            <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Unanswered</span><span className="font-medium text-gray-900 dark:text-white">{exam.questions.length - totalAnswered}</span></div>
-            <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Flagged</span><span className="font-medium text-yellow-500">{totalFlagged}</span></div>
-          </div>
+
+          {currentIndex < exam.questions.length - 1 ? (
+            <button
+              onClick={() => setCurrentIndex((i) => i + 1)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-700 hover:bg-blue-800 text-white transition-colors shadow-sm"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+            >
+              <CheckCircle className="w-4 h-4" /> Finish
+            </button>
+          )}
         </div>
-      </div>
+      </footer>
 
-      {/* Bottom navigation */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-          disabled={currentIndex === 0}
-          className="gap-2"
-        >
-          <ChevronLeft className="w-4 h-4" /> Previous
-        </Button>
-
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {currentIndex + 1} / {exam.questions.length}
-        </span>
-
-        {currentIndex < exam.questions.length - 1 ? (
-          <Button onClick={() => setCurrentIndex((i) => i + 1)} className="gap-2">
-            Next <ChevronRight className="w-4 h-4" />
-          </Button>
-        ) : (
-          <Button onClick={() => setShowSubmitModal(true)} className="gap-2 bg-green-600 hover:bg-green-700">
-            <CheckCircle className="w-4 h-4" /> Finish
-          </Button>
-        )}
-      </div>
-
-      {/* Submit confirmation modal */}
+      {/* ── Submit modal ── */}
       <Modal open={showSubmitModal} onClose={() => setShowSubmitModal(false)} title="Submit Exam?">
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
-              { label: "Answered", value: totalAnswered, color: "text-green-600" },
-              { label: "Unanswered", value: exam.questions.length - totalAnswered, color: "text-red-500" },
-              { label: "Flagged", value: totalFlagged, color: "text-yellow-500" },
+              { label: "Answered",   value: totalAnswered,                         color: "text-emerald-600" },
+              { label: "Unanswered", value: exam.questions.length - totalAnswered, color: "text-red-500"     },
+              { label: "Flagged",    value: totalFlagged,                          color: "text-amber-500"   },
             ].map(({ label, value, color }) => (
-              <div key={label} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                <div className={`text-2xl font-bold ${color}`}>{value}</div>
-                <div className="text-xs text-gray-400">{label}</div>
+              <div key={label} className="p-3 rounded-xl bg-slate-50 dark:bg-gray-800 border border-slate-100 dark:border-gray-700">
+                <div className={cn("text-2xl font-bold", color)}>{value}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{label}</div>
               </div>
             ))}
           </div>
           {exam.questions.length - totalAnswered > 0 && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400">
-              <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <p className="text-sm">You have {exam.questions.length - totalAnswered} unanswered questions.</p>
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50">
+              <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                {exam.questions.length - totalAnswered} question{exam.questions.length - totalAnswered > 1 ? "s" : ""} left unanswered.
+              </p>
             </div>
           )}
-          <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={() => setShowSubmitModal(false)}>Cancel</Button>
-            <Button className="flex-1 bg-green-600 hover:bg-green-700" loading={submitting} onClick={() => handleSubmit(false)}>
-              Submit Exam
-            </Button>
+          <div className="flex gap-3 pt-1">
+            <button
+              onClick={() => setShowSubmitModal(false)}
+              className="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              Continue Exam
+            </button>
+            <button
+              onClick={() => handleSubmit(false)}
+              disabled={submitting}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-60"
+            >
+              {submitting ? "Submitting…" : "Submit Exam"}
+            </button>
           </div>
         </div>
       </Modal>
 
-      {/* Timeout modal */}
-      <Modal open={showTimeoutModal} onClose={() => {}} title="Time's Up!">
+      {/* ── Timeout modal ── */}
+      <Modal open={showTimeoutModal} onClose={() => {}} title="Time's Up">
         <div className="text-center space-y-4">
-          <Clock className="w-12 h-12 text-red-500 mx-auto" />
-          <p className="text-gray-600 dark:text-gray-300">Your time has expired. The exam will be submitted automatically.</p>
-          <Button loading={submitting} className="w-full" onClick={() => handleSubmit(true)}>
-            Submit Now
-          </Button>
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto">
+            <Clock className="w-8 h-8 text-red-500" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 text-sm">Your allotted time has expired. Your answers will be submitted now.</p>
+          <button
+            onClick={() => handleSubmit(true)}
+            disabled={submitting}
+            className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl bg-blue-700 hover:bg-blue-800 text-white transition-colors disabled:opacity-60"
+          >
+            {submitting ? "Submitting…" : "Submit My Exam"}
+          </button>
         </div>
       </Modal>
     </div>
