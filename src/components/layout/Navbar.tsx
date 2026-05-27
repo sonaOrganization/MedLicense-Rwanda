@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Menu, X, Moon, Sun, ChevronDown, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/lib/theme";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 

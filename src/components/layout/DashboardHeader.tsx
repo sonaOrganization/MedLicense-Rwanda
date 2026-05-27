@@ -1,6 +1,6 @@
 "use client";
 import { Bell, Moon, Sun, Search, ChevronDown } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/lib/theme";
 import { usePathname } from "next/navigation";
 
 interface DashboardHeaderProps {
