@@ -4,13 +4,18 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, FileText, BarChart2, Bookmark,
-  CreditCard, User, LogOut, Stethoscope, Trophy
+  CreditCard, User, LogOut, Stethoscope, Trophy, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language";
 import { useT } from "@/lib/translations";
 
-export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
+interface Props {
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+export function DashboardSidebar({ onClose }: Props) {
   const pathname = usePathname();
   const { language } = useLanguage();
   const T = useT(language);
@@ -26,23 +31,28 @@ export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
   ];
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col h-full bg-gray-950 border-r border-gray-800/60",
-        mobile ? "w-full" : "w-60"
-      )}
-    >
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-800/60">
-        <Link href="/" className="flex items-center gap-2.5 group">
+    <aside className="flex flex-col h-full w-full md:w-60 bg-gray-950 border-r border-gray-800/60">
+
+      {/* Logo + close button (mobile) */}
+      <div className="px-5 py-5 border-b border-gray-800/60 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 group" onClick={onClose}>
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md">
-            <Stethoscope className="w-4.5 h-4.5 text-white" />
+            <Stethoscope className="w-[18px] h-[18px] text-white" />
           </div>
           <div className="leading-none">
             <span className="font-bold text-[15px] text-white tracking-tight">Med</span>
             <span className="font-bold text-[15px] text-indigo-400 tracking-tight">License</span>
           </div>
         </Link>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-300 transition-colors"
+            aria-label="Close navigation"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Nav section label */}
@@ -58,14 +68,15 @@ export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all duration-150",
+                "flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl text-[14px] md:text-[13.5px] font-medium transition-all duration-150",
                 active
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/50"
                   : "text-gray-500 hover:bg-gray-800/70 hover:text-gray-200"
               )}
             >
-              <Icon className={cn("w-4.5 h-4.5 flex-shrink-0", active ? "text-white" : "text-gray-500")} />
+              <Icon className={cn("w-[18px] h-[18px] flex-shrink-0", active ? "text-white" : "text-gray-500")} />
               {label}
               {active && <span className="ml-auto w-1 h-4 rounded-full bg-indigo-300/60" />}
             </Link>
@@ -77,9 +88,9 @@ export function DashboardSidebar({ mobile = false }: { mobile?: boolean }) {
       <div className="px-3 py-4 border-t border-gray-800/60">
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[13.5px] font-medium text-gray-500 hover:bg-red-950/40 hover:text-red-400 transition-all duration-150"
+          className="flex items-center gap-3 w-full px-3 py-3 md:py-2.5 rounded-xl text-[14px] md:text-[13.5px] font-medium text-gray-500 hover:bg-red-950/40 hover:text-red-400 transition-all duration-150"
         >
-          <LogOut className="w-4.5 h-4.5" />
+          <LogOut className="w-[18px] h-[18px]" />
           {T("nav_logout")}
         </button>
       </div>

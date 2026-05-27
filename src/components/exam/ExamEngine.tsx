@@ -106,7 +106,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       <button
         onClick={() => setAnswers((a) => ({ ...a, [q.id]: answer.id }))}
         className={cn(
-          "flex-1 w-full text-left rounded-2xl border-2 transition-all duration-150 group flex items-center gap-4 px-5",
+          "w-full text-left rounded-2xl border-2 transition-all duration-150 group flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-0",
           selected
             ? "border-blue-500 bg-blue-600/20 dark:bg-blue-600/20 shadow-lg shadow-blue-900/20"
             : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-blue-400/60 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-white/10"
@@ -114,7 +114,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       >
         {/* Letter circle */}
         <span className={cn(
-          "flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all",
+          "flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all",
           selected
             ? "border-blue-500 bg-blue-500 text-white"
             : "border-slate-300 dark:border-white/25 text-slate-500 dark:text-gray-400 group-hover:border-blue-400 dark:group-hover:border-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"
@@ -124,7 +124,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
 
         {/* Answer text */}
         <span className={cn(
-          "flex-1 text-[14.5px] leading-snug font-medium",
+          "flex-1 text-sm sm:text-[14.5px] leading-snug font-medium",
           selected ? "text-blue-900 dark:text-blue-100" : "text-gray-700 dark:text-gray-200"
         )}>
           {t(answer.textEn, answer.textFr, language)}
@@ -146,22 +146,22 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
         <div className="flex items-center justify-between px-5 sm:px-7 h-14">
 
           {/* Left: logo + exam title */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
             <div className="min-w-0">
-              <p className="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[220px] sm:max-w-sm">{t(exam.titleEn, exam.titleFr, language)}</p>
-              <p className="text-[11px] text-gray-400 leading-none mt-0.5">
-                {totalAnswered} of {exam.questions.length} {T("exam_answered")} · {T("exam_passing")}: {exam.passingScore}%
+              <p className="font-bold text-gray-900 dark:text-white text-sm truncate max-w-[140px] sm:max-w-xs md:max-w-sm">{t(exam.titleEn, exam.titleFr, language)}</p>
+              <p className="hidden sm:block text-[11px] text-gray-400 leading-none mt-0.5">
+                {totalAnswered}/{exam.questions.length} {T("exam_answered")} · {T("exam_passing")}: {exam.passingScore}%
               </p>
             </div>
           </div>
 
           {/* Right: timer + submit */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition-all",
+              "flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition-all",
               isUrgent  ? "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 animate-pulse" :
               isWarning ? "bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400" :
                           "bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-gray-200"
@@ -171,9 +171,10 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
             </div>
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="px-4 py-1.5 text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
+              className="px-3 sm:px-4 py-1.5 text-sm font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
             >
-              {T("exam_submit")}
+              <span className="hidden sm:inline">{T("exam_submit")}</span>
+              <span className="sm:hidden">Submit</span>
             </button>
           </div>
         </div>
@@ -194,7 +195,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* ── Main: question + 2-column answers ── */}
-        <main className="flex-1 min-w-0 flex flex-col p-4 sm:p-6 gap-4 overflow-hidden">
+        <main className="flex-1 min-w-0 flex flex-col p-3 sm:p-6 gap-3 sm:gap-4 overflow-hidden">
 
           {/* Question card */}
           <div className="flex-shrink-0 bg-white dark:bg-[#0d1120] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
@@ -228,8 +229,8 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
               </button>
             </div>
 
-            {/* Question text — scrollable only if very long */}
-            <div className="px-5 sm:px-7 py-5 max-h-[30vh] overflow-y-auto">
+            {/* Question text */}
+            <div className="px-4 sm:px-7 py-4 sm:py-5 max-h-[35vh] overflow-y-auto">
               {q.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={q.imageUrl} alt="Clinical image" className="rounded-xl mb-4 max-h-48 object-contain border border-slate-200 dark:border-white/10" />
@@ -240,18 +241,18 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
             </div>
           </div>
 
-          {/* ── Answer grid: A+B left column | C+D right column ── */}
-          <div className="flex-1 min-h-0 grid grid-cols-2 gap-3">
+          {/* ── Answer grid: single col on mobile, 2-col on sm+ ── */}
+          <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
 
             {/* Left column: A, B */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5 sm:gap-3">
               {leftAnswers.map((answer, i) => (
                 <AnswerCard key={answer.id} answer={answer} letterIndex={i} />
               ))}
             </div>
 
             {/* Right column: C, D */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5 sm:gap-3">
               {rightAnswers.map((answer, i) => (
                 <AnswerCard key={answer.id} answer={answer} letterIndex={half + i} />
               ))}
@@ -327,15 +328,16 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
           <button
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-slate-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" /> {T("exam_previous")}
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">{T("exam_previous")}</span>
           </button>
 
-          {/* Mini question pills */}
-          <div className="flex items-center gap-1.5">
+          {/* Mini question pills — show fewer on mobile */}
+          <div className="flex items-center gap-1 sm:gap-1.5">
             {exam.questions
-              .slice(Math.max(0, currentIndex - 2), Math.min(exam.questions.length, currentIndex + 3))
+              .slice(Math.max(0, currentIndex - 1), Math.min(exam.questions.length, currentIndex + 2))
               .map((question) => {
                 const absIdx    = exam.questions.indexOf(question);
                 const isCurrent = absIdx === currentIndex;
@@ -344,7 +346,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
                     key={question.id}
                     onClick={() => setCurrentIndex(absIdx)}
                     className={cn(
-                      "w-7 h-7 rounded-full text-xs font-bold transition-colors",
+                      "w-8 h-8 sm:w-7 sm:h-7 rounded-full text-xs font-bold transition-colors",
                       isCurrent
                         ? "bg-blue-600 text-white shadow-sm"
                         : answers[question.id]
@@ -356,22 +358,27 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
                   </button>
                 );
               })}
+            <span className="text-xs text-gray-400 font-medium tabular-nums hidden xs:inline">
+              {currentIndex + 1}/{exam.questions.length}
+            </span>
           </div>
 
           {/* Next / Finish */}
           {currentIndex < exam.questions.length - 1 ? (
             <button
               onClick={() => setCurrentIndex((i) => i + 1)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
             >
-              {T("exam_next")} <ChevronRight className="w-4 h-4" />
+              <span className="hidden sm:inline">{T("exam_next")}</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
             >
-              <CheckCircle className="w-4 h-4" /> {T("exam_finish")}
+              <CheckCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">{T("exam_finish")}</span>
             </button>
           )}
         </div>
