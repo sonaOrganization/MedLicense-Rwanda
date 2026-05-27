@@ -106,7 +106,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       <button
         onClick={() => setAnswers((a) => ({ ...a, [q.id]: answer.id }))}
         className={cn(
-          "w-full text-left rounded-2xl border-2 transition-all duration-150 group flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-0",
+          "w-full text-left rounded-2xl border-2 transition-all duration-150 group flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-5",
           selected
             ? "border-blue-500 bg-blue-600/20 dark:bg-blue-600/20 shadow-lg shadow-blue-900/20"
             : "border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-blue-400/60 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-white/10"
@@ -195,13 +195,11 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* ── Main panel ── */}
-        <main className="flex-1 min-w-0 overflow-y-auto sm:overflow-hidden sm:flex sm:flex-col sm:p-6 sm:gap-4">
-
-          {/* Scrollable inner on mobile, flex column on desktop */}
-          <div className="flex flex-col gap-0 sm:gap-4 sm:flex-1 sm:min-h-0">
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-3 sm:py-6 flex flex-col gap-3 sm:gap-4">
 
             {/* Question card */}
-            <div className="flex-shrink-0 bg-white dark:bg-[#0d1120] sm:rounded-2xl border-b sm:border border-slate-200 dark:border-white/10 sm:shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-[#0d1120] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
 
               {/* Card header */}
               <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50/80 dark:bg-white/5">
@@ -233,29 +231,27 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
               </div>
 
               {/* Question text */}
-              <div className="px-4 sm:px-7 py-4 sm:py-5 sm:max-h-[30vh] sm:overflow-y-auto">
+              <div className="px-4 sm:px-7 py-4 sm:py-6">
                 {q.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={q.imageUrl} alt="Clinical image" className="rounded-xl mb-4 max-h-48 object-contain border border-slate-200 dark:border-white/10" />
                 )}
-                <p className="text-[15px] sm:text-[15.5px] font-medium text-gray-900 dark:text-white leading-relaxed">
+                <p className="text-[15px] sm:text-[16px] font-medium text-gray-900 dark:text-white leading-relaxed">
                   {t(q.textEn, q.textFr, language)}
                 </p>
               </div>
             </div>
 
             {/* ── Answers ── */}
-            {/* Mobile: flat single list, full width, scrolls with page */}
-            <div className="flex flex-col gap-0 sm:hidden bg-slate-50 dark:bg-[#090d18]">
+            {/* Mobile: flat single list */}
+            <div className="flex flex-col gap-2 sm:hidden">
               {q.answers.map((answer, i) => (
-                <div key={answer.id} className="px-3 py-1.5 first:pt-3 last:pb-3">
-                  <AnswerCard answer={answer} letterIndex={i} />
-                </div>
+                <AnswerCard key={answer.id} answer={answer} letterIndex={i} />
               ))}
             </div>
 
             {/* Desktop: 2-column grid */}
-            <div className="hidden sm:grid sm:grid-cols-2 sm:gap-3 sm:flex-1 sm:min-h-0">
+            <div className="hidden sm:grid sm:grid-cols-2 sm:gap-3">
               <div className="flex flex-col gap-3">
                 {leftAnswers.map((answer, i) => (
                   <AnswerCard key={answer.id} answer={answer} letterIndex={i} />

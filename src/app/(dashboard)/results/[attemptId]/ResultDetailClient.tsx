@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, MinusCircle, Clock, ArrowLeft, RotateCcw } from "lucide-react";
+import { CheckCircle, XCircle, MinusCircle, Clock, ArrowLeft, RotateCcw, LayoutDashboard } from "lucide-react";
 import { formatDuration, formatScore, getGradeColor } from "@/lib/utils";
 import { useLanguage, t } from "@/lib/language";
 import { useT } from "@/lib/translations";
@@ -96,7 +96,12 @@ export function ResultDetailClient({ attempt }: { attempt: Attempt }) {
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
+        <Link href="/dashboard">
+          <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+            <LayoutDashboard className="w-4 h-4" /> {T("nav_dashboard")}
+          </Button>
+        </Link>
         <Link href={`/exams/${attempt.exam_id}`}>
           <Button variant="outline" className="gap-2">
             <RotateCcw className="w-4 h-4" /> {T("rd_retake")}
