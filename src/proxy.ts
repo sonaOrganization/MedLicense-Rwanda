@@ -11,7 +11,8 @@ export default auth((req) => {
 
   // Redirect logged-in users away from auth pages
   if (session && AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    const dest = session.user.role === "ADMIN" ? "/admin" : "/dashboard";
+    return NextResponse.redirect(new URL(dest, req.url));
   }
 
   // Protect dashboard routes
