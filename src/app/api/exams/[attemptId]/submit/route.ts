@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ attemptId: string }> }) {
   const session = await auth();
@@ -9,31 +9,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ att
   const { attemptId } = await params;
   const { answers, timedOut } = await req.json();
 
-  const attempt = await prisma.examAttempt.findUnique({
-    where: { id: attemptId, userId: session.user.id },
-    include: {
-      exam: {
-        include: {
-          questions: {
-            include: { question: { include: { answers: true } } },
-          },
-        },
-      },
-    },
-  });
+  const { data: attempt } = await supabase
+    .from("exam_attempts")
+    .select("*, exam:exams(*, questions:exam_questions(*, question:questions(*, answers(*))))")
+    .eq("id", attemptId)
+    .eq("user_id", session.user.id)
+    .single();
 
   if (!attempt || attempt.status === "COMPLETED") {
     return NextResponse.json({ error: "Attempt not found or already submitted" }, { status: 404 });
   }
 
-  const questions = attempt.exam.questions.map((eq) => eq.question);
+  const questions = attempt.exam.questions.map((eq: { question: { id: string; answers: { id: string; is_correct: boolean }[] } }) => eq.question);
   let correct = 0;
   let wrong = 0;
   let skipped = 0;
 
-  const answerRecords = questions.map((q) => {
+  const answerRecords = questions.map((q: { id: string; answers: { id: string; is_correct: boolean }[] }) => {
     const selectedAnswerId = answers[q.id] ?? null;
-    const correctAnswer = q.answers.find((a) => a.isCorrect);
+    const correctAnswer = q.answers.find((a: { id: string; is_correct: boolean }) => a.is_correct);
     const isCorrect = selectedAnswerId ? selectedAnswerId === correctAnswer?.id : false;
 
     if (!selectedAnswerId) skipped++;
@@ -41,35 +35,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ att
     else wrong++;
 
     return {
-      attemptId,
-      questionId: q.id,
-      answerId: selectedAnswerId,
-      isCorrect,
+      attempt_id: attemptId,
+      question_id: q.id,
+      answer_id: selectedAnswerId,
+      is_correct: isCorrect,
     };
   });
 
-  const score = attempt.exam.negativeMarking
+  const score = attempt.exam.negative_marking
     ? Math.max(0, ((correct - wrong * 0.25) / questions.length) * 100)
     : (correct / questions.length) * 100;
 
-  const timeTaken = Math.round((Date.now() - attempt.startedAt.getTime()) / 1000);
+  const timeTaken = Math.round((Date.now() - new Date(attempt.started_at).getTime()) / 1000);
 
-  await prisma.$transaction([
-    prisma.attemptAnswer.createMany({ data: answerRecords }),
-    prisma.examAttempt.update({
-      where: { id: attemptId },
-      data: {
-        status: timedOut ? "TIMED_OUT" : "COMPLETED",
-        score,
-        correct,
-        wrong,
-        skipped,
-        totalAnswered: correct + wrong,
-        timeTaken,
-        submittedAt: new Date(),
-      },
-    }),
-  ]);
+  await supabase.from("attempt_answers").insert(answerRecords);
+  await supabase
+    .from("exam_attempts")
+    .update({
+      status: timedOut ? "TIMED_OUT" : "COMPLETED",
+      score,
+      correct,
+      wrong,
+      skipped,
+      total_answered: correct + wrong,
+      time_taken: timeTaken,
+      submitted_at: new Date().toISOString(),
+    })
+    .eq("id", attemptId);
 
   return NextResponse.json({ ok: true, score, correct, wrong, skipped, attemptId });
 }

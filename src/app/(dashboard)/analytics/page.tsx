@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { TrendingUp, Target, Trophy, Calendar } from "lucide-react";
@@ -9,27 +9,28 @@ export default async function AnalyticsPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const attempts = await prisma.examAttempt.findMany({
-    where: { userId, status: "COMPLETED" },
-    include: {
-      exam: { select: { passingScore: true, category: { select: { nameEn: true } } } },
-    },
-    orderBy: { submittedAt: "asc" },
-  });
+  const { data: attempts } = await supabase
+    .from("exam_attempts")
+    .select("*, exam:exams(passing_score, category:categories(name_en))")
+    .eq("user_id", userId)
+    .eq("status", "COMPLETED")
+    .order("submitted_at", { ascending: true });
 
-  const totalAttempts = attempts.length;
-  const avgScore = totalAttempts > 0 ? attempts.reduce((s, a) => s + (a.score ?? 0), 0) / totalAttempts : 0;
-  const passed = attempts.filter((a) => (a.score ?? 0) >= a.exam.passingScore).length;
+  const attemptList = attempts ?? [];
+
+  const totalAttempts = attemptList.length;
+  const avgScore = totalAttempts > 0 ? attemptList.reduce((s: number, a: { score?: number }) => s + (a.score ?? 0), 0) / totalAttempts : 0;
+  const passed = attemptList.filter((a: { score?: number; exam: { passing_score: number } }) => (a.score ?? 0) >= a.exam.passing_score).length;
   const passRate = calculatePercentage(passed, totalAttempts);
 
   // Category performance
   const categoryMap: Record<string, { total: number; score: number; passed: number }> = {};
-  for (const attempt of attempts) {
-    const cat = attempt.exam.category.nameEn;
+  for (const attempt of attemptList as { score?: number; exam: { passing_score: number; category: { name_en: string } } }[]) {
+    const cat = attempt.exam.category.name_en;
     if (!categoryMap[cat]) categoryMap[cat] = { total: 0, score: 0, passed: 0 };
     categoryMap[cat].total++;
     categoryMap[cat].score += attempt.score ?? 0;
-    if ((attempt.score ?? 0) >= attempt.exam.passingScore) categoryMap[cat].passed++;
+    if ((attempt.score ?? 0) >= attempt.exam.passing_score) categoryMap[cat].passed++;
   }
 
   const categoryStats = Object.entries(categoryMap).map(([name, stats]) => ({
@@ -99,12 +100,12 @@ export default async function AnalyticsPage() {
           <CardHeader><CardTitle>Score Progression</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-end gap-1 h-32">
-              {attempts.slice(-20).map((a, i) => {
+              {(attemptList as { id: string; score?: number; exam: { passing_score: number } }[]).slice(-20).map((a, i) => {
                 const h = Math.round(((a.score ?? 0) / 100) * 100);
                 return (
                   <div key={a.id} className="flex-1 flex flex-col items-center gap-1 group">
                     <div
-                      className={`w-full rounded-t transition-all ${(a.score ?? 0) >= a.exam.passingScore ? "bg-green-400" : "bg-red-400"}`}
+                      className={`w-full rounded-t transition-all ${(a.score ?? 0) >= a.exam.passing_score ? "bg-green-400" : "bg-red-400"}`}
                       style={{ height: `${h}%` }}
                       title={`${Math.round(a.score ?? 0)}%`}
                     />
@@ -113,7 +114,7 @@ export default async function AnalyticsPage() {
                 );
               })}
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">Last {Math.min(attempts.length, 20)} exam scores</p>
+            <p className="text-xs text-gray-400 mt-2 text-center">Last {Math.min(attemptList.length, 20)} exam scores</p>
           </CardContent>
         </Card>
       )}

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,22 +13,22 @@ interface Props {
 export default async function AdminUsersPage({ searchParams }: Props) {
   const { q, role } = await searchParams;
 
-  const users = await prisma.user.findMany({
-    where: {
-      AND: [
-        q ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }] } : {},
-        role ? { role: role as "STUDENT" | "ADMIN" | "INSTRUCTOR" } : {},
-      ],
-    },
-    include: { subscription: true, _count: { select: { examAttempts: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  let query = supabase
+    .from("users")
+    .select("*, subscription:subscriptions(*), exam_attempts(count)")
+    .order("created_at", { ascending: false });
+
+  if (q) query = query.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
+  if (role) query = query.eq("role", role);
+
+  const { data: users } = await query;
+  const userList = users ?? [];
 
   return (
     <div className="max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-        <span className="text-sm text-gray-400">{users.length} users</span>
+        <span className="text-sm text-gray-400">{userList.length} users</span>
       </div>
 
       {/* Filters */}
@@ -66,7 +66,16 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {users.map((user) => (
+              {userList.map((user: {
+                id: string;
+                name?: string;
+                email: string;
+                role: string;
+                is_banned: boolean;
+                created_at: string;
+                subscription?: { status?: string } | null;
+                exam_attempts: { count: number }[];
+              }) => (
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -90,15 +99,15 @@ export default async function AdminUsersPage({ searchParams }: Props) {
                       {user.subscription?.status ?? "FREE"}
                     </Badge>
                   </td>
-                  <td className="p-4 text-gray-600 dark:text-gray-300">{user._count.examAttempts}</td>
-                  <td className="p-4 text-gray-400 text-xs">{formatDate(user.createdAt)}</td>
+                  <td className="p-4 text-gray-600 dark:text-gray-300">{user.exam_attempts[0]?.count ?? 0}</td>
+                  <td className="p-4 text-gray-400 text-xs">{formatDate(new Date(user.created_at))}</td>
                   <td className="p-4">
-                    <Badge variant={user.isBanned ? "danger" : "success"}>
-                      {user.isBanned ? "Banned" : "Active"}
+                    <Badge variant={user.is_banned ? "danger" : "success"}>
+                      {user.is_banned ? "Banned" : "Active"}
                     </Badge>
                   </td>
                   <td className="p-4 text-right">
-                    <UserActions userId={user.id} isBanned={user.isBanned} role={user.role} />
+                    <UserActions userId={user.id} isBanned={user.is_banned} role={user.role} />
                   </td>
                 </tr>
               ))}

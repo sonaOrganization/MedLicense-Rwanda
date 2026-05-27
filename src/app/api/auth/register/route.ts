@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { sendVerificationEmail } from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
 import crypto from "crypto";
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const { name, email, password } = parsed.data;
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const { data: existing } = await supabase.from("users").select("id").eq("email", email).single();
     if (existing) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
@@ -24,14 +24,8 @@ export async function POST(req: NextRequest) {
     const token = crypto.randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 86400000); // 24h
 
-    await prisma.$transaction([
-      prisma.user.create({
-        data: { name, email, password: hashed },
-      }),
-      prisma.verificationToken.create({
-        data: { identifier: email, token, expires },
-      }),
-    ]);
+    await supabase.from("users").insert({ name, email, password: hashed });
+    await supabase.from("verification_tokens").insert({ identifier: email, token, expires: expires.toISOString() });
 
     await sendVerificationEmail(email, token);
     return NextResponse.json({ ok: true });

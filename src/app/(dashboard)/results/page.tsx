@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,22 +10,23 @@ import { formatDate, formatDuration, formatScore, getGradeColor } from "@/lib/ut
 
 export default async function ResultsPage() {
   const session = await auth();
-  const attempts = await prisma.examAttempt.findMany({
-    where: { userId: session!.user.id, status: "COMPLETED" },
-    orderBy: { submittedAt: "desc" },
-    include: {
-      exam: { select: { titleEn: true, passingScore: true, durationMinutes: true, category: { select: { nameEn: true } } } },
-    },
-  });
+  const { data: attempts } = await supabase
+    .from("exam_attempts")
+    .select("*, exam:exams(title_en, passing_score, duration_minutes, category:categories(name_en))")
+    .eq("user_id", session!.user.id)
+    .eq("status", "COMPLETED")
+    .order("submitted_at", { ascending: false });
+
+  const attemptList = attempts ?? [];
 
   return (
     <div className="max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Results</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{attempts.length} completed exams</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{attemptList.length} completed exams</p>
       </div>
 
-      {attempts.length === 0 ? (
+      {attemptList.length === 0 ? (
         <div className="text-center py-16">
           <CheckCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 dark:text-gray-400 mb-4">No exam results yet.</p>
@@ -33,8 +34,18 @@ export default async function ResultsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {attempts.map((attempt) => {
-            const passed = (attempt.score ?? 0) >= attempt.exam.passingScore;
+          {attemptList.map((attempt: {
+            id: string;
+            score?: number;
+            correct: number;
+            wrong: number;
+            skipped: number;
+            time_taken?: number;
+            submitted_at?: string;
+            exam_id: string;
+            exam: { title_en: string; passing_score: number; duration_minutes: number; category: { name_en: string } };
+          }) => {
+            const passed = (attempt.score ?? 0) >= attempt.exam.passing_score;
             return (
               <Card key={attempt.id}>
                 <CardContent className="p-5">
@@ -45,19 +56,19 @@ export default async function ResultsPage() {
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-2 flex-wrap">
                         <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{attempt.exam.titleEn}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{attempt.exam.title_en}</h3>
                           <div className="flex items-center gap-3 mt-1">
-                            <span className="text-xs text-gray-400">{attempt.exam.category.nameEn}</span>
-                            <span className="text-xs text-gray-400">{formatDate(attempt.submittedAt!)}</span>
-                            {attempt.timeTaken && (
+                            <span className="text-xs text-gray-400">{attempt.exam.category.name_en}</span>
+                            <span className="text-xs text-gray-400">{attempt.submitted_at ? formatDate(new Date(attempt.submitted_at)) : "—"}</span>
+                            {attempt.time_taken && (
                               <span className="text-xs text-gray-400 flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> {formatDuration(attempt.timeTaken)}
+                                <Clock className="w-3 h-3" /> {formatDuration(attempt.time_taken)}
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className={`text-2xl font-bold ${getGradeColor(attempt.score ?? 0, attempt.exam.passingScore)}`}>
+                          <div className={`text-2xl font-bold ${getGradeColor(attempt.score ?? 0, attempt.exam.passing_score)}`}>
                             {formatScore(attempt.score ?? 0)}
                           </div>
                           <Badge variant={passed ? "success" : "danger"}>{passed ? "Passed" : "Failed"}</Badge>

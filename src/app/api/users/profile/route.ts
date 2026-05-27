@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { profileSchema } from "@/lib/validations";
 
 export async function PATCH(req: NextRequest) {
@@ -13,10 +13,10 @@ export async function PATCH(req: NextRequest) {
 
   const { name, phone, country, language } = parsed.data;
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { name, phone, country, language },
-  });
+  await supabase
+    .from("users")
+    .update({ name, phone, country, language })
+    .eq("id", session.user.id);
 
   return NextResponse.json({ ok: true });
 }

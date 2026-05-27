@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/auth";
 import { ExamEngine } from "@/components/exam/ExamEngine";
 
@@ -12,35 +12,29 @@ export default async function ExamPage({ params }: Props) {
   const session = await auth();
   if (!session) redirect("/login");
 
-  const exam = await prisma.exam.findUnique({
-    where: { id, isPublished: true },
-    include: {
-      category: true,
-      questions: {
-        include: {
-          question: {
-            include: { answers: { orderBy: { order: "asc" } } },
-          },
-        },
-        orderBy: { order: "asc" },
-      },
-    },
-  });
+  const { data: exam } = await supabase
+    .from("exams")
+    .select("*, category:categories(*), questions:exam_questions(*, question:questions(*, answers(*)))")
+    .eq("id", id)
+    .eq("is_published", true)
+    .single();
 
   if (!exam) notFound();
 
   // Create attempt
-  const attempt = await prisma.examAttempt.create({
-    data: { userId: session.user.id, examId: exam.id, status: "IN_PROGRESS" },
-  });
+  const { data: attempt } = await supabase
+    .from("exam_attempts")
+    .insert({ user_id: session.user.id, exam_id: exam.id, status: "IN_PROGRESS" })
+    .select()
+    .single();
 
   // Shuffle questions if enabled
-  let questions = exam.questions.map((eq) => eq.question);
-  if (exam.shuffleQuestions) questions = questions.sort(() => Math.random() - 0.5);
+  let questions = exam.questions.map((eq: { question: { id: string; text_en: string; text_fr?: string; image_url?: string; difficulty: string; answers: { id: string; text_en: string; text_fr?: string; order: number }[] } }) => eq.question);
+  if (exam.shuffle_questions) questions = questions.sort(() => Math.random() - 0.5);
 
   // Shuffle answers if enabled
-  if (exam.shuffleAnswers) {
-    questions = questions.map((q) => ({
+  if (exam.shuffle_answers) {
+    questions = questions.map((q: { id: string; text_en: string; text_fr?: string; image_url?: string; difficulty: string; answers: { id: string; text_en: string; text_fr?: string; order: number }[] }) => ({
       ...q,
       answers: [...q.answers].sort(() => Math.random() - 0.5),
     }));
@@ -48,18 +42,18 @@ export default async function ExamPage({ params }: Props) {
 
   const examData = {
     id: exam.id,
-    title: exam.titleEn,
-    durationMinutes: exam.durationMinutes,
-    passingScore: exam.passingScore,
-    negativeMarking: exam.negativeMarking,
-    attemptId: attempt.id,
-    questions: questions.map((q) => ({
+    title: exam.title_en,
+    durationMinutes: exam.duration_minutes,
+    passingScore: exam.passing_score,
+    negativeMarking: exam.negative_marking,
+    attemptId: attempt!.id,
+    questions: questions.map((q: { id: string; text_en: string; text_fr?: string; image_url?: string; difficulty: string; answers: { id: string; text_en: string; text_fr?: string }[] }) => ({
       id: q.id,
-      textEn: q.textEn,
-      textFr: q.textFr,
-      imageUrl: q.imageUrl,
+      textEn: q.text_en,
+      textFr: q.text_fr,
+      imageUrl: q.image_url,
       difficulty: q.difficulty,
-      answers: q.answers.map((a) => ({ id: a.id, textEn: a.textEn, textFr: a.textFr })),
+      answers: q.answers.map((a: { id: string; text_en: string; text_fr?: string }) => ({ id: a.id, textEn: a.text_en, textFr: a.text_fr })),
     })),
   };
 

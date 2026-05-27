@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WelcomeBanner } from "@/components/dashboard/overview/WelcomeBanner";
 import { ReadinessGauge } from "@/components/dashboard/overview/ReadinessGauge";
@@ -17,46 +17,53 @@ export default async function DashboardPage() {
   const userId = session!.user.id;
 
   const [
-    recentAttempts,
-    allAttempts,
-    subscription,
-    streak,
-    userBadges,
-    savedCount,
-    topUsers,
+    recentAttemptsRes,
+    allAttemptsRes,
+    subscriptionRes,
+    streakRes,
+    badgeCountRes,
+    savedCountRes,
+    topUsersRes,
   ] = await Promise.all([
-    prisma.examAttempt.findMany({
-      where: { userId, status: "COMPLETED" },
-      orderBy: { submittedAt: "desc" },
-      take: 5,
-      include: {
-        exam: { select: { titleEn: true, passingScore: true, category: { select: { nameEn: true } } } },
-      },
-    }),
-    prisma.examAttempt.findMany({
-      where: { userId, status: "COMPLETED" },
-      include: {
-        exam: { select: { passingScore: true, category: { select: { nameEn: true } } } },
-      },
-    }),
-    prisma.subscription.findUnique({ where: { userId } }),
-    prisma.dailyStreak.findUnique({ where: { userId } }),
-    prisma.userBadge.count({ where: { userId } }),
-    prisma.savedQuestion.count({ where: { userId } }),
-    prisma.user.findMany({
-      where: { role: "STUDENT", isBanned: false },
-      include: { _count: { select: { examAttempts: true } } },
-      orderBy: { createdAt: "asc" },
-      take: 20,
-    }),
+    supabase
+      .from("exam_attempts")
+      .select("*, exam:exams(title_en, passing_score, category:categories(name_en))")
+      .eq("user_id", userId)
+      .eq("status", "COMPLETED")
+      .order("submitted_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("exam_attempts")
+      .select("*, exam:exams(passing_score, category:categories(name_en))")
+      .eq("user_id", userId)
+      .eq("status", "COMPLETED"),
+    supabase.from("subscriptions").select("*").eq("user_id", userId).single(),
+    supabase.from("daily_streaks").select("*").eq("user_id", userId).single(),
+    supabase.from("user_badges").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    supabase.from("saved_questions").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    supabase
+      .from("users")
+      .select("*, exam_attempts(count)")
+      .eq("role", "STUDENT")
+      .eq("is_banned", false)
+      .order("created_at", { ascending: true })
+      .limit(20),
   ]);
+
+  const recentAttempts = recentAttemptsRes.data ?? [];
+  const allAttempts = allAttemptsRes.data ?? [];
+  const subscription = subscriptionRes.data;
+  const streak = streakRes.data;
+  const userBadgesCount = badgeCountRes.count ?? 0;
+  const savedCount = savedCountRes.count ?? 0;
+  const topUsers = topUsersRes.data ?? [];
 
   // ── Compute stats ──────────────────────────────────────────────
   const totalExams = allAttempts.length;
   const avgScore = totalExams > 0
-    ? Math.round(allAttempts.reduce((s, a) => s + (a.score ?? 0), 0) / totalExams)
+    ? Math.round(allAttempts.reduce((s: number, a: { score?: number }) => s + (a.score ?? 0), 0) / totalExams)
     : 0;
-  const passed = allAttempts.filter((a) => (a.score ?? 0) >= a.exam.passingScore).length;
+  const passed = allAttempts.filter((a: { score?: number; exam: { passing_score: number } }) => (a.score ?? 0) >= a.exam.passing_score).length;
   const passRate = totalExams > 0 ? Math.round((passed / totalExams) * 100) : 0;
 
   // Readiness score (weighted: avg score 60% + pass rate 30% + exams taken 10%)
@@ -66,8 +73,8 @@ export default async function DashboardPage() {
 
   // ── Competency breakdown by category ──────────────────────────
   const categoryMap: Record<string, { scores: number[]; trend: number[] }> = {};
-  allAttempts.forEach((a) => {
-    const cat = a.exam.category.nameEn;
+  allAttempts.forEach((a: { score?: number; exam: { category: { name_en: string } } }) => {
+    const cat = a.exam.category.name_en;
     if (!categoryMap[cat]) categoryMap[cat] = { scores: [], trend: [] };
     categoryMap[cat].scores.push(a.score ?? 0);
   });
@@ -90,18 +97,18 @@ export default async function DashboardPage() {
 
   // ── Top performers leaderboard (mock scoring via attempts count) ──
   const performers = topUsers
-    .map((u, i) => ({
+    .map((u: { id: string; name?: string; exam_attempts: { count: number }[] }, i: number) => ({
       rank: i + 1,
       name: u.name ?? "Anonymous",
       score: Math.round(50 + Math.random() * 45), // replace with real avg when available
-      exams: u._count.examAttempts,
+      exams: u.exam_attempts[0]?.count ?? 0,
       isCurrentUser: u.id === userId,
     }))
-    .sort((a, b) => b.score - a.score)
+    .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
     .slice(0, 5)
-    .map((p, i) => ({ ...p, rank: i + 1 }));
+    .map((p: { rank: number; name: string; score: number; exams: number; isCurrentUser: boolean }, i: number) => ({ ...p, rank: i + 1 }));
 
-  const currentUserRank = performers.find((p) => p.isCurrentUser)?.rank;
+  const currentUserRank = performers.find((p: { isCurrentUser: boolean }) => p.isCurrentUser)?.rank;
 
   // ── Summary stat cards ────────────────────────────────────────
   const statCards = [
@@ -119,7 +126,7 @@ export default async function DashboardPage() {
       {/* ── Welcome Banner ── */}
       <WelcomeBanner
         name={session!.user.name?.split(" ")[0] ?? "Student"}
-        streak={streak?.currentStreak ?? 0}
+        streak={streak?.current_streak ?? 0}
         subscriptionStatus={subscription?.status ?? "FREE"}
       />
 
@@ -179,15 +186,23 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <RecentActivity
-                attempts={recentAttempts.map((a) => ({
+                attempts={recentAttempts.map((a: {
+                  id: string;
+                  score?: number;
+                  correct: number;
+                  wrong: number;
+                  time_taken?: number;
+                  submitted_at?: string;
+                  exam: { title_en: string; passing_score: number };
+                }) => ({
                   id: a.id,
-                  examTitle: a.exam.titleEn,
+                  examTitle: a.exam.title_en,
                   score: a.score,
-                  passingScore: a.exam.passingScore,
-                  submittedAt: a.submittedAt,
+                  passingScore: a.exam.passing_score,
+                  submittedAt: a.submitted_at ? new Date(a.submitted_at) : null,
                   correct: a.correct,
                   wrong: a.wrong,
-                  timeTaken: a.timeTaken,
+                  timeTaken: a.time_taken,
                 }))}
               />
             </CardContent>
@@ -229,10 +244,10 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <StudyStreakCard
-                streak={streak?.currentStreak ?? 0}
-                longestStreak={streak?.longestStreak ?? 0}
+                streak={streak?.current_streak ?? 0}
+                longestStreak={streak?.longest_streak ?? 0}
                 points={streak?.points ?? 0}
-                badges={userBadges}
+                badges={userBadgesCount}
               />
             </CardContent>
           </Card>

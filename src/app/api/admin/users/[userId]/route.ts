@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const session = await auth();
@@ -13,16 +13,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
 
   switch (action) {
     case "ban":
-      await prisma.user.update({ where: { id: userId }, data: { isBanned: true } });
+      await supabase.from("users").update({ is_banned: true }).eq("id", userId);
       break;
     case "unban":
-      await prisma.user.update({ where: { id: userId }, data: { isBanned: false } });
+      await supabase.from("users").update({ is_banned: false }).eq("id", userId);
       break;
     case "make_admin":
-      await prisma.user.update({ where: { id: userId }, data: { role: "ADMIN" } });
+      await supabase.from("users").update({ role: "ADMIN" }).eq("id", userId);
       break;
     case "make_student":
-      await prisma.user.update({ where: { id: userId }, data: { role: "STUDENT" } });
+      await supabase.from("users").update({ role: "STUDENT" }).eq("id", userId);
       break;
     default:
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });

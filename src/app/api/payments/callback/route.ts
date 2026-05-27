@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   const paymentId = req.nextUrl.searchParams.get("paymentId");
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
 
   if (!paymentId) return NextResponse.redirect(new URL("/dashboard", req.url));
 
-  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+  const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).single();
   if (!payment) return NextResponse.redirect(new URL("/subscription", req.url));
 
   if (status === "completed" || status === "success") {
@@ -16,14 +16,18 @@ export async function GET(req: NextRequest) {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
 
-    await prisma.$transaction([
-      prisma.payment.update({ where: { id: paymentId }, data: { status: "completed" } }),
-      prisma.subscription.upsert({
-        where: { userId: payment.userId },
-        create: { userId: payment.userId, status: "ACTIVE", plan: payment.plan, startDate: new Date(), endDate, autoRenew: false },
-        update: { status: "ACTIVE", plan: payment.plan, startDate: new Date(), endDate },
-      }),
-    ]);
+    await supabase.from("payments").update({ status: "completed" }).eq("id", paymentId);
+    await supabase.from("subscriptions").upsert(
+      {
+        user_id: payment.user_id,
+        status: "ACTIVE",
+        plan: payment.plan,
+        start_date: new Date().toISOString(),
+        end_date: endDate.toISOString(),
+        auto_renew: false,
+      },
+      { onConflict: "user_id" }
+    );
   }
 
   return NextResponse.redirect(new URL("/subscription?success=true", req.url));

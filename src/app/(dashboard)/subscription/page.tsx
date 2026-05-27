@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,15 @@ const plans = [
 
 export default async function SubscriptionPage() {
   const session = await auth();
-  const subscription = await prisma.subscription.findUnique({ where: { userId: session!.user.id } });
-  const payments = await prisma.payment.findMany({
-    where: { userId: session!.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-  });
+  const { data: subscription } = await supabase.from("subscriptions").select("*").eq("user_id", session!.user.id).single();
+  const { data: payments } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("user_id", session!.user.id)
+    .order("created_at", { ascending: false })
+    .limit(5);
 
+  const paymentList = payments ?? [];
   const isActive = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
 
   return (
@@ -61,9 +63,9 @@ export default async function SubscriptionPage() {
                   {subscription?.status ?? "FREE"}
                 </Badge>
               </div>
-              {subscription?.endDate && (
+              {subscription?.end_date && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                  {isActive ? `Renews on ${formatDate(subscription.endDate)}` : `Expired on ${formatDate(subscription.endDate)}`}
+                  {isActive ? `Renews on ${formatDate(new Date(subscription.end_date))}` : `Expired on ${formatDate(new Date(subscription.end_date))}`}
                 </p>
               )}
             </div>
@@ -112,7 +114,7 @@ export default async function SubscriptionPage() {
       )}
 
       {/* Payment history */}
-      {payments.length > 0 && (
+      {paymentList.length > 0 && (
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Payment History</h2>
           <Card>
@@ -127,9 +129,9 @@ export default async function SubscriptionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((p) => (
+                  {paymentList.map((p: { id: string; created_at: string; plan: string; amount: number; currency: string; status: string }) => (
                     <tr key={p.id} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
-                      <td className="p-4 text-gray-700 dark:text-gray-300">{formatDate(p.createdAt)}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-300">{formatDate(new Date(p.created_at))}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-300 capitalize">{p.plan}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-300">{p.amount.toLocaleString()} {p.currency}</td>
                       <td className="p-4">
