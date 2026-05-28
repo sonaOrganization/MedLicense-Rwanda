@@ -182,7 +182,7 @@ export default async function AdminDashboard() {
 
               {/* Stats */}
               <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                {stats.map(({ label: sl, value, warn }) => (
+                {stats.map(({ label: sl, value, warn = false }) => (
                   <div key={sl}>
                     <p className={`text-sm sm:text-base font-bold leading-none ${warn ? "text-amber-500" : "text-gray-900 dark:text-white"}`}>
                       {value}
