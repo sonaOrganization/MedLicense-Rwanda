@@ -4,19 +4,11 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
 
-// Only enforce email verification when SMTP is actually configured
-const smtpConfigured = !!(
-  process.env.SMTP_HOST &&
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASSWORD
-);
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
     error: "/login",
-    verifyRequest: "/verify-email",
   },
   providers: [
     Google({
@@ -28,27 +20,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { data: user, error: dbError } = await supabase
             .from("users")
-            .select("id, email, name, role, password, is_banned, email_verified, license_category, language")
+            .select("id, email, name, role, password, is_banned, license_category, language")
             .eq("email", credentials.email as string)
             .single();
 
           if (dbError || !user || !user.password) return null;
           if (user.is_banned) throw new Error("Account suspended");
-
-          // If the user has no email_verified but SMTP isn't set up,
-          // auto-heal them so they can log in — this fixes users who
-          // registered before the SMTP-optional fix was deployed.
-          if (!user.email_verified) {
-            if (smtpConfigured) {
-              throw new Error("Email not verified");
-            } else {
-              // Auto-verify: no email server means we can't ask them to verify
-              await supabase
-                .from("users")
-                .update({ email_verified: new Date().toISOString() })
-                .eq("id", user.id);
-            }
-          }
 
           const valid = await bcrypt.compare(credentials.password as string, user.password);
           if (!valid) return null;
@@ -67,11 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             language: (user.language as string | null) ?? "EN",
           };
         } catch (err) {
-          // Re-throw known auth errors so the login page can handle them
-          if (err instanceof Error && (err.message === "Account suspended" || err.message === "Email not verified")) {
-            throw err;
-          }
-          // Log and swallow unexpected errors — return null = "invalid credentials" toast
+          if (err instanceof Error && err.message === "Account suspended") throw err;
           console.error("[AUTH_AUTHORIZE]", err);
           return null;
         }
@@ -126,7 +99,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               email: user.email,
               name: user.name,
               image: user.image,
-              email_verified: new Date().toISOString(),
               role: "STUDENT",
             });
           }

@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
-import { sendVerificationEmail } from "@/lib/email";
 import { registerSchema } from "@/lib/validations";
-import crypto from "crypto";
-
-const smtpConfigured = !!(
-  process.env.SMTP_HOST &&
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASSWORD
-);
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,41 +20,20 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 12);
 
-    await supabase.from("users").insert({
+    const { error } = await supabase.from("users").insert({
       name,
       email,
       password: hashed,
       phone: phone ?? null,
       license_category: licenseCategory,
-      // Auto-verify immediately when SMTP is not configured
-      email_verified: smtpConfigured ? null : new Date().toISOString(),
     });
 
-    // Try to send verification email only if SMTP is configured
-    if (smtpConfigured) {
-      try {
-        const token   = crypto.randomBytes(32).toString("hex");
-        const expires = new Date(Date.now() + 86400000); // 24 h
-
-        await supabase.from("verification_tokens").insert({
-          identifier: email,
-          token,
-          expires: expires.toISOString(),
-        });
-
-        await sendVerificationEmail(email, token);
-        return NextResponse.json({ ok: true, requiresVerification: true });
-      } catch (emailErr) {
-        console.error("[REGISTER] Email send failed, auto-verifying:", emailErr);
-        // Email failed — auto-verify so the user can still log in
-        await supabase
-          .from("users")
-          .update({ email_verified: new Date().toISOString() })
-          .eq("email", email);
-      }
+    if (error) {
+      console.error("[REGISTER]", error);
+      return NextResponse.json({ error: "Could not create account. Please try again." }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true, requiresVerification: false });
+    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[REGISTER]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

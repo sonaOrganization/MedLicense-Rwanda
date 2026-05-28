@@ -36,9 +36,6 @@ export default function RegisterPage() {
 
     if (!res.ok) {
       toast.error(json.error || "Registration failed");
-    } else if (json.requiresVerification) {
-      toast.success("Account created! Please check your email to verify your account.");
-      router.push("/verify-email?sent=true");
     } else {
       toast.success("Account created! You can now sign in.");
       router.push("/login");
