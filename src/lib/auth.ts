@@ -100,6 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: user.name,
               image: user.image,
               role: "STUDENT",
+              email_verified: new Date().toISOString(),
             });
           }
         } catch (err) {

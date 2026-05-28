@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res?.error) {
-      toast.error(res.error === "Email not verified" ? "Please verify your email first." : "Invalid email or password.");
+      toast.error(res.error === "Account suspended" ? "Your account has been suspended. Please contact support." : "Invalid email or password.");
     } else {
       router.push("/dashboard");
       router.refresh();
