@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
       password: hashed,
       phone: phone ?? null,
       license_category: licenseCategory,
+      email_verified: new Date().toISOString(),
     });
 
     if (error) {
