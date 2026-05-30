@@ -9,23 +9,24 @@ import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
 
 const plans = [
   {
-    id: "monthly",
-    name: "Premium Monthly",
-    price: 15000,
+    id: "basic",
+    name: "Basic",
+    price: 1500,
     currency: "RWF",
     period: "month",
-    features: ["2500+ practice questions", "Unlimited mock exams", "Video tutorials", "Detailed analytics", "Study notes PDF", "Priority support"],
-    popular: true,
+    features: ["2 mock exams", "Priority support"],
+    popular: false,
+    badge: null,
   },
   {
-    id: "annual",
-    name: "Premium Annual",
-    price: 120000,
+    id: "pro",
+    name: "Pro",
+    price: 4000,
     currency: "RWF",
-    period: "year",
-    features: ["Everything in Monthly", "Flashcard system", "Offline study notes", "Early feature access", "1-on-1 support sessions"],
-    popular: false,
-    badge: "Save 33%",
+    period: "month",
+    features: ["Unlimited mock exams", "1-on-1 support sessions", "Online Notes"],
+    popular: true,
+    badge: "Best Value",
   },
 ];
 
@@ -108,7 +109,7 @@ export default async function SubscriptionPage() {
           {/* Payment security note */}
           <div className="flex items-center gap-2 text-sm text-gray-400">
             <Shield className="w-4 h-4 text-green-500" />
-            Secure payment via Mobile Money, Card, or Afripay
+            Secure payment via Afripay · Cancel anytime
           </div>
         </>
       )}

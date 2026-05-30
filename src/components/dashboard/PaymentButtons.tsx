@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Smartphone, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface PaymentButtonsProps {
@@ -11,54 +10,33 @@ interface PaymentButtonsProps {
 }
 
 export function PaymentButtons({ planId, amount, currency }: PaymentButtonsProps) {
-  const [loading, setLoading] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  async function initiatePayment(provider: string) {
-    setLoading(provider);
+  async function initiatePayment() {
+    setLoading(true);
     try {
       const res = await fetch("/api/payments/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, provider }),
+        body: JSON.stringify({ planId, provider: "afripay" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (data.redirectUrl) window.location.href = data.redirectUrl;
-      else toast.success("Payment initiated. Check your phone for the prompt.");
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Payment failed");
+      toast.error(err instanceof Error ? err.message : "Payment failed. Please try again.");
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   }
 
   return (
-    <div className="space-y-2">
-      <Button
-        className="w-full bg-yellow-500 hover:bg-yellow-600 text-yellow-950 gap-2"
-        loading={loading === "momo"}
-        onClick={() => initiatePayment("momo")}
-      >
-        <Smartphone className="w-4 h-4" />
-        Pay with Mobile Money
-      </Button>
-      <Button
-        variant="outline"
-        className="w-full gap-2"
-        loading={loading === "card"}
-        onClick={() => initiatePayment("card")}
-      >
-        <CreditCard className="w-4 h-4" />
-        Pay with Card
-      </Button>
-      <Button
-        variant="ghost"
-        className="w-full text-indigo-600 dark:text-indigo-400 gap-2"
-        loading={loading === "afripay"}
-        onClick={() => initiatePayment("afripay")}
-      >
-        Pay with Afripay
-      </Button>
-    </div>
+    <Button
+      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold gap-2"
+      loading={loading}
+      onClick={initiatePayment}
+    >
+      Pay {amount.toLocaleString()} {currency} with Afripay
+    </Button>
   );
 }

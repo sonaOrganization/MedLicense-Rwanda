@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   if (!payment) return NextResponse.redirect(new URL("/subscription", req.url));
 
   if (status === "completed" || status === "success") {
-    const planMonths: Record<string, number> = { monthly: 1, annual: 12 };
+    const planMonths: Record<string, number> = { basic: 1, pro: 1 };
     const months = planMonths[payment.plan] ?? 1;
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);

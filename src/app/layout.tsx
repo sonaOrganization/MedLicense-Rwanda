@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     template: "%s | MedLicense",
   },
   description:
-    "Rwanda's leading platform for professional medical license exam preparation. Practice with real exam simulations, video tutorials, and analytics.",
-  keywords: ["MedLicense", "Rwanda Medical", "License Exam", "Medical Prep", "Exam Simulation"],
+    "Rwanda's leading platform for professional medical license exams preparation. Practice with real exam simulations, video tutorials, and analytics.",
+  keywords: ["MedLicense", "Rwanda Medical", "License Exam", "Medical Prep",],
   authors: [{ name: "MedLicense" }],
   openGraph: {
     type: "website",

@@ -41,10 +41,10 @@ export default function FreeTrialPage() {
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">What to expect</h3>
           {[
-            { title: "Real Exam Format", desc: "Questions are formatted exactly like the official medical licensing exam." },
+            { title: "Real Exam Format", desc: "Questions are formatted exactly like the  medical licensing exam." },
             { title: "Timed Environment", desc: "Experience the pressure of a timed exam before test day." },
             { title: "Immediate Feedback", desc: "See which answers were right or wrong with full explanations." },
-            { title: "No Registration Required", desc: "Take the free trial without creating an account." },
+            { title: "No Credit Card Required", desc: "Take the free trial without providing a credit card." },
           ].map(({ title, desc }) => (
             <div key={title} className="flex items-start gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
               <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
