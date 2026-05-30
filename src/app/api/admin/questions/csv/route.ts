@@ -2,23 +2,21 @@ import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
-// POST /api/admin/questions/csv — bulk import from CSV text
+// POST /api/admin/questions/csv — bulk import from CSV
 //
-// Required columns (header row required):
-//   category_slug, difficulty, correct_letter
-//   language         — EN or FR (defaults to EN if omitted)
-//
-// For English questions (language=EN):
-//   text_en, explanation_en (optional)
-//   answer_a, answer_b, answer_c, answer_d
-//
-// For French questions (language=FR):
-//   text_fr, explanation_fr (optional)
-//   answer_a_fr, answer_b_fr, answer_c_fr, answer_d_fr
-//
-// Optional columns (both languages):
-//   license_categories  — comma-separated IDs e.g. "medical_doctor,nurse_a0"
-//   text_en / text_fr   — translation fallback for the non-primary language
+// Expected columns (header row required):
+//   category_slug     — matches categories.slug
+//   difficulty        — EASY | MEDIUM | HARD  (default: MEDIUM)
+//   question          — question text
+//   answer_a          — answer option A (required)
+//   answer_b          — answer option B (required)
+//   answer_c          — answer option C (optional)
+//   answer_d          — answer option D (optional)
+//   answer_e          — answer option E (optional)
+//   correct_letter    — A | B | C | D | E
+//   license_categories — comma-separated IDs e.g. "medical_doctor,nurse_a0" (optional)
+//   explanation       — shown after submission (optional)
+//   target_language   — EN | FR (default: EN)
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -33,7 +31,8 @@ export async function POST(req: NextRequest) {
   (categories ?? []).forEach((c: { id: string; slug: string }) => { catMap[c.slug] = c.id; });
 
   const lines = csv.split("\n").map((l: string) => l.trim()).filter(Boolean);
-  if (lines.length < 2) return NextResponse.json({ error: "CSV must have a header and at least one row" }, { status: 400 });
+  if (lines.length < 2)
+    return NextResponse.json({ error: "CSV must have a header and at least one row" }, { status: 400 });
 
   function parseCSVLine(line: string): string[] {
     const result: string[] = [];
@@ -60,78 +59,77 @@ export async function POST(req: NextRequest) {
 
     const slug     = get(row, "category_slug");
     const diff     = get(row, "difficulty").toUpperCase() || "MEDIUM";
+    const question = get(row, "question");
+    const ansA     = get(row, "answer_a");
+    const ansB     = get(row, "answer_b");
+    const ansC     = get(row, "answer_c");
+    const ansD     = get(row, "answer_d");
+    const ansE     = get(row, "answer_e");
     const correct  = get(row, "correct_letter").toUpperCase();
-    const language = (get(row, "language").toUpperCase() || "EN") as "EN" | "FR";
+    const expl     = get(row, "explanation");
+    const lang     = (get(row, "target_language").toUpperCase() || "EN") as "EN" | "FR";
     const licCats  = get(row, "license_categories")
       .split(",").map((s: string) => s.trim()).filter(Boolean);
 
-    // English fields
-    const textEn   = get(row, "text_en");
-    const explEn   = get(row, "explanation_en");
-    const aEn      = get(row, "answer_a");
-    const bEn      = get(row, "answer_b");
-    const cEn      = get(row, "answer_c");
-    const dEn      = get(row, "answer_d");
-
-    // French fields
-    const textFr   = get(row, "text_fr");
-    const explFr   = get(row, "explanation_fr");
-    const aFr      = get(row, "answer_a_fr");
-    const bFr      = get(row, "answer_b_fr");
-    const cFr      = get(row, "answer_c_fr");
-    const dFr      = get(row, "answer_d_fr");
-
-    // Validate required fields based on language
-    const primaryText    = language === "FR" ? textFr  : textEn;
-    const primaryAnswerA = language === "FR" ? aFr     : aEn;
-    const primaryAnswerB = language === "FR" ? bFr     : bEn;
-
-    if (!primaryText) {
-      failed.push({ row: i + 1, reason: `Missing ${language === "FR" ? "text_fr" : "text_en"}` });
+    // Validate
+    if (!question) {
+      failed.push({ row: i + 1, reason: "Missing question text" });
       continue;
     }
-    if (!slug || !primaryAnswerA || !primaryAnswerB || !correct) {
-      failed.push({ row: i + 1, reason: "Missing required fields (category_slug, answer_a/b, correct_letter)" });
+    if (!slug || !ansA || !ansB || !correct) {
+      failed.push({ row: i + 1, reason: "Missing required fields (category_slug, answer_a, answer_b, correct_letter)" });
       continue;
     }
-
+    const validLetters = ["A", "B", "C", "D", "E"].filter((l) => {
+      if (l === "A") return !!ansA;
+      if (l === "B") return !!ansB;
+      if (l === "C") return !!ansC;
+      if (l === "D") return !!ansD;
+      if (l === "E") return !!ansE;
+      return false;
+    });
+    if (!validLetters.includes(correct)) {
+      failed.push({ row: i + 1, reason: `correct_letter "${correct}" has no matching answer text` });
+      continue;
+    }
     const catId = catMap[slug];
-    if (!catId) { failed.push({ row: i + 1, reason: `Category slug "${slug}" not found` }); continue; }
-    if (!["A","B","C","D"].includes(correct)) { failed.push({ row: i + 1, reason: "correct_letter must be A, B, C, or D" }); continue; }
+    if (!catId) {
+      failed.push({ row: i + 1, reason: `Category slug "${slug}" not found` });
+      continue;
+    }
 
-    const { data: question, error: qErr } = await supabase
+    // Store question text in the correct language column
+    const { data: dbQuestion, error: qErr } = await supabase
       .from("questions")
       .insert({
-        text_en:        textEn  || null,
-        text_fr:        textFr  || null,
-        explanation_en: explEn  || null,
-        explanation_fr: explFr  || null,
-        difficulty:     diff,
+        text_en:        lang === "EN" ? question : null,
+        text_fr:        lang === "FR" ? question : null,
+        explanation_en: lang === "EN" ? (expl || null) : null,
+        explanation_fr: lang === "FR" ? (expl || null) : null,
+        difficulty:     ["EASY", "MEDIUM", "HARD"].includes(diff) ? diff : "MEDIUM",
         category_id:    catId,
-        language,
+        language:       lang,
         license_categories: licCats,
-        type:        "MULTIPLE_CHOICE",
-        is_approved: true,
-        is_active:   true,
+        type:           "MULTIPLE_CHOICE",
+        is_approved:    true,
+        is_active:      true,
       })
       .select()
       .single();
 
     if (qErr) { failed.push({ row: i + 1, reason: qErr.message }); continue; }
 
-    // Build answer rows using primary language + optional translation
-    const enTexts = [aEn, bEn, cEn, dEn];
-    const frTexts = [aFr, bFr, cFr, dFr];
-    const primaryTexts = language === "FR" ? frTexts : enTexts;
+    // Build answer rows — store in correct language column
+    const answerTexts = [ansA, ansB, ansC, ansD, ansE];
+    const correctIdx  = ["A", "B", "C", "D", "E"].indexOf(correct);
 
-    const correctIdx  = ["A","B","C","D"].indexOf(correct);
-    const answerRows  = primaryTexts
+    const answerRows = answerTexts
       .map((t, idx) => ({ t, idx }))
       .filter(({ t }) => t)
       .map(({ t, idx }) => ({
-        question_id: question.id,
-        text_en:     language === "EN" ? t : (enTexts[idx] || null),
-        text_fr:     language === "FR" ? t : (frTexts[idx] || null),
+        question_id: dbQuestion.id,
+        text_en:     lang === "EN" ? t : null,
+        text_fr:     lang === "FR" ? t : null,
         is_correct:  idx === correctIdx,
         order:       idx,
       }));
@@ -139,7 +137,7 @@ export async function POST(req: NextRequest) {
     const { error: aErr } = await supabase.from("answers").insert(answerRows);
     if (aErr) { failed.push({ row: i + 1, reason: aErr.message }); continue; }
 
-    imported.push(question.id);
+    imported.push(dbQuestion.id);
   }
 
   return NextResponse.json({ imported: imported.length, failed });
