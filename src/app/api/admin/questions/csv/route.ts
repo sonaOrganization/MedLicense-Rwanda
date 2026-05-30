@@ -26,9 +26,40 @@ export async function POST(req: NextRequest) {
   const { csv } = await req.json();
   if (!csv) return NextResponse.json({ error: "No CSV data" }, { status: 400 });
 
-  const { data: categories } = await supabase.from("categories").select("id, slug");
+  const { data: categories } = await supabase.from("categories").select("id, slug, name_en, name");
+  // Build lookup by slug AND by name (case-insensitive) so CSV can use either
   const catMap: Record<string, string> = {};
-  (categories ?? []).forEach((c: { id: string; slug: string }) => { catMap[c.slug] = c.id; });
+  (categories ?? []).forEach((c: { id: string; slug: string; name_en: string; name: string }) => {
+    catMap[c.slug] = c.id;
+    catMap[c.name_en?.toLowerCase()] = c.id;
+    catMap[c.name?.toLowerCase()]    = c.id;
+  });
+
+  function toSlug(name: string): string {
+    return name.toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  async function getOrCreateCategory(raw: string): Promise<string | null> {
+    const key = raw.toLowerCase();
+    if (catMap[key]) return catMap[key];
+    // Also try slug version
+    const slug = toSlug(raw);
+    if (catMap[slug]) return catMap[slug];
+
+    // Auto-create the category
+    const { data: created, error } = await supabase
+      .from("categories")
+      .insert({ name: raw, name_en: raw, name_fr: raw, slug })
+      .select("id")
+      .single();
+    if (error || !created) return null;
+    catMap[key]  = created.id;
+    catMap[slug] = created.id;
+    return created.id;
+  }
 
   const lines = csv.split("\n").map((l: string) => l.trim()).filter(Boolean);
   if (lines.length < 2)
@@ -92,9 +123,9 @@ export async function POST(req: NextRequest) {
       failed.push({ row: i + 1, reason: `correct_letter "${correct}" has no matching answer text` });
       continue;
     }
-    const catId = catMap[slug];
+    const catId = await getOrCreateCategory(slug);
     if (!catId) {
-      failed.push({ row: i + 1, reason: `Category slug "${slug}" not found` });
+      failed.push({ row: i + 1, reason: `Could not find or create category "${slug}"` });
       continue;
     }
 
