@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       amount:       plan.amount,
       currency:     plan.currency,
       comment:      plan.label,
-      client_token: payment.id,                        // our UUID — AfriPay sends this back in callback
+      client_token: `ML_${payment.id}`,                 // ML_ prefix identifies MedLicense payments in shared callback
       return_url:   `${appUrl}/subscription?paid=true`, // redirect after payment
       app_id:       process.env.AFRIPAY_PUBLIC_KEY,
       app_secret:   process.env.AFRIPAY_SECRET_KEY,
