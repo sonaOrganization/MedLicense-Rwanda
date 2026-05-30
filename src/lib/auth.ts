@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
@@ -11,10 +10,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     Credentials({
       async authorize(credentials) {
         try {
@@ -54,25 +49,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user, account }) {
       if (account && user) {
-        if (account.provider === "google") {
-          const { data: dbUser } = await supabase
-            .from("users")
-            .select("id, role, license_category, language")
-            .eq("email", token.email!)
-            .single();
-
-          if (dbUser) {
-            token.id = dbUser.id;
-            token.role = dbUser.role;
-            token.licenseCategory = dbUser.license_category ?? null;
-            token.language = (dbUser.language as string | null) ?? "EN";
-          }
-        } else {
-          token.id = user.id;
-          token.role = (user as { role?: string }).role ?? "STUDENT";
-          token.licenseCategory = (user as { licenseCategory?: string | null }).licenseCategory ?? null;
-          token.language = (user as { language?: string | null }).language ?? "EN";
-        }
+        token.id = user.id;
+        token.role = (user as { role?: string }).role ?? "STUDENT";
+        token.licenseCategory = (user as { licenseCategory?: string | null }).licenseCategory ?? null;
+        token.language = (user as { language?: string | null }).language ?? "EN";
       }
       return token;
     },
@@ -84,30 +64,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.language = (token.language as string | null) ?? "EN";
       }
       return session;
-    },
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        try {
-          const { data: existing } = await supabase
-            .from("users")
-            .select("id")
-            .eq("email", user.email!)
-            .single();
-
-          if (!existing) {
-            await supabase.from("users").insert({
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              role: "STUDENT",
-              email_verified: new Date().toISOString(),
-            });
-          }
-        } catch (err) {
-          console.error("[AUTH_SIGNIN_GOOGLE]", err);
-        }
-      }
-      return true;
     },
   },
 });
