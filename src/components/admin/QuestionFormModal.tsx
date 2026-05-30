@@ -9,6 +9,8 @@ import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categ
 interface Category { id: string; name_en: string; license_category?: string | null; }
 interface AnswerField { text_en: string; text_fr: string; is_correct: boolean; }
 
+type Lang = "EN" | "FR";
+
 interface QuestionFormModalProps {
   open: boolean;
   onClose: () => void;
@@ -21,6 +23,7 @@ interface QuestionFormModalProps {
     explanation_fr?: string | null;
     difficulty: string;
     category_id: string;
+    language?: string | null;
     license_categories?: string[] | null;
     answers: { id?: string; text_en: string; text_fr?: string | null; is_correct: boolean }[];
   };
@@ -33,13 +36,12 @@ const EMPTY_ANSWERS: AnswerField[] = [
   { text_en: "", text_fr: "", is_correct: false },
 ];
 
-type Lang = "EN" | "FR";
-
 export function QuestionFormModal({ open, onClose, categories, question }: QuestionFormModalProps) {
   const router = useRouter();
   const isEdit = !!question;
 
   const [lang,              setLang]              = useState<Lang>("EN");
+  const [language,          setLanguage]          = useState<Lang>("EN");
   const [textEn,            setTextEn]            = useState("");
   const [textFr,            setTextFr]            = useState("");
   const [explanationEn,     setExplanationEn]     = useState("");
@@ -52,15 +54,16 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
 
   useEffect(() => {
     if (question) {
-      setTextEn(question.text_en);
+      setTextEn(question.text_en ?? "");
       setTextFr(question.text_fr ?? "");
       setExplanationEn(question.explanation_en ?? "");
       setExplanationFr(question.explanation_fr ?? "");
       setDifficulty(question.difficulty);
       setCategoryId(question.category_id);
+      setLanguage((question.language as Lang) ?? "EN");
       setLicenseCategories(question.license_categories ?? []);
       setAnswers(question.answers.map((a) => ({
-        text_en: a.text_en,
+        text_en: a.text_en ?? "",
         text_fr: a.text_fr ?? "",
         is_correct: a.is_correct,
       })));
@@ -69,11 +72,15 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
       setExplanationEn(""); setExplanationFr("");
       setDifficulty("MEDIUM");
       setCategoryId(categories[0]?.id ?? "");
+      setLanguage("EN");
       setLicenseCategories([]);
       setAnswers(EMPTY_ANSWERS.map((a) => ({ ...a })));
     }
     setLang("EN");
   }, [question, categories, open]);
+
+  // When language changes, switch the active tab to match
+  useEffect(() => { setLang(language); }, [language]);
 
   const visibleCategories = useMemo(() => {
     if (licenseCategories.length === 0) return categories;
@@ -116,10 +123,18 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
   }
 
   async function handleSave() {
-    if (!textEn.trim()) return toast.error("English question text is required");
-    if (!categoryId)    return toast.error("Select a category");
-    if (!answers.some((a) => a.is_correct)) return toast.error("Mark one answer as correct");
-    if (answers.some((a) => !a.text_en.trim())) return toast.error("All English answer fields must be filled in");
+    if (language === "EN" && !textEn.trim())
+      return toast.error("English question text is required");
+    if (language === "FR" && !textFr.trim())
+      return toast.error("French question text is required");
+    if (!categoryId)
+      return toast.error("Select a category");
+    if (!answers.some((a) => a.is_correct))
+      return toast.error("Mark one answer as correct");
+    if (language === "EN" && answers.some((a) => !a.text_en.trim()))
+      return toast.error("All English answer fields must be filled in");
+    if (language === "FR" && answers.some((a) => !a.text_fr.trim()))
+      return toast.error("All French answer fields must be filled in");
 
     setSaving(true);
     try {
@@ -129,7 +144,8 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text_en: textEn.trim(),
+          language,
+          text_en: textEn.trim() || null,
           text_fr: textFr.trim() || null,
           explanation_en: explanationEn.trim() || null,
           explanation_fr: explanationFr.trim() || null,
@@ -137,7 +153,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           category_id: categoryId,
           license_categories: licenseCategories,
           answers: answers.map((a) => ({
-            text_en: a.text_en,
+            text_en: a.text_en.trim() || null,
             text_fr: a.text_fr.trim() || null,
             is_correct: a.is_correct,
           })),
@@ -155,13 +171,19 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
     }
   }
 
-  // Derived completeness indicators
-  const frComplete = textFr.trim() !== "" && answers.every((a) => a.text_fr.trim() !== "");
-  const frPartial  = !frComplete && (textFr.trim() !== "" || answers.some((a) => a.text_fr.trim() !== ""));
+  const isFr = lang === "FR";
+  // Completeness indicators for the non-primary tab
+  const secondaryLang = language === "EN" ? "FR" : "EN";
+  const secondaryComplete = secondaryLang === "FR"
+    ? (textFr.trim() !== "" && answers.every((a) => a.text_fr.trim() !== ""))
+    : (textEn.trim() !== "" && answers.every((a) => a.text_en.trim() !== ""));
+  const secondaryPartial = !secondaryComplete && (
+    secondaryLang === "FR"
+      ? (textFr.trim() !== "" || answers.some((a) => a.text_fr.trim() !== ""))
+      : (textEn.trim() !== "" || answers.some((a) => a.text_en.trim() !== ""))
+  );
 
   if (!open) return null;
-
-  const isFr = lang === "FR";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -171,18 +193,57 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-          <h2 className="font-bold text-gray-900 dark:text-white">{isEdit ? "Edit Question" : "Add New Question"}</h2>
+          <div>
+            <h2 className="font-bold text-gray-900 dark:text-white">
+              {isEdit ? "Edit Question" : "Add New Question"}
+            </h2>
+          </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Language tab bar */}
+        {/* Language selector */}
+        <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-900/50">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Question Language *</p>
+          <div className="flex gap-2">
+            {(["EN", "FR"] as Lang[]).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLanguage(l)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all",
+                  language === l
+                    ? l === "EN"
+                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                      : "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300"
+                    : "border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                )}
+              >
+                {l === "EN" ? "🇬🇧" : "🇫🇷"}
+                {l === "EN" ? "English" : "French"}
+                {language === l && (
+                  <span className={cn(
+                    "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                    l === "EN" ? "bg-blue-600 text-white" : "bg-indigo-600 text-white"
+                  )}>
+                    PRIMARY
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab bar (EN / FR content) */}
         <div className="flex gap-0 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 px-6">
           {(["EN", "FR"] as Lang[]).map((l) => {
-            const active = lang === l;
-            const showDot = l === "FR" && frPartial;
-            const showCheck = l === "FR" && frComplete;
+            const active      = lang === l;
+            const isPrimary   = l === language;
+            const isSecondary = l !== language;
+            const showCheck   = isSecondary && secondaryComplete;
+            const showDot     = isSecondary && secondaryPartial;
             return (
               <button
                 key={l}
@@ -195,15 +256,15 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                 )}
               >
                 {l === "EN" ? "🇬🇧 English" : "🇫🇷 Français"}
-                {l === "EN" && <span className="text-[10px] text-red-500 font-bold">*</span>}
-                {showCheck && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                {showDot   && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                {isPrimary && <span className="text-[10px] text-red-500 font-bold">*</span>}
+                {showCheck  && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                {showDot    && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
               </button>
             );
           })}
-          {isFr && (
+          {lang !== language && (
             <span className="ml-auto self-center text-[11px] text-gray-400 italic">
-              Optional — shown to French students
+              Optional — shown as fallback
             </span>
           )}
         </div>
@@ -211,8 +272,8 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-          {/* License Categories — only show on EN tab (structural, not language-specific) */}
-          {!isFr && (
+          {/* License Categories — only on primary tab */}
+          {lang === language && (
             <div>
               <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
                 License Categories *
@@ -253,8 +314,8 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
             </div>
           )}
 
-          {/* Category + Difficulty — only on EN tab */}
-          {!isFr && (
+          {/* Category + Difficulty — only on primary tab */}
+          {lang === language && (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
@@ -290,7 +351,8 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           {/* Question text */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
-              {isFr ? "Question Text (French)" : "Question Text *"}
+              {isFr ? "Question Text (French)" : "Question Text (English)"}
+              {lang === language && <span className="text-red-500 ml-1">*</span>}
             </label>
             <textarea
               value={isFr ? textFr : textEn}
@@ -307,10 +369,11 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                {isFr ? "Answer Options (French)" : "Answer Options *"}
+                {isFr ? "Answer Options (French)" : "Answer Options (English)"}
                 {!isFr && <span className="font-normal text-gray-400 ml-1">(click circle to mark correct)</span>}
+                {lang === language && <span className="text-red-500 ml-1">*</span>}
               </label>
-              {!isFr && answers.length < 6 && (
+              {lang === language && answers.length < 6 && (
                 <button onClick={addAnswer} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium">
                   <Plus className="w-3.5 h-3.5" /> Add option
                 </button>
@@ -324,18 +387,17 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                     ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10"
                     : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
                 )}>
-                  {/* Correct indicator — always visible, only clickable on EN tab */}
                   <button
                     type="button"
-                    onClick={() => !isFr && setCorrect(i)}
-                    title={isFr ? undefined : "Mark as correct answer"}
+                    onClick={() => lang === language && setCorrect(i)}
+                    title={lang !== language ? undefined : "Mark as correct answer"}
                     className={cn(
                       "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors",
                       ans.is_correct
                         ? "border-emerald-500 bg-emerald-500 text-white"
                         : "border-gray-300 dark:border-gray-600 text-gray-400",
-                      !isFr && !ans.is_correct && "hover:border-emerald-400 cursor-pointer",
-                      isFr && "cursor-default"
+                      lang === language && !ans.is_correct && "hover:border-emerald-400 cursor-pointer",
+                      lang !== language && "cursor-default"
                     )}
                   >
                     {ans.is_correct
@@ -351,7 +413,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                       : `Option ${String.fromCharCode(65 + i)}`}
                     className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
                   />
-                  {!isFr && answers.length > 2 && (
+                  {lang === language && answers.length > 2 && (
                     <button onClick={() => removeAnswer(i)} className="text-gray-300 hover:text-red-400 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -364,7 +426,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           {/* Explanation */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
-              {isFr ? "Explanation (French)" : "Explanation"}
+              {isFr ? "Explanation (French)" : "Explanation (English)"}
               {!isFr && <span className="font-normal ml-1">(shown after submission)</span>}
             </label>
             <textarea
@@ -381,13 +443,12 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
 
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex-shrink-0 bg-gray-50 dark:bg-gray-900">
-          {/* FR completion hint */}
           <p className="text-[11px] text-gray-400 min-w-0">
-            {frComplete
-              ? <span className="text-emerald-600 dark:text-emerald-400">✓ French translation complete</span>
-              : frPartial
-              ? <span className="text-amber-500">⚠ French translation incomplete</span>
-              : <span>French translation optional</span>}
+            {secondaryComplete
+              ? <span className="text-emerald-600 dark:text-emerald-400">✓ {secondaryLang === "FR" ? "French" : "English"} translation complete</span>
+              : secondaryPartial
+              ? <span className="text-amber-500">⚠ {secondaryLang === "FR" ? "French" : "English"} translation incomplete</span>
+              : <span>{secondaryLang === "FR" ? "French" : "English"} translation optional</span>}
           </p>
           <div className="flex items-center gap-3 flex-shrink-0">
             <button onClick={onClose} className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">

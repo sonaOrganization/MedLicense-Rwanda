@@ -12,17 +12,18 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const { id } = await params;
-  const { text_en, text_fr, explanation_en, explanation_fr, difficulty, category_id, answers, license_categories } = await req.json();
+  const { text_en, text_fr, explanation_en, explanation_fr, difficulty, category_id, answers, license_categories, language } = await req.json();
 
   const { error: qErr } = await supabase
     .from("questions")
     .update({
-      text_en,
+      text_en: text_en || null,
       text_fr: text_fr || null,
       explanation_en: explanation_en || null,
       explanation_fr: explanation_fr || null,
       difficulty,
       category_id,
+      ...(language && { language }),
       license_categories: Array.isArray(license_categories) ? license_categories : [],
       updated_at: new Date().toISOString(),
     })

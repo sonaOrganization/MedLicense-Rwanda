@@ -37,10 +37,11 @@ export async function POST(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
-  const { category_selections, difficulty_mix = "progressive", license_category } = await req.json() as {
+  const { category_selections, difficulty_mix = "progressive", license_category, language } = await req.json() as {
     category_selections: CategorySelection[];
     difficulty_mix: DiffMix;
     license_category?: string;
+    language?: "EN" | "FR";
   };
 
   if (!Array.isArray(category_selections) || category_selections.length === 0)
@@ -70,8 +71,11 @@ export async function POST(req: NextRequest) {
       .eq("is_approved", true);
 
     if (license_category) {
-      // Postgres array-contains: license_categories @> ARRAY[license_category]
       qQuery = qQuery.contains("license_categories", [license_category]);
+    }
+
+    if (language) {
+      qQuery = qQuery.eq("language", language);
     }
 
     const { data: rows } = await qQuery;
