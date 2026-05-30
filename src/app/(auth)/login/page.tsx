@@ -2,19 +2,21 @@
 import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const isConflict   = searchParams.get("error") === "session_conflict";
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -40,7 +42,16 @@ export default function LoginPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Welcome back</h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-8">Sign in to your account to continue</p>
+      <p className="text-gray-500 dark:text-gray-400 mb-6">Sign in to your account to continue</p>
+
+      {isConflict && (
+        <div className="flex items-start gap-3 mb-6 px-4 py-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-800 dark:text-amber-300">
+            Your account was signed in on another device of the same type. Please sign in again.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
