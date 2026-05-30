@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-const planMonths: Record<string, number> = { basic: 1, pro: 1 };
+const planMonths: Record<string, number> = { pro: 1 };
 
 // Internal webhook — called by the other website when it receives an ML_ payment from AfriPay
 // Secured with WEBHOOK_SECRET so only your other website can call this

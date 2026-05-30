@@ -9,16 +9,6 @@ import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
 
 const plans = [
   {
-    id: "basic",
-    name: "Basic",
-    price: 1500,
-    currency: "RWF",
-    period: "month",
-    features: ["2 mock exams", "Priority support"],
-    popular: false,
-    badge: null,
-  },
-  {
     id: "pro",
     name: "Pro",
     price: 4000,

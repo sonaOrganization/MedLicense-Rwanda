@@ -1,25 +1,8 @@
 import Link from "next/link";
-import { Check, ArrowRight, Zap, Crown } from "lucide-react";
+import { Check, ArrowRight, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const plans = [
-  {
-    id: "basic",
-    name: "Basic",
-    price: 1500,
-    currency: "RWF",
-    period: "/ month",
-    description: "Get started with focused exam practice",
-    features: [
-      "2 mock exams",
-      "Priority support",
-    ],
-    cta: "Get Basic",
-    href: "/register",
-    highlighted: false,
-    badge: null,
-    icon: Zap,
-  },
   {
     id: "pro",
     name: "Pro",
@@ -142,8 +125,8 @@ export function PricingPreview() {
           ))}
         </div>
 
-        {/* Desktop: 2-col grid */}
-        <div className="hidden sm:grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        {/* Desktop: single centered card */}
+        <div className="hidden sm:flex justify-center max-w-sm mx-auto">
           {plans.map((plan) => (
             <div key={plan.name} className="pt-4">
               <PlanCard plan={plan} />
