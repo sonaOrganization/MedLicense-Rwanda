@@ -30,34 +30,43 @@ async function activateSubscription(paymentId: string) {
   );
 }
 
-// GET — redirect-based callback (AfriPay sends user back here after checkout)
-export async function GET(req: NextRequest) {
-  const paymentId = req.nextUrl.searchParams.get("paymentId");
-  const status    = req.nextUrl.searchParams.get("status") ?? "completed";
+// POST — AfriPay calls this URL after payment completes
+// AfriPay sends: status, amount, currency, transaction_ref, payment_method, client_token
+// client_token is the payment UUID we sent — this is how we identify which user paid
+export async function POST(req: NextRequest) {
+  let clientToken: string | null = null;
+  let status: string | null = null;
 
-  if (!paymentId) return NextResponse.redirect(new URL("/dashboard", req.url));
+  const contentType = req.headers.get("content-type") ?? "";
 
-  if (status === "completed" || status === "success") {
-    await activateSubscription(paymentId);
-    return NextResponse.redirect(new URL("/subscription?success=true", req.url));
+  if (contentType.includes("application/json")) {
+    const body = await req.json().catch(() => ({}));
+    clientToken = body.client_token ?? null;
+    status      = body.status ?? null;
+  } else {
+    // AfriPay sends form-encoded POST data
+    const body = await req.formData().catch(() => new FormData());
+    clientToken = body.get("client_token") as string | null;
+    status      = body.get("status") as string | null;
   }
 
-  return NextResponse.redirect(new URL("/subscription", req.url));
-}
+  if (!clientToken) return NextResponse.json({ error: "Missing client_token" }, { status: 400 });
 
-// POST — webhook callback (AfriPay notifies server directly)
-export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-
-  // AfriPay sends the reference (our paymentId) and a status field
-  const paymentId = body.reference ?? body.payment_id ?? body.ref;
-  const status    = body.status ?? body.payment_status ?? "";
-
-  if (!paymentId) return NextResponse.json({ error: "Missing reference" }, { status: 400 });
-
-  if (status === "completed" || status === "success" || status === "PAID") {
-    await activateSubscription(paymentId);
+  if (status === "success" || status === "completed" || status === "PAID" || status === "paid") {
+    await activateSubscription(clientToken);
   }
 
   return NextResponse.json({ received: true });
+}
+
+// GET — fallback if AfriPay redirects with query params
+export async function GET(req: NextRequest) {
+  const clientToken = req.nextUrl.searchParams.get("client_token");
+  const status      = req.nextUrl.searchParams.get("status") ?? "";
+
+  if (clientToken && (status === "success" || status === "completed")) {
+    await activateSubscription(clientToken);
+  }
+
+  return NextResponse.redirect(new URL("/subscription", req.url));
 }
