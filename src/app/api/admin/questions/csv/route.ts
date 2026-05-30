@@ -129,13 +129,14 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    // Store question text in the correct language column
+    // Store question text in the correct language column.
+    // text_en is kept non-null (stores FR text as fallback) to satisfy DB constraint.
     const { data: dbQuestion, error: qErr } = await supabase
       .from("questions")
       .insert({
-        text_en:        lang === "EN" ? question : null,
+        text_en:        lang === "EN" ? question : question, // always set for NOT NULL
         text_fr:        lang === "FR" ? question : null,
-        explanation_en: lang === "EN" ? (expl || null) : null,
+        explanation_en: expl || null,
         explanation_fr: lang === "FR" ? (expl || null) : null,
         difficulty:     ["EASY", "MEDIUM", "HARD"].includes(diff) ? diff : "MEDIUM",
         category_id:    catId,
@@ -159,7 +160,7 @@ export async function POST(req: NextRequest) {
       .filter(({ t }) => t)
       .map(({ t, idx }) => ({
         question_id: dbQuestion.id,
-        text_en:     lang === "EN" ? t : null,
+        text_en:     t,               // always set — satisfies NOT NULL constraint
         text_fr:     lang === "FR" ? t : null,
         is_correct:  idx === correctIdx,
         order:       idx,
