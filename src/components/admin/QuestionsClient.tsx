@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Upload, Edit, Trash2, CheckCircle, Clock } from "lucide-react";
+import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { QuestionFormModal } from "./QuestionFormModal";
 import { CSVUploadModal } from "./CSVUploadModal";
@@ -41,7 +41,24 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
   const [addOpen,    setAddOpen]    = useState(false);
   const [csvOpen,    setCsvOpen]    = useState(false);
   const [editQ,      setEditQ]      = useState<Question | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingId,  setDeletingId]  = useState<string | null>(null);
+  const [fixingLang,  setFixingLang]  = useState(false);
+
+  async function handleFixLanguage() {
+    if (!confirm("Auto-assign language tags to all untagged questions?\n• Has French text → FR\n• No French text → EN\n\nAlready tagged questions are not affected.")) return;
+    setFixingLang(true);
+    try {
+      const res = await fetch("/api/admin/questions/fix-language", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Done — ${data.enFixed} set to EN, ${data.frFixed} set to FR`);
+      router.refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setFixingLang(false);
+    }
+  }
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this question? This cannot be undone.")) return;
@@ -66,7 +83,16 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Question Bank</h1>
           <p className="text-sm text-gray-400 mt-0.5">{questions.length} question{questions.length !== 1 ? "s" : ""} shown</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleFixLanguage}
+            disabled={fixingLang}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-60"
+            title="Auto-assign EN/FR language tags to untagged questions"
+          >
+            <Wand2 className="w-4 h-4" />
+            {fixingLang ? "Fixing…" : "Fix Language Tags"}
+          </button>
           <button
             onClick={() => setCsvOpen(true)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
