@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { X, Search, CheckSquare, Square, Wand2, List, RefreshCw, Loader2, Clock, Trophy, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
-import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categories";
+import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS, getLicenseCategoryLabel } from "@/lib/license-categories";
 
 interface Category { id: string; name_en: string; license_category?: string | null; }
 interface Question {
@@ -98,7 +98,17 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
   // ── Questions filtered by exam language + license category ──
   const langFilteredQuestions = useMemo(() => {
     let qs = questions.filter((q) => (q.language ?? "EN") === examLanguage);
-    if (licenseCategory) qs = qs.filter((q) => q.license_categories.includes(licenseCategory));
+    if (licenseCategory) {
+      // Match by ID OR by label to handle legacy data stored with label strings
+      const label = getLicenseCategoryLabel(licenseCategory);
+      qs = qs.filter((q) =>
+        q.license_categories.some(
+          (lc) => lc === licenseCategory || lc.toLowerCase() === label.toLowerCase()
+            || label.toLowerCase().includes(lc.toLowerCase())
+            || lc.toLowerCase().includes(licenseCategory.replace(/_/g, " "))
+        )
+      );
+    }
     return qs;
   }, [questions, examLanguage, licenseCategory]);
 

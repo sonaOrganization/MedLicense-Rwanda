@@ -1,6 +1,25 @@
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
+import { LICENSE_CATEGORIES } from "@/lib/license-categories";
+
+// Resolve a license category string (label or ID) to its canonical ID.
+// "Medical Doctor" → "medical_doctor", "medical_doctor" → "medical_doctor"
+function normalizeLicCat(val: string): string {
+  const lower = val.toLowerCase().trim();
+  // Exact ID match
+  const byId = LICENSE_CATEGORIES.find((c) => c.id === lower);
+  if (byId) return byId.id;
+  // Exact label match (case-insensitive)
+  const byLabel = LICENSE_CATEGORIES.find((c) => c.label.toLowerCase() === lower);
+  if (byLabel) return byLabel.id;
+  // Partial label match — e.g. "Medical Doctor" matches "Medical Doctor (MD)"
+  const byPartial = LICENSE_CATEGORIES.find(
+    (c) => c.label.toLowerCase().includes(lower) || lower.includes(c.id.replace(/_/g, " "))
+  );
+  if (byPartial) return byPartial.id;
+  return val; // keep original if nothing matched
+}
 
 // POST /api/admin/questions/csv — bulk import from CSV
 //
@@ -100,7 +119,7 @@ export async function POST(req: NextRequest) {
     const expl     = get(row, "explanation");
     const lang     = (get(row, "target_language").toUpperCase() || "EN") as "EN" | "FR";
     const licCats  = get(row, "license_categories")
-      .split(",").map((s: string) => s.trim()).filter(Boolean);
+      .split(",").map((s: string) => normalizeLicCat(s.trim())).filter(Boolean);
 
     // Validate
     if (!question) {

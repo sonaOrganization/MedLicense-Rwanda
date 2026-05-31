@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
+import { LICENSE_CATEGORIES } from "@/lib/license-categories";
 
 type Difficulty = "EASY" | "MEDIUM" | "HARD";
 type DiffMix    = "balanced" | "progressive" | "challenge";
@@ -71,7 +72,13 @@ export async function POST(req: NextRequest) {
       .eq("is_approved", true);
 
     if (license_category) {
-      qQuery = qQuery.contains("license_categories", [license_category]);
+      // Support both ID ("medical_doctor") and legacy label ("Medical Doctor") stored in DB
+      const cat = LICENSE_CATEGORIES.find((c) => c.id === license_category);
+      const candidates = Array.from(new Set([
+        license_category,
+        cat?.label ?? "",
+      ])).filter(Boolean);
+      qQuery = qQuery.overlaps("license_categories", candidates);
     }
 
     if (language) {
