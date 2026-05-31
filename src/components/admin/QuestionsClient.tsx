@@ -25,6 +25,9 @@ interface Props {
   categories: Category[];
   currentCategory: string;
   currentApproved: string;
+  totalCount: number;
+  enCount: number;
+  frCount: number;
 }
 
 const DIFF: Record<string, string> = {
@@ -33,7 +36,7 @@ const DIFF: Record<string, string> = {
   HARD:   "bg-red-100 text-red-700 border-red-200",
 };
 
-export function QuestionsClient({ questions, categories, currentCategory, currentApproved }: Props) {
+export function QuestionsClient({ questions, categories, currentCategory, currentApproved, totalCount, enCount, frCount }: Props) {
   const router = useRouter();
   const [addOpen,    setAddOpen]    = useState(false);
   const [csvOpen,    setCsvOpen]    = useState(false);
@@ -76,6 +79,33 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           >
             <Plus className="w-4 h-4" /> Add Question
           </button>
+        </div>
+      </div>
+
+      {/* ── Language stats ── */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Total Questions</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalCount.toLocaleString()}</p>
+          <p className="text-xs text-gray-400 mt-1">in question bank</p>
+        </div>
+        <div className="rounded-xl border border-blue-200 dark:border-blue-900/40 bg-blue-50 dark:bg-blue-900/10 px-5 py-4">
+          <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+            🇬🇧 English
+          </p>
+          <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{enCount.toLocaleString()}</p>
+          <p className="text-xs text-blue-400 mt-1">
+            {totalCount > 0 ? Math.round((enCount / totalCount) * 100) : 0}% of total
+          </p>
+        </div>
+        <div className="rounded-xl border border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/10 px-5 py-4">
+          <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+            🇫🇷 French
+          </p>
+          <p className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">{frCount.toLocaleString()}</p>
+          <p className="text-xs text-indigo-400 mt-1">
+            {totalCount > 0 ? Math.round((frCount / totalCount) * 100) : 0}% of total
+          </p>
         </div>
       </div>
 

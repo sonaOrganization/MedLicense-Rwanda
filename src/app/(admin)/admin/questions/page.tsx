@@ -15,8 +15,13 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
   if (category) query = query.eq("category_id", category);
   if (approved !== undefined && approved !== "") query = query.eq("is_approved", approved === "true");
 
-  const { data: questions } = await query;
-  const { data: categories } = await supabase.from("categories").select("*");
+  const [{ data: questions }, { data: categories }, { count: totalCount }, { count: enCount }, { count: frCount }] = await Promise.all([
+    query,
+    supabase.from("categories").select("*"),
+    supabase.from("questions").select("*", { count: "exact", head: true }),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("language", "EN"),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("language", "FR"),
+  ]);
 
   const questionList = questions ?? [];
   const categoryList = categories ?? [];
@@ -24,6 +29,9 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
   return (
     <div className="max-w-6xl space-y-6">
       <QuestionsClient
+        totalCount={totalCount ?? 0}
+        enCount={enCount ?? 0}
+        frCount={frCount ?? 0}
         questions={questionList.map((q: {
           id: string;
           text_en: string;
