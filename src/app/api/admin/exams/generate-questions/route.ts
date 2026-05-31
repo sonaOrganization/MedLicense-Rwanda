@@ -64,30 +64,43 @@ export async function POST(req: NextRequest) {
   for (const { category_id, count } of category_selections) {
     if (!count || count < 1) continue;
 
-    // Fetch approved questions for this category, filtered by license_category if specified
-    let qQuery = supabase
+    // Fetch all approved questions for this category, then filter in JS
+    // (JS filtering avoids Supabase array-contains exact-match issues with legacy label data)
+    const { data: rawRows } = await supabase
       .from("questions")
-      .select("id, difficulty, category:categories(name_en)")
+      .select("id, difficulty, language, license_categories, category:categories(name_en)")
       .eq("category_id", category_id)
       .eq("is_approved", true);
 
-    if (license_category) {
-      // Support both ID ("medical_doctor") and legacy label ("Medical Doctor") stored in DB
-      const cat = LICENSE_CATEGORIES.find((c) => c.id === license_category);
-      const candidates = Array.from(new Set([
-        license_category,
-        cat?.label ?? "",
-      ])).filter(Boolean);
-      qQuery = qQuery.overlaps("license_categories", candidates);
-    }
+    if (!rawRows || rawRows.length === 0) continue;
 
-    if (language) {
-      qQuery = qQuery.eq("language", language);
-    }
+    // Flexible license_category match: ID, full label, or partial match
+    const licCat = license_category
+      ? LICENSE_CATEGORIES.find((c) => c.id === license_category)
+      : null;
+    const licLabel = licCat?.label?.toLowerCase() ?? "";
 
-    const { data: rows } = await qQuery;
+    const rows = rawRows.filter((r) => {
+      // Language filter
+      if (language && (r.language ?? "EN") !== language) return false;
+      // License category filter
+      if (license_category) {
+        const lcs: string[] = r.license_categories ?? [];
+        const matches = lcs.some((lc) => {
+          const lcLower = lc.toLowerCase();
+          return (
+            lc === license_category ||
+            lcLower === licLabel ||
+            (licLabel && licLabel.includes(lcLower)) ||
+            lcLower.includes(license_category.replace(/_/g, " "))
+          );
+        });
+        if (!matches) return false;
+      }
+      return true;
+    });
 
-    if (!rows || rows.length === 0) continue;
+    if (rows.length === 0) continue;
 
     // Group by difficulty
     const pools: Record<Difficulty, string[]> = { EASY: [], MEDIUM: [], HARD: [] };
