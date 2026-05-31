@@ -18,9 +18,9 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
   const [{ data: questions }, { data: categories }, { count: totalCount }, { count: enCount }, { count: frCount }] = await Promise.all([
     query,
     supabase.from("categories").select("*"),
-    supabase.from("questions").select("*", { count: "exact", head: true }),
-    supabase.from("questions").select("*", { count: "exact", head: true }).eq("language", "EN"),
-    supabase.from("questions").select("*", { count: "exact", head: true }).eq("language", "FR"),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", true),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", true).eq("language", "EN"),
+    supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", true).eq("language", "FR"),
   ]);
 
   const questionList = questions ?? [];

@@ -69,8 +69,7 @@ export async function POST(req: NextRequest) {
     const { data: rawRows } = await supabase
       .from("questions")
       .select("id, difficulty, language, license_categories, category:categories(name_en)")
-      .eq("category_id", category_id)
-      .eq("is_approved", true);
+      .eq("category_id", category_id);
 
     if (!rawRows || rawRows.length === 0) continue;
 
