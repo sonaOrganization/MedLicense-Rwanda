@@ -36,7 +36,7 @@ export async function PATCH(
       title_en: title_en?.trim(),
       title: title_en?.trim(),
       description: description?.trim() || null,
-      category_id,
+      category_id: category_id || null,
       license_category: license_category || null,
       target_language: target_language || null,
       duration_minutes:    Number(duration_minutes),

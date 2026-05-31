@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
   } = await req.json();
 
   if (!title_en?.trim()) return NextResponse.json({ error: "Title is required" }, { status: 400 });
-  if (!category_id)       return NextResponse.json({ error: "Category is required" }, { status: 400 });
 
   const { data: exam, error: eErr } = await supabase
     .from("exams")
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
       title_en: title_en.trim(),
       title: title_en.trim(),
       description: description?.trim() || null,
-      category_id,
+      category_id: category_id || null,
       license_category: license_category || null,
       target_language: target_language || null,
       duration_minutes:    Number(duration_minutes)    || 60,

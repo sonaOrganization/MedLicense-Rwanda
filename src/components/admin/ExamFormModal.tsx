@@ -73,7 +73,6 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
   const [description,       setDescription]       = useState("");
   const [examLanguage,      setExamLanguage]      = useState<ExamLang>("EN");
   const [licenseCategory,   setLicenseCategory]   = useState("");
-  const [categoryId,        setCategoryId]        = useState("");
   const [duration,          setDuration]          = useState(60);
   const [passingScore,      setPassingScore]      = useState(70);
   const [pointsPerQuestion, setPointsPerQuestion] = useState(1);
@@ -115,12 +114,6 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
     return m;
   }, [langFilteredQuestions]);
 
-  // ── Category dropdown: filter by license type ──
-  const visibleCategories = useMemo(() => {
-    if (!licenseCategory) return categories;
-    return categories.filter((c) => !c.license_category || c.license_category === licenseCategory);
-  }, [categories, licenseCategory]);
-
   // ── Smart Build rows: only categories that have questions in current language+license ──
   const visibleCatRows = useMemo(() => {
     if (!licenseCategory) return catRows;
@@ -132,7 +125,6 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
 
   // Reset selections when language or license category changes
   useEffect(() => {
-    setCategoryId("");
     setCatRows((prev) => prev.map((r) => ({ ...r, enabled: false, count: 0 })));
     setBreakdown(null);
     setSelectedIds([]);
@@ -146,7 +138,6 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
       setDescription(exam.description ?? "");
       setExamLanguage((exam.target_language as ExamLang) ?? "EN");
       setLicenseCategory(exam.license_category ?? "");
-      setCategoryId(exam.category_id);
       setDuration(exam.duration_minutes);
       setPassingScore(exam.passing_score);
       setPointsPerQuestion(exam.points_per_question ?? 1);
@@ -158,7 +149,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
       setQMode("manual");
     } else {
       setTitleEn(""); setDescription("");
-      setExamLanguage("EN"); setLicenseCategory(""); setCategoryId(categories[0]?.id ?? "");
+      setExamLanguage("EN"); setLicenseCategory("");
       setDuration(60); setPassingScore(70); setPointsPerQuestion(1);
       setIsFree(false); setIsPublished(false); setShuffleQ(true); setShuffleA(true);
       setSelectedIds([]);
@@ -216,8 +207,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
 
   // ── Save ──
   async function handleSave() {
-    if (!titleEn.trim())         return toast.error("Exam title is required");
-    if (!categoryId)             return toast.error("Select a category");
+    if (!titleEn.trim())          return toast.error("Exam title is required");
     if (selectedIds.length === 0) return toast.error("Select at least one question");
 
     setSaving(true);
@@ -232,7 +222,6 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
           description:        description.trim() || null,
           target_language:    examLanguage,
           license_category:   licenseCategory || null,
-          category_id:        categoryId,
           duration_minutes:   duration,
           passing_score:      passingScore,
           points_per_question: pointsPerQuestion,
@@ -380,19 +369,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
               Duration &amp; Scores
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-[11px] text-gray-400 mb-1">Subject Category *</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-2.5 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select…</option>
-                  {visibleCategories.map((c) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
-                </select>
-              </div>
-
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-[11px] text-gray-400 mb-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" /> Duration (min)
