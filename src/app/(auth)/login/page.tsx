@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Mail, Lock, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
-export default function LoginPage() {
+function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const isConflict   = searchParams.get("error") === "session_conflict";
@@ -88,11 +88,19 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        Don't have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/register" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
           Create one free
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
