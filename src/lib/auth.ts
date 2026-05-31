@@ -80,8 +80,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role           = token.role as string;
         session.user.licenseCategory = (token.licenseCategory as string | null) ?? null;
         session.user.language       = (token.language as string | null) ?? "EN";
-        (session.user as Record<string, unknown>).sessionId  = token.sessionId;
-        (session.user as Record<string, unknown>).deviceType = token.deviceType;
+        (session.user as unknown as Record<string, unknown>).sessionId  = token.sessionId;
+        (session.user as unknown as Record<string, unknown>).deviceType = token.deviceType;
       }
       return session;
     },

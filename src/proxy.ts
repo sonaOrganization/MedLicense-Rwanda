@@ -48,7 +48,7 @@ export default auth(async (req) => {
                    || ADMIN_PATHS.some((p) => pathname.startsWith(p));
 
   if (session?.user && isProtected) {
-    const user = session.user as Record<string, unknown>;
+    const user = session.user as unknown as Record<string, unknown>;
     const sessionId  = user.sessionId  as string | undefined;
     const deviceType = user.deviceType as string | undefined;
 
