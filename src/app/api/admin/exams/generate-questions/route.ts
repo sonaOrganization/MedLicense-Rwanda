@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
     const licLabel = licCat?.label?.toLowerCase() ?? "";
 
     const rows = rawRows.filter((r) => {
-      // Strict language filter: only questions matching the exam language
-      if (language && r.language !== language) return false;
+      // null language defaults to "EN" (questions added before language column existed)
+      if (language && (r.language ?? "EN") !== language) return false;
       // License category filter
       if (license_category) {
         const lcs: string[] = r.license_categories ?? [];

@@ -97,7 +97,8 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
 
   // ── Questions filtered by exam language + license category ──
   const langFilteredQuestions = useMemo(() => {
-    let qs = questions.filter((q) => q.language === examLanguage);
+    // null language defaults to "EN" (questions added before language column existed)
+    let qs = questions.filter((q) => (q.language ?? "EN") === examLanguage);
 
     if (licenseCategory) {
       // Match by ID OR by label to handle legacy data stored with label strings
