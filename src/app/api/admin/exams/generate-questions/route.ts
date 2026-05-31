@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
     const licLabel = licCat?.label?.toLowerCase() ?? "";
 
     const rows = rawRows.filter((r) => {
-      // Language filter
-      if (language && (r.language ?? "EN") !== language) return false;
+      // Language filter: include questions that match OR have no language set (untagged = compatible with any)
+      if (language && r.language && r.language !== language) return false;
       // License category filter
       if (license_category) {
         const lcs: string[] = r.license_categories ?? [];

@@ -24,7 +24,8 @@ export default async function AdminExamsPage({ searchParams }: Props) {
       .from("questions")
       .select("id, text_en, text_fr, difficulty, category_id, license_categories, language, category:categories(name_en)")
       .eq("is_approved", true)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .range(0, 4999),  // fetch up to 5000 questions (Supabase default cap is 1000)
   ]);
 
   const examList = (exams ?? []).map((e: {
