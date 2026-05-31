@@ -26,7 +26,7 @@ export async function PATCH(
   // Full exam update
   const {
     title_en, description, category_id, license_category, target_language,
-    duration_minutes, passing_score, is_free, is_published,
+    duration_minutes, passing_score, points_per_question, is_free, is_published,
     shuffle_questions, shuffle_answers, question_ids,
   } = body;
 
@@ -39,8 +39,9 @@ export async function PATCH(
       category_id,
       license_category: license_category || null,
       target_language: target_language || null,
-      duration_minutes: Number(duration_minutes),
-      passing_score: Number(passing_score),
+      duration_minutes:    Number(duration_minutes),
+      passing_score:       Number(passing_score),
+      points_per_question: Number(points_per_question) || 1,
       total_questions: Array.isArray(question_ids) ? question_ids.length : 0,
       is_free: Boolean(is_free),
       is_published: Boolean(is_published),

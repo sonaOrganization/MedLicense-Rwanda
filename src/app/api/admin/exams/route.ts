@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const {
     title_en, description, category_id, license_category, target_language,
-    duration_minutes, passing_score, is_free, is_published,
+    duration_minutes, passing_score, points_per_question, is_free, is_published,
     shuffle_questions, shuffle_answers, question_ids,
   } = await req.json();
 
@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
       category_id,
       license_category: license_category || null,
       target_language: target_language || null,
-      duration_minutes: Number(duration_minutes) || 60,
-      passing_score: Number(passing_score) || 70,
+      duration_minutes:    Number(duration_minutes)    || 60,
+      passing_score:       Number(passing_score)       || 70,
+      points_per_question: Number(points_per_question) || 1,
       total_questions: Array.isArray(question_ids) ? question_ids.length : 0,
       is_free: Boolean(is_free),
       is_published: Boolean(is_published),

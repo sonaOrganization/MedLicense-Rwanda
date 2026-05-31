@@ -22,7 +22,7 @@ export default async function AdminExamsPage({ searchParams }: Props) {
     supabase.from("categories").select("id, name_en, license_category"),
     supabase
       .from("questions")
-      .select("id, text_en, difficulty, category_id, license_categories, category:categories(name_en)")
+      .select("id, text_en, text_fr, difficulty, category_id, license_categories, language, category:categories(name_en)")
       .eq("is_approved", true)
       .order("created_at", { ascending: false }),
   ]);
@@ -69,17 +69,21 @@ export default async function AdminExamsPage({ searchParams }: Props) {
   const questionList = (questions ?? []).map((q: {
     id: string;
     text_en: string;
+    text_fr?: string | null;
     difficulty: string;
     category_id: string;
     license_categories?: string[] | null;
+    language?: string | null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category: any;
   }) => ({
     id: q.id,
     text_en: q.text_en,
+    text_fr: q.text_fr ?? null,
     difficulty: q.difficulty,
     category_id: q.category_id,
     license_categories: q.license_categories ?? [],
+    language: q.language ?? "EN",
     category: { name_en: Array.isArray(q.category) ? q.category[0]?.name_en ?? "" : q.category?.name_en ?? "" },
   }));
 
