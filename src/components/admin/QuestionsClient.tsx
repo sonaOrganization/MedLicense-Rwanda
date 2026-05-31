@@ -43,6 +43,7 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
   const [editQ,      setEditQ]      = useState<Question | null>(null);
   const [deletingId,  setDeletingId]  = useState<string | null>(null);
   const [fixingLang,  setFixingLang]  = useState(false);
+  const [fixingLic,   setFixingLic]   = useState(false);
 
   async function handleFixLanguage() {
     if (!confirm("Auto-assign language tags to all untagged questions?\n• Has French text → FR\n• No French text → EN\n\nAlready tagged questions are not affected.")) return;
@@ -57,6 +58,22 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
       toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setFixingLang(false);
+    }
+  }
+
+  async function handleFixLicense() {
+    if (!confirm("Set license category to 'Medical Doctor' for all questions that have no license assigned?\n\nThis cannot be undone.")) return;
+    setFixingLic(true);
+    try {
+      const res = await fetch("/api/admin/questions/fix-license", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Done — ${data.fixed} question${data.fixed !== 1 ? "s" : ""} updated to Medical Doctor`);
+      router.refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setFixingLic(false);
     }
   }
 
@@ -84,6 +101,15 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           <p className="text-sm text-gray-400 mt-0.5">{questions.length} question{questions.length !== 1 ? "s" : ""} shown</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleFixLicense}
+            disabled={fixingLic}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-60"
+            title="Set Medical Doctor license on questions with no license assigned"
+          >
+            <Wand2 className="w-4 h-4" />
+            {fixingLic ? "Fixing…" : "Fix Missing License"}
+          </button>
           <button
             onClick={handleFixLanguage}
             disabled={fixingLang}

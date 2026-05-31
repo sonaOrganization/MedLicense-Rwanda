@@ -101,15 +101,18 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
     let qs = questions.filter((q) => (q.language ?? "EN") === examLanguage);
 
     if (licenseCategory) {
-      // Match by ID OR by label to handle legacy data stored with label strings
       const label = getLicenseCategoryLabel(licenseCategory);
-      qs = qs.filter((q) =>
-        q.license_categories.some(
+      qs = qs.filter((q) => {
+        const lcs = q.license_categories ?? [];
+        // No license_categories set → applicable to all licenses, always include
+        if (lcs.length === 0) return true;
+        // Otherwise check flexible match (ID or label)
+        return lcs.some(
           (lc) => lc === licenseCategory || lc.toLowerCase() === label.toLowerCase()
             || label.toLowerCase().includes(lc.toLowerCase())
             || lc.toLowerCase().includes(licenseCategory.replace(/_/g, " "))
-        )
-      );
+        );
+      });
     }
     return qs;
   }, [questions, examLanguage, licenseCategory]);

@@ -85,16 +85,19 @@ export async function POST(req: NextRequest) {
       // License category filter
       if (license_category) {
         const lcs: string[] = r.license_categories ?? [];
-        const matches = lcs.some((lc) => {
-          const lcLower = lc.toLowerCase();
-          return (
-            lc === license_category ||
-            lcLower === licLabel ||
-            (licLabel && licLabel.includes(lcLower)) ||
-            lcLower.includes(license_category.replace(/_/g, " "))
-          );
-        });
-        if (!matches) return false;
+        // Empty license_categories → applicable to all licenses, always include
+        if (lcs.length > 0) {
+          const matches = lcs.some((lc) => {
+            const lcLower = lc.toLowerCase();
+            return (
+              lc === license_category ||
+              lcLower === licLabel ||
+              (licLabel && licLabel.includes(lcLower)) ||
+              lcLower.includes(license_category.replace(/_/g, " "))
+            );
+          });
+          if (!matches) return false;
+        }
       }
       return true;
     });
