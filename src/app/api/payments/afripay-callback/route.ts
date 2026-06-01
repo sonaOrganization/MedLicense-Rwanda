@@ -3,11 +3,12 @@ import { supabase } from "@/lib/supabase";
 
 const planMonths: Record<string, number> = { pro: 1 };
 
-async function activate(clientToken: string, status: string) {
-  if (!clientToken.startsWith("ML_")) return null;
+async function activateFromToken(clientToken: string, status: string) {
+  // Only ML_ prefixed tokens belong to MedLicense
+  if (!clientToken.startsWith("ML_")) return { ok: false, reason: "Not a MedLicense payment" };
 
   const isPaid = ["success", "completed", "PAID", "paid"].includes(status);
-  if (!isPaid) return { activated: false };
+  if (!isPaid) return { ok: false, reason: "Payment not successful" };
 
   const paymentId = clientToken.slice(3);
 
@@ -17,7 +18,8 @@ async function activate(clientToken: string, status: string) {
     .eq("id", paymentId)
     .single();
 
-  if (!payment || payment.status === "completed") return { activated: false };
+  if (!payment)                      return { ok: false, reason: "Payment not found" };
+  if (payment.status === "completed") return { ok: true,  reason: "Already activated" };
 
   const months  = planMonths[payment.plan] ?? 1;
   const endDate = new Date();
@@ -36,17 +38,12 @@ async function activate(clientToken: string, status: string) {
     { onConflict: "user_id" }
   );
 
-  return { activated: true };
+  return { ok: true, activated: true };
 }
 
-// Called by the other website when it receives an ML_ callback from AfriPay.
-// Accepts both JSON and form-encoded body, with optional x-webhook-secret.
+// POST — AfriPay calls this directly (form-encoded body)
+// Set this URL as your AfriPay callback: https://medlicense.vercel.app/api/payments/afripay-callback
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get("x-webhook-secret");
-  if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   let clientToken = "";
   let status      = "";
 
@@ -57,15 +54,13 @@ export async function POST(req: NextRequest) {
     clientToken = body.client_token ?? "";
     status      = body.status ?? "";
   } else {
-    // form-encoded (AfriPay's native format)
+    // AfriPay sends application/x-www-form-urlencoded
     const text   = await req.text();
     const params = new URLSearchParams(text);
     clientToken  = params.get("client_token") ?? "";
     status       = params.get("status")       ?? "";
   }
 
-  const result = await activate(clientToken, status);
-  if (!result) return NextResponse.json({ error: "Not a MedLicense payment" }, { status: 400 });
-
+  const result = await activateFromToken(clientToken, status);
   return NextResponse.json({ received: true, ...result });
 }
