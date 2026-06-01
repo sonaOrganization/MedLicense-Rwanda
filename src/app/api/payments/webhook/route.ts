@@ -39,8 +39,12 @@ async function activate(clientToken: string, status: string) {
   return { activated: true };
 }
 
-// Called by the other website when it receives an ML_ callback from AfriPay.
-// Accepts both JSON and form-encoded body, with optional x-webhook-secret.
+// GET — health check so the other website can verify this endpoint exists
+export async function GET() {
+  return NextResponse.json({ ok: true, endpoint: "MedLicense AfriPay webhook active" });
+}
+
+// POST — called by the other website when it receives an ML_ callback from AfriPay
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-webhook-secret");
   if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) {
