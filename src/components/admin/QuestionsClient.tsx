@@ -42,8 +42,9 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
   const [csvOpen,    setCsvOpen]    = useState(false);
   const [editQ,      setEditQ]      = useState<Question | null>(null);
   const [deletingId,  setDeletingId]  = useState<string | null>(null);
-  const [fixingLang,  setFixingLang]  = useState(false);
-  const [fixingLic,   setFixingLic]   = useState(false);
+  const [fixingLang,     setFixingLang]     = useState(false);
+  const [fixingLic,      setFixingLic]      = useState(false);
+  const [fixingDiffLang, setFixingDiffLang] = useState(false);
 
   async function handleFixLanguage() {
     if (!confirm("Auto-assign language tags to all untagged questions?\n• Has French text → FR\n• No French text → EN\n\nAlready tagged questions are not affected.")) return;
@@ -93,6 +94,22 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
     }
   }
 
+  async function handleFixDifficultyLanguage() {
+    if (!confirm("Set language = FR for all questions where difficulty is Facile, Moyen, or Difficile?\n\nThis cannot be undone.")) return;
+    setFixingDiffLang(true);
+    try {
+      const res = await fetch("/api/admin/questions/fix-language-difficulty", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Done — ${data.fixed} question${data.fixed !== 1 ? "s" : ""} tagged as French`);
+      router.refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setFixingDiffLang(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Delete this question? This cannot be undone.")) return;
     setDeletingId(id);
@@ -117,6 +134,15 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           <p className="text-sm text-gray-400 mt-0.5">{questions.length} question{questions.length !== 1 ? "s" : ""} shown</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleFixDifficultyLanguage}
+            disabled={fixingDiffLang}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors disabled:opacity-60"
+            title="Tag questions as FR where difficulty is Facile/Moyen/Difficile"
+          >
+            <Wand2 className="w-4 h-4" />
+            {fixingDiffLang ? "Fixing…" : "🇫🇷 Fix FR by Difficulty"}
+          </button>
           <button
             onClick={handleSetAllMedicalDoctor}
             disabled={fixingLic}
