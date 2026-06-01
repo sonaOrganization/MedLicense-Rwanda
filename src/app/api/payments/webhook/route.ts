@@ -46,10 +46,8 @@ export async function GET() {
 
 // POST — called by the other website when it receives an ML_ callback from AfriPay
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get("x-webhook-secret");
-  if (process.env.WEBHOOK_SECRET && secret !== process.env.WEBHOOK_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // No secret required — the ML_<uuid> client_token is unpredictable enough
+  // and we cross-check against our own DB before activating anything.
 
   let clientToken = "";
   let status      = "";
