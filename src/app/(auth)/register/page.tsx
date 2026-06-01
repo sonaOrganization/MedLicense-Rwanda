@@ -118,9 +118,11 @@ export default function RegisterPage() {
             >
               <option value="">Select your license category…</option>
               {LICENSE_CATEGORY_GROUPS.map((group) => (
-                <optgroup key={group} label={group}>
+                <optgroup key={group} label={group === "Medicine" ? group : `${group} (coming soon)`}>
                   {LICENSE_CATEGORIES.filter((c) => c.group === group).map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                    <option key={cat.id} value={cat.id} disabled={group !== "Medicine"}>
+                      {cat.label}{group !== "Medicine" ? " (coming soon)" : ""}
+                    </option>
                   ))}
                 </optgroup>
               ))}
