@@ -12,7 +12,7 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: 500,
+    price: 4000,
     currency: "RWF",
     period: "month",
     features: ["Unlimited mock exams", "1-on-1 support sessions", "Online Notes"],

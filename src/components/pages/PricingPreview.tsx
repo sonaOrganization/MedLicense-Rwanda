@@ -6,7 +6,7 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: 500,
+    price: 4000,
     currency: "RWF",
     period: "/ month",
     description: "Everything you need to pass your licensing exam",
