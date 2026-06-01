@@ -2,15 +2,16 @@ import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 
-// POST — sets language = 'FR' for questions whose difficulty
-// contains French words: Facile, Moyen, or Difficile
+// POST — detects French questions by two signals:
+// 1. Difficulty contains French words (Facile, Moyen, Difficile)
+// 2. text_en contains French accent characters (é, è, à, ç, etc.)
+// Sets language = 'FR' and copies text_en → text_fr if text_fr is empty.
 export async function POST() {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
-  // Use Supabase RPC to run raw SQL (needed for ILIKE on enum cast)
-  const { data, error } = await supabase.rpc("fix_language_by_difficulty");
+  const { data, error } = await supabase.rpc("fix_french_questions");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
