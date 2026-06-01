@@ -3,9 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, CreditCard, Shield, Zap } from "lucide-react";
+import { Check, CreditCard, Shield } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
+import { PaymentSuccessBanner } from "@/components/dashboard/PaymentSuccessBanner";
 
 const plans = [
   {
@@ -20,7 +21,11 @@ const plans = [
   },
 ];
 
-export default async function SubscriptionPage() {
+interface Props { searchParams: Promise<{ paid?: string; success?: string }> }
+
+export default async function SubscriptionPage({ searchParams }: Props) {
+  const { paid, success } = await searchParams;
+  const justPaid = paid === "true" || success === "true";
   const session = await auth();
   const { data: subscription } = await supabase.from("subscriptions").select("*").eq("user_id", session!.user.id).single();
   const { data: payments } = await supabase
@@ -39,6 +44,8 @@ export default async function SubscriptionPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage your plan and billing</p>
       </div>
+
+      {justPaid && <PaymentSuccessBanner />}
 
       {/* Current status */}
       <Card>
