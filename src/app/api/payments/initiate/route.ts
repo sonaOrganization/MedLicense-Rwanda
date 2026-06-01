@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 const PLANS: Record<string, { amount: number; currency: string; months: number; label: string }> = {
-  pro: { amount: 4000, currency: "RWF", months: 1, label: "MedLicense Pro Plan" },
+  pro: { amount: 500, currency: "RWF", months: 1, label: "MedLicense Pro Plan" },
 };
 
 export async function POST(req: NextRequest) {
