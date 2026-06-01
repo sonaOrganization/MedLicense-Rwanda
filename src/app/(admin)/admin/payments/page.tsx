@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, TrendingUp, CheckCircle, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { ActivatePaymentButton } from "@/components/admin/ActivatePaymentButton";
 
 interface Props {
   searchParams: Promise<{ status?: string; plan?: string }>;
@@ -123,6 +124,7 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Provider</th>
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Status</th>
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Date</th>
+                <th className="p-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -155,6 +157,9 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                     </Badge>
                   </td>
                   <td className="p-4 text-xs text-gray-400">{formatDate(new Date(p.created_at))}</td>
+                  <td className="p-4">
+                    {p.status === "pending" && <ActivatePaymentButton paymentId={p.id} />}
+                  </td>
                 </tr>
               ))}
             </tbody>
