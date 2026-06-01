@@ -77,6 +77,22 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
     }
   }
 
+  async function handleSetAllMedicalDoctor() {
+    if (!confirm("Set ALL 1,508 questions to Medical Doctor license?\n\nThis will overwrite any existing license tags. This cannot be undone.")) return;
+    setFixingLic(true);
+    try {
+      const res = await fetch("/api/admin/questions/fix-license?all=true", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Done — all ${data.fixed} questions set to Medical Doctor`);
+      router.refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setFixingLic(false);
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Delete this question? This cannot be undone.")) return;
     setDeletingId(id);
@@ -101,6 +117,15 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           <p className="text-sm text-gray-400 mt-0.5">{questions.length} question{questions.length !== 1 ? "s" : ""} shown</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleSetAllMedicalDoctor}
+            disabled={fixingLic}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-60"
+            title="Set ALL questions to Medical Doctor license"
+          >
+            <Wand2 className="w-4 h-4" />
+            {fixingLic ? "Updating…" : "Set All → Medical Doctor"}
+          </button>
           <button
             onClick={handleFixLicense}
             disabled={fixingLic}
