@@ -21,7 +21,9 @@ export default async function ExamsPage() {
     examsQuery = examsQuery.or(`license_category.eq.${licenseCategory},license_category.is.null`);
   }
 
-  const { data: exams } = await examsQuery.order("created_at", { ascending: false });
+  const { data: exams } = await examsQuery
+    .order("is_free", { ascending: false })       // free exams first
+    .order("created_at", { ascending: false });
 
   return <ExamsClient exams={exams ?? []} isPremium={isPremium} />;
 }
