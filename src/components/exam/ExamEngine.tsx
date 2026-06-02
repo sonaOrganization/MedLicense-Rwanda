@@ -196,7 +196,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
 
         {/* ── Main panel ── */}
         <main className="flex-1 min-w-0 overflow-y-auto">
-          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-3 sm:py-6 flex flex-col gap-3 sm:gap-4">
+          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-3 sm:py-6 pb-6 flex flex-col gap-3 sm:gap-4">
 
             {/* Question card */}
             <div className="bg-white dark:bg-[#0d1120] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
@@ -328,64 +328,40 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       </div>
 
       {/* ── Bottom navigation ───────────────────────────────────────────── */}
-      <footer className="flex-shrink-0 bg-white dark:bg-[#0d1120] border-t border-slate-200 dark:border-white/10 px-5 sm:px-7 py-3">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+      <footer className="flex-shrink-0 bg-white dark:bg-[#0d1120] border-t border-slate-200 dark:border-white/10 px-3 sm:px-7 py-3 pb-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto gap-3">
 
           {/* Previous */}
           <button
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
             disabled={currentIndex === 0}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-4 py-3 text-sm font-semibold rounded-xl border border-slate-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed transition-colors min-w-[90px] justify-center"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">{T("exam_previous")}</span>
+            <ChevronLeft className="w-4 h-4 flex-shrink-0" />
+            <span>{T("exam_previous")}</span>
           </button>
 
-          {/* Mini question pills — show fewer on mobile */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            {exam.questions
-              .slice(Math.max(0, currentIndex - 1), Math.min(exam.questions.length, currentIndex + 2))
-              .map((question) => {
-                const absIdx    = exam.questions.indexOf(question);
-                const isCurrent = absIdx === currentIndex;
-                return (
-                  <button
-                    key={question.id}
-                    onClick={() => setCurrentIndex(absIdx)}
-                    className={cn(
-                      "w-8 h-8 sm:w-7 sm:h-7 rounded-full text-xs font-bold transition-colors",
-                      isCurrent
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : answers[question.id]
-                          ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                          : "text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10"
-                    )}
-                  >
-                    {absIdx + 1}
-                  </button>
-                );
-              })}
-            <span className="text-xs text-gray-400 font-medium tabular-nums hidden xs:inline">
-              {currentIndex + 1}/{exam.questions.length}
-            </span>
-          </div>
+          {/* Counter */}
+          <span className="text-xs text-gray-400 font-bold tabular-nums whitespace-nowrap">
+            {currentIndex + 1} / {exam.questions.length}
+          </span>
 
           {/* Next / Finish */}
           {currentIndex < exam.questions.length - 1 ? (
             <button
               onClick={() => setCurrentIndex((i) => i + 1)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white transition-colors shadow-sm min-w-[90px] justify-center"
             >
-              <span className="hidden sm:inline">{T("exam_next")}</span>
-              <ChevronRight className="w-4 h-4" />
+              <span>{T("exam_next")}</span>
+              <ChevronRight className="w-4 h-4 flex-shrink-0" />
             </button>
           ) : (
             <button
               onClick={() => setShowSubmitModal(true)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-3 text-sm font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm min-w-[90px] justify-center"
             >
-              <CheckCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">{T("exam_finish")}</span>
+              <CheckCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{T("exam_finish")}</span>
             </button>
           )}
         </div>

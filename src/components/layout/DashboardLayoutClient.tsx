@@ -19,6 +19,9 @@ export function DashboardLayoutClient({ user, children }: Props) {
   // Close drawer on route change
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
 
+  // Hide bottom nav and WhatsApp button when taking an exam (exam engine has its own full-screen UI)
+  const isExamPage = /^\/exams\/[^/]+/.test(pathname);
+
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-[#0a0d16] overflow-hidden" suppressHydrationWarning>
 
@@ -52,8 +55,8 @@ export function DashboardLayoutClient({ user, children }: Props) {
         </main>
       </div>
 
-      {/* ── Mobile bottom nav ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 safe-area-pb">
+      {/* ── Mobile bottom nav — hidden during exams ── */}
+      <nav className={cn("fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800", isExamPage && "hidden")}>
         <div className="flex items-stretch h-16">
           {[
             { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard"     },
@@ -81,12 +84,15 @@ export function DashboardLayoutClient({ user, children }: Props) {
         </div>
       </nav>
 
-      {/* ── WhatsApp floating button ── */}
+      {/* ── WhatsApp floating button — hidden during exams ── */}
       <a
         href="https://wa.me/250782710630"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-[#25D366] hover:bg-[#1ebe5a] active:scale-95 transition-all duration-200"
+        className={cn(
+          "fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-[#25D366] hover:bg-[#1ebe5a] active:scale-95 transition-all duration-200",
+          isExamPage && "hidden"
+        )}
         title="Chat with us on WhatsApp"
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
