@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
 
     const { name, email, password, phone, licenseCategory } = parsed.data;
 
-    const { data: existing } = await supabase.from("users").select("id").eq("email", email).single();
+    // maybeSingle returns null (no error) when no row is found — cleaner than .single()
+    const { data: existing } = await supabase.from("users").select("id").eq("email", email).maybeSingle();
     if (existing) {
       return NextResponse.json({ error: "Email already in use" }, { status: 409 });
     }
