@@ -1,8 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardHeader } from "./DashboardHeader";
+import { LayoutDashboard, FileText, CreditCard } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   user: { name?: string | null; email?: string | null; image?: string | null };
@@ -44,17 +47,46 @@ export function DashboardLayoutClient({ user, children }: Props) {
       {/* ── Main column ── */}
       <div className="flex flex-col flex-1 overflow-hidden min-w-0">
         <DashboardHeader user={user} onMenuClick={() => setMobileNavOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7 pb-24 md:pb-7">
           {children}
         </main>
       </div>
+
+      {/* ── Mobile bottom nav ── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 safe-area-pb">
+        <div className="flex items-stretch h-16">
+          {[
+            { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard"     },
+            { href: "/exams",         icon: FileText,        label: "Exams"         },
+            { href: "/subscription",  icon: CreditCard,      label: "Subscription"  },
+          ].map(({ href, icon: Icon, label }) => {
+            const active = pathname === href || pathname.startsWith(href + "/");
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
+                  active
+                    ? "text-indigo-600 dark:text-indigo-400"
+                    : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                )}
+              >
+                <Icon className={cn("w-5 h-5", active && "text-indigo-600 dark:text-indigo-400")} />
+                {label}
+                {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* ── WhatsApp floating button ── */}
       <a
         href="https://wa.me/250782710630"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-[#25D366] hover:bg-[#1ebe5a] active:scale-95 transition-all duration-200"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg bg-[#25D366] hover:bg-[#1ebe5a] active:scale-95 transition-all duration-200"
         title="Chat with us on WhatsApp"
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
