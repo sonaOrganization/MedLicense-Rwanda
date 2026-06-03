@@ -15,6 +15,7 @@ interface Question {
   explanation_en?: string | null; explanation_fr?: string | null;
   difficulty: string; is_approved: boolean; category_id: string;
   license_categories?: string[] | null;
+  language?: string | null;
   category: { id: string; name_en: string };
   answers: Answer[];
 }
@@ -25,6 +26,7 @@ interface Props {
   categories: Category[];
   currentCategory: string;
   currentApproved: string;
+  currentIncomplete: string;
   totalCount: number;
   enCount: number;
   frCount: number;
@@ -36,7 +38,7 @@ const DIFF: Record<string, string> = {
   HARD:   "bg-red-100 text-red-700 border-red-200",
 };
 
-export function QuestionsClient({ questions, categories, currentCategory, currentApproved, totalCount, enCount, frCount }: Props) {
+export function QuestionsClient({ questions, categories, currentCategory, currentApproved, currentIncomplete, totalCount, enCount, frCount }: Props) {
   const router = useRouter();
   const [addOpen,    setAddOpen]    = useState(false);
   const [csvOpen,    setCsvOpen]    = useState(false);
@@ -231,6 +233,14 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
           <option value="true">Approved</option>
           <option value="false">Pending</option>
         </select>
+        <select
+          name="incomplete"
+          defaultValue={currentIncomplete}
+          className="px-3 py-2 text-sm rounded-lg border border-orange-300 dark:border-orange-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        >
+          <option value="">All Questions</option>
+          <option value="true">⚠ Incomplete Data Only</option>
+        </select>
         <button
           type="submit"
           className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -271,6 +281,18 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
                       ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/40">🇫🇷 FR</span>
                       : <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700">EN only</span>
                     }
+                    {/* Incomplete data warning */}
+                    {(() => {
+                      const issues: string[] = [];
+                      if (!q.license_categories || q.license_categories.length === 0) issues.push("No license");
+                      if (!q.language) issues.push("No language");
+                      if (q.language === "FR" && !q.text_fr) issues.push("Missing FR text");
+                      return issues.length > 0 ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/40" title={issues.join(" · ")}>
+                          ⚠ {issues.join(" · ")}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
 
                   {/* Question text */}
