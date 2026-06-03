@@ -18,9 +18,10 @@ export async function POST(req: NextRequest) {
     .update({ license_categories: ["medical_doctor"] });
 
   if (!all) {
-    query = query.eq("license_categories", "{}"); // only empty ones
+    query = query.eq("license_categories", "{}");   // only empty ones
+  } else {
+    query = query.not("id", "is", null);            // matches all rows (Supabase requires a WHERE clause)
   }
-  // if all=true, no filter → updates every question
 
   const { data: fixed, error } = await query.select("id");
 
