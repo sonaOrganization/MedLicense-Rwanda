@@ -15,11 +15,12 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
   if (category)  query = query.eq("category_id", category);
   if (approved !== undefined && approved !== "") query = query.eq("is_approved", approved === "true");
 
-  // "Incomplete" = missing language tag OR empty license_categories OR FR question with no text_fr
+  // When filtering for incomplete, raise limit and also do DB-level filter for field issues
   if (incomplete === "true") {
-    query = query.or(
-      "language.is.null,license_categories.eq.{},and(language.eq.FR,text_fr.is.null)"
-    );
+    // DB-level: missing language, missing license, or FR question without text_fr
+    query = query
+      .or("language.is.null,license_categories.eq.{},and(language.eq.FR,text_fr.is.null)")
+      .range(0, 1999);
   }
 
   const [{ data: questions }, { data: categories }, { count: totalCount }, { count: enCount }, { count: frCount }] = await Promise.all([
@@ -30,7 +31,19 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
     supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", true).eq("language", "FR"),
   ]);
 
-  const questionList = questions ?? [];
+  // Also catch answer-level issues in JS (can't do this in SQL without complex joins)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allQuestions = (questions ?? []) as any[];
+  const questionList = incomplete === "true"
+    ? allQuestions.filter((q) => {
+        const noLicense  = !q.license_categories || (q.license_categories as string[]).length === 0;
+        const noLanguage = !q.language;
+        const frNoText   = q.language === "FR" && !q.text_fr;
+        const noAnswers  = !q.answers || q.answers.length === 0;
+        const noCorrect  = q.answers && q.answers.length > 0 && !q.answers.some((a) => a.is_correct);
+        return noLicense || noLanguage || frNoText || noAnswers || noCorrect;
+      })
+    : allQuestions;
   const categoryList = categories ?? [];
 
   return (

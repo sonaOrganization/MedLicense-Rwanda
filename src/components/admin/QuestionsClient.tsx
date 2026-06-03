@@ -287,6 +287,8 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
                       if (!q.license_categories || q.license_categories.length === 0) issues.push("No license");
                       if (!q.language) issues.push("No language");
                       if (q.language === "FR" && !q.text_fr) issues.push("Missing FR text");
+                      if (!q.answers || q.answers.length === 0) issues.push("No answers");
+                      else if (!q.answers.some((a) => a.is_correct)) issues.push("No correct answer");
                       return issues.length > 0 ? (
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/40" title={issues.join(" · ")}>
                           ⚠ {issues.join(" · ")}
