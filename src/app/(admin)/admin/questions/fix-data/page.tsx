@@ -43,8 +43,9 @@ export default async function QuestionFixPage() {
     if (q.language === "FR" && !textFr.trim())
       reasons.push("FR question missing text_fr");
 
-    // Pattern 5: text_fr equals text_en (copy-paste error)
-    if (textFr && textFr.trim() === textEn.trim())
+    // Pattern 5: text_fr equals text_en on an EN question (copy-paste error)
+    // For FR questions this is expected — the import stores FR text in both columns
+    if (q.language !== "FR" && textFr && textFr.trim() === textEn.trim())
       reasons.push("text_fr identical to text_en");
 
     return reasons;
