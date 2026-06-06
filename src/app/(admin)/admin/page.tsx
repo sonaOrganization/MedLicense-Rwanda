@@ -3,7 +3,7 @@ import Link from "next/link";
 import {
   FileQuestion, FileText, Users, CreditCard,
   BarChart2, Video, ArrowRight, CheckCircle,
-  Clock, TrendingUp, AlertCircle, Shield,
+  Clock, TrendingUp, AlertCircle, Shield, MessageSquare,
 } from "lucide-react";
 
 export default async function AdminDashboard() {
@@ -18,6 +18,7 @@ export default async function AdminDashboard() {
     { count: activeSubscriptions },
     { data: completedPayments },
     { count: totalAttempts },
+    { data: feedbackData },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }).eq("is_banned", false),
     supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", false),
@@ -29,9 +30,14 @@ export default async function AdminDashboard() {
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).in("status", ["ACTIVE", "TRIAL"]),
     supabase.from("payments").select("amount").eq("status", "completed"),
     supabase.from("exam_attempts").select("*", { count: "exact", head: true }).eq("status", "COMPLETED"),
+    supabase.from("feedback").select("rating").limit(500),
   ]);
 
   const totalRevenue = completedPayments?.reduce((s: number, p: { amount: number }) => s + p.amount, 0) ?? 0;
+  const feedbackList = (feedbackData ?? []) as { rating: number }[];
+  const avgRating = feedbackList.length
+    ? (feedbackList.reduce((s, f) => s + f.rating, 0) / feedbackList.length).toFixed(1)
+    : null;
 
   const health = [
     { label: "Active Users",         value: (totalUsers ?? 0).toLocaleString(),          icon: Users,       color: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-50 dark:bg-blue-900/20"     },
@@ -110,6 +116,18 @@ export default async function AdminDashboard() {
       stats: [
         { label: "Published", value: publishedVideos ?? 0 },
         { label: "Total",     value: totalVideos ?? 0 },
+      ],
+      alert: null,
+    },
+    {
+      href: "/admin/feedback",
+      icon: MessageSquare,
+      label: "Feedback",
+      description: "View student ratings and suggestions.",
+      iconBg: "bg-pink-600",
+      stats: [
+        { label: "Responses", value: feedbackList.length },
+        { label: "Avg Rating", value: avgRating ? `★ ${avgRating}` : "—" },
       ],
       alert: null,
     },

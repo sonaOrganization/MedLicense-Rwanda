@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language";
 import { useT } from "@/lib/translations";
+import { FeedbackWidget } from "@/components/dashboard/FeedbackWidget";
 
 interface Props {
   mobile?: boolean;
@@ -84,8 +85,9 @@ export function DashboardSidebar({ onClose }: Props) {
         })}
       </nav>
 
-      {/* Sign out */}
-      <div className="px-3 py-4 border-t border-gray-800/60">
+      {/* Feedback + Sign out */}
+      <div className="px-3 py-4 border-t border-gray-800/60 space-y-0.5">
+        <FeedbackWidget />
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="flex items-center gap-3 w-full px-3 py-3 md:py-2.5 rounded-xl text-[14px] md:text-[13.5px] font-medium text-gray-500 hover:bg-red-950/40 hover:text-red-400 transition-all duration-150"
