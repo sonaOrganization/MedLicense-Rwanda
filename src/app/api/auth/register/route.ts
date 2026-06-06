@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
 import { registerSchema } from "@/lib/validations";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,6 +35,9 @@ export async function POST(req: NextRequest) {
       console.error("[REGISTER]", error);
       return NextResponse.json({ error: "Could not create account. Please try again." }, { status: 500 });
     }
+
+    // Send welcome email — fire-and-forget (don't block registration on email failure)
+    sendWelcomeEmail(email, name).catch((err) => console.error("[WELCOME_EMAIL]", err));
 
     return NextResponse.json({ ok: true });
   } catch (err) {
