@@ -18,7 +18,7 @@ const navLinks = [
 ];
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -93,13 +93,13 @@ export function Navbar() {
               {/* Desktop CTA */}
               <div className="hidden lg:flex items-center gap-2 ml-1">
                 <div className="h-5 w-px bg-gray-200 dark:bg-gray-700" />
-                {session ? (
+                {status === "authenticated" && session ? (
                   <Link href="/dashboard">
                     <Button size="sm" className="h-9 px-4 text-[13px] font-semibold gap-1.5">
                       <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
                     </Button>
                   </Link>
-                ) : (
+                ) : status === "unauthenticated" ? (
                   <>
                     <Link href="/login">
                       <Button variant="ghost" size="sm" className="h-9 px-4 text-[13px] font-medium text-gray-700 dark:text-gray-300">
@@ -112,7 +112,7 @@ export function Navbar() {
                       </Button>
                     </Link>
                   </>
-                )}
+                ) : null}
               </div>
 
               {/* Mobile hamburger */}
@@ -183,13 +183,13 @@ export function Navbar() {
 
             {/* CTA buttons */}
             <div className="px-4 py-4 border-t border-gray-800/60 space-y-2">
-              {session ? (
+              {status === "authenticated" && session ? (
                 <Link href="/dashboard" className="block" onClick={() => setMobileOpen(false)}>
                   <Button className="w-full bg-blue-700 hover:bg-blue-600 font-semibold gap-1.5">
                     <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
                   </Button>
                 </Link>
-              ) : (
+              ) : status === "unauthenticated" ? (
                 <>
                   <Link href="/login" className="block" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white">
@@ -202,7 +202,7 @@ export function Navbar() {
                     </Button>
                   </Link>
                 </>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

@@ -89,7 +89,7 @@ export function DashboardSidebar({ onClose }: Props) {
       <div className="px-3 py-4 border-t border-gray-800/60 space-y-0.5">
         <FeedbackWidget />
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-3 w-full px-3 py-3 md:py-2.5 rounded-xl text-[14px] md:text-[13.5px] font-medium text-gray-500 hover:bg-red-950/40 hover:text-red-400 transition-all duration-150"
         >
           <LogOut className="w-[18px] h-[18px]" />
