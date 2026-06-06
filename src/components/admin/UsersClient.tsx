@@ -24,8 +24,10 @@ interface User {
   license_category?: string | null;
   is_banned: boolean;
   created_at: string;
+  last_login_at?: string | null;
   subscription?: Subscription | null;
   exam_count: number;
+  avg_score?: number | null;
 }
 
 const ROLE_BADGE: Record<string, string> = {
@@ -242,7 +244,7 @@ export function UsersClient({ users }: { users: User[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-800">
-                {["User", "Role", "Plan", "Expires", "Exams", "Registered", "Status", ""].map((h) => (
+                {["User", "Role", "Plan", "Expires", "Progress", "Last Active", "Status", ""].map((h) => (
                   <th
                     key={h}
                     className={cn(
@@ -339,14 +341,34 @@ export function UsersClient({ users }: { users: User[] }) {
                       )}
                     </td>
 
-                    {/* Exams */}
+                    {/* Progress */}
                     <td className="px-4 py-3.5">
-                      <span className="text-gray-300 font-medium">{user.exam_count}</span>
+                      <div>
+                        <p className="text-gray-300 font-medium text-sm">
+                          {user.exam_count} exam{user.exam_count !== 1 ? "s" : ""}
+                        </p>
+                        {user.avg_score !== null && user.avg_score !== undefined ? (
+                          <p className={cn("text-xs font-semibold mt-0.5", user.avg_score >= 70 ? "text-emerald-400" : user.avg_score >= 50 ? "text-amber-400" : "text-red-400")}>
+                            avg {user.avg_score}%
+                          </p>
+                        ) : (
+                          <p className="text-xs text-gray-600 mt-0.5">no attempts</p>
+                        )}
+                      </div>
                     </td>
 
-                    {/* Registered */}
-                    <td className="px-4 py-3.5 text-xs text-gray-500 whitespace-nowrap">
-                      {fmtDate(user.created_at)}
+                    {/* Last Active */}
+                    <td className="px-4 py-3.5 text-xs whitespace-nowrap">
+                      {user.last_login_at ? (
+                        <div>
+                          <p className="text-gray-400">{fmtDate(user.last_login_at)}</p>
+                          <p className="text-gray-600 mt-0.5">
+                            {Math.ceil((Date.now() - new Date(user.last_login_at).getTime()) / 86_400_000)}d ago
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-gray-600">Never</span>
+                      )}
                     </td>
 
                     {/* Status */}
