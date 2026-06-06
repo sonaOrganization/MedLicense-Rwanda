@@ -1,11 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const FROM = process.env.RESEND_FROM ?? "MedLicense <noreply@medlicense.rw>";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://medlicense.rw";
-
 export async function sendWelcomeEmail(to: string, name: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) { console.warn("[EMAIL] RESEND_API_KEY not set — skipping welcome email"); return; }
+
+  const resend   = new Resend(apiKey);
+  const FROM     = process.env.RESEND_FROM    ?? "MedLicense <onboarding@resend.dev>";
+  const APP_URL  = process.env.NEXT_PUBLIC_APP_URL ?? "https://medlicense.rw";
   const firstName = name.split(" ")[0];
 
   const html = `
