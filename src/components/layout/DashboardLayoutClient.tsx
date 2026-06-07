@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardHeader } from "./DashboardHeader";
+import { WhatsAppButton } from "./WhatsAppButton";
 import { LayoutDashboard, FileText, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +85,8 @@ export function DashboardLayoutClient({ user, children }: Props) {
         </div>
       </nav>
 
-      {/* WhatsApp button hidden */}
+      {/* WhatsApp button — hidden during exams */}
+      {!isExamPage && <WhatsAppButton />}
     </div>
   );
 }
