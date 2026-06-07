@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2, Wrench, BookOpen } from "lucide-react";
+import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2, Wrench, BookOpen, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { QuestionFormModal } from "./QuestionFormModal";
 import { CSVUploadModal } from "./CSVUploadModal";
@@ -48,6 +48,7 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
   const [fixingLang,     setFixingLang]     = useState(false);
   const [fixingLic,      setFixingLic]      = useState(false);
   const [fixingDiffLang, setFixingDiffLang] = useState(false);
+  const [search,         setSearch]         = useState("");
 
   async function handleFixLanguage() {
     if (!confirm("Auto-assign language tags to all untagged questions?\n• Has French text → FR\n• No French text → EN\n\nAlready tagged questions are not affected.")) return;
@@ -128,13 +129,28 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
     }
   }
 
+  const displayed = search.trim()
+    ? questions.filter((q) => {
+        const s = search.toLowerCase();
+        return (
+          q.text_en.toLowerCase().includes(s) ||
+          (q.text_fr ?? "").toLowerCase().includes(s) ||
+          q.category.name_en.toLowerCase().includes(s)
+        );
+      })
+    : questions;
+
   return (
     <>
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Question Bank</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{questions.length} question{questions.length !== 1 ? "s" : ""} shown</p>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {search.trim()
+              ? `${displayed.length} of ${questions.length} question${questions.length !== 1 ? "s" : ""} match`
+              : `${questions.length} question${questions.length !== 1 ? "s" : ""} shown`}
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Link
@@ -229,6 +245,25 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
         </div>
       </div>
 
+      {/* ── Search ── */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search questions by text, French text, or category…"
+          className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* ── Filters ── */}
       <form className="flex flex-wrap gap-3">
         <select
@@ -266,13 +301,22 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
 
       {/* ── Question list ── */}
       <div className="space-y-3">
-        {questions.length === 0 && (
+        {displayed.length === 0 && (
           <div className="text-center py-16 text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl">
-            <p className="font-medium">No questions found</p>
-            <p className="text-sm mt-1">Add your first question or import a CSV file.</p>
+            {search.trim() ? (
+              <>
+                <p className="font-medium">No questions match &ldquo;{search}&rdquo;</p>
+                <button onClick={() => setSearch("")} className="text-sm mt-2 text-blue-500 hover:underline">Clear search</button>
+              </>
+            ) : (
+              <>
+                <p className="font-medium">No questions found</p>
+                <p className="text-sm mt-1">Add your first question or import a CSV file.</p>
+              </>
+            )}
           </div>
         )}
-        {questions.map((q) => (
+        {displayed.map((q) => (
           <div
             key={q.id}
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors"
