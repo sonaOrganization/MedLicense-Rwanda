@@ -9,7 +9,12 @@ import { getLicenseCategoryLabel } from "@/lib/license-categories";
 import toast from "react-hot-toast";
 
 interface Category { id: string; name_en: string; }
-interface Question { id: string; text_en: string; difficulty: string; category_id: string; license_categories: string[]; category: { name_en: string }; }
+interface Question {
+  id: string; text_en: string; text_fr?: string | null;
+  difficulty: string; category_id: string;
+  license_categories: string[]; language?: string | null;
+  category: { name_en: string };
+}
 
 interface Exam {
   id: string;
@@ -32,11 +37,12 @@ interface Props {
   exams: Exam[];
   categories: Category[];
   questions: Question[];
+  usedQuestionIds: string[];
   currentCategory: string;
   currentPublished: string;
 }
 
-export function ExamsClient({ exams, categories, questions, currentCategory, currentPublished }: Props) {
+export function ExamsClient({ exams, categories, questions, usedQuestionIds, currentCategory, currentPublished }: Props) {
   const router = useRouter();
   const [addOpen,    setAddOpen]    = useState(false);
   const [editExam,   setEditExam]   = useState<Exam | null>(null);
@@ -183,12 +189,14 @@ export function ExamsClient({ exams, categories, questions, currentCategory, cur
         onClose={() => setAddOpen(false)}
         categories={categories}
         questions={questions}
+        usedQuestionIds={usedQuestionIds}
       />
       <ExamFormModal
         open={!!editExam}
         onClose={() => setEditExam(null)}
         categories={categories}
         questions={questions}
+        usedQuestionIds={usedQuestionIds}
         exam={editExam ?? undefined}
       />
     </>

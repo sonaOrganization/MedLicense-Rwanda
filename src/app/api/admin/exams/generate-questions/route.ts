@@ -38,17 +38,37 @@ export async function POST(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
-  const { category_selections, difficulty_mix = "progressive", license_category, language } = await req.json() as {
+  const { category_selections, difficulty_mix = "progressive", license_category, language, exam_id } = await req.json() as {
     category_selections: CategorySelection[];
     difficulty_mix: DiffMix;
     license_category?: string;
     language?: "EN" | "FR";
+    exam_id?: string;
   };
 
   if (!Array.isArray(category_selections) || category_selections.length === 0)
     return NextResponse.json({ error: "No categories provided" }, { status: 400 });
 
   const ratios = MIXES[difficulty_mix] ?? MIXES.progressive;
+
+  // Build exclusion set: all question IDs already in any exam, minus those in the current exam being edited
+  let excludeSet = new Set<string>();
+  {
+    const { data: usedRows } = await supabase
+      .from("exam_questions")
+      .select("exam_id, question_id")
+      .limit(100000);
+
+    const currentExamIds = new Set<string>();
+    if (exam_id) {
+      for (const r of (usedRows ?? []) as { exam_id: string; question_id: string }[]) {
+        if (r.exam_id === exam_id) currentExamIds.add(r.question_id);
+      }
+    }
+    for (const r of (usedRows ?? []) as { exam_id: string; question_id: string }[]) {
+      if (!currentExamIds.has(r.question_id)) excludeSet.add(r.question_id);
+    }
+  }
 
   const allIds: string[] = [];
   const breakdown: {
@@ -80,6 +100,8 @@ export async function POST(req: NextRequest) {
     const licLabel = licCat?.label?.toLowerCase() ?? "";
 
     const rows = rawRows.filter((r) => {
+      // Exclude questions already in use by other exams
+      if (excludeSet.has(r.id)) return false;
       // null language defaults to "EN" (questions added before language column existed)
       if (language && (r.language ?? "EN") !== language) return false;
       // License category filter

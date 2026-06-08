@@ -41,6 +41,7 @@ interface Props {
   onClose: () => void;
   categories: Category[];
   questions: Question[];
+  usedQuestionIds?: string[];
   exam?: Exam;
 }
 
@@ -65,7 +66,7 @@ interface BreakdownRow {
   easy: number; medium: number; hard: number;
 }
 
-export function ExamFormModal({ open, onClose, categories, questions, exam }: Props) {
+export function ExamFormModal({ open, onClose, categories, questions, usedQuestionIds, exam }: Props) {
   const router = useRouter();
   const isEdit = !!exam;
 
@@ -118,17 +119,26 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
     return qs;
   }, [questions, examLanguage, licenseCategory]);
 
+  // ── Exclude questions already used in OTHER exams ──
+  // When editing, keep questions already in this exam (selectedIds) so they remain visible.
+  const unusedQuestions = useMemo(() => {
+    if (!usedQuestionIds || usedQuestionIds.length === 0) return langFilteredQuestions;
+    const usedSet = new Set(usedQuestionIds);
+    const selectedSet = new Set(selectedIds);
+    return langFilteredQuestions.filter((q) => !usedSet.has(q.id) || selectedSet.has(q.id));
+  }, [langFilteredQuestions, usedQuestionIds, selectedIds]);
+
   // ── Availability map for Smart Build ──
   const availMap = useMemo(() => {
     const m: Record<string, { EASY: number; MEDIUM: number; HARD: number; total: number }> = {};
-    for (const q of langFilteredQuestions) {
+    for (const q of unusedQuestions) {
       if (!m[q.category_id]) m[q.category_id] = { EASY: 0, MEDIUM: 0, HARD: 0, total: 0 };
       const d = q.difficulty as "EASY" | "MEDIUM" | "HARD";
       if (d in m[q.category_id]) m[q.category_id][d]++;
       m[q.category_id].total++;
     }
     return m;
-  }, [langFilteredQuestions]);
+  }, [unusedQuestions]);
 
   // ── Smart Build rows: only categories that have questions in current language+license ──
   const visibleCatRows = useMemo(() => {
@@ -192,7 +202,8 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
           category_selections: selections,
           difficulty_mix:      diffMix,
           license_category:    licenseCategory  || undefined,
-          language:            examLanguage,     // filters questions by EN or FR
+          language:            examLanguage,
+          exam_id:             exam?.id,         // allow current exam's questions when editing
         }),
       });
       const data = await res.json();
@@ -214,12 +225,12 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
   const filteredQuestions = useMemo(() => {
     const s = qSearch.toLowerCase();
     return s
-      ? langFilteredQuestions.filter((q) => {
+      ? unusedQuestions.filter((q) => {
           const text = examLanguage === "FR" ? (q.text_fr ?? q.text_en) : q.text_en;
           return text.toLowerCase().includes(s) || q.category.name_en.toLowerCase().includes(s);
         })
-      : langFilteredQuestions;
-  }, [langFilteredQuestions, qSearch, examLanguage]);
+      : unusedQuestions;
+  }, [unusedQuestions, qSearch, examLanguage]);
 
   // ── Save ──
   async function handleSave() {
@@ -455,6 +466,13 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
                 <p className="text-[11px] text-gray-400 mt-0.5">
                   Showing{" "}<span className="inline-flex items-center align-middle"><FlagIcon lang={examLanguage} size={11} /></span>{" "}{examLanguage === "EN" ? "English" : "French"} questions
                   {licenseCategory && ` · ${LICENSE_CATEGORIES.find(c => c.id === licenseCategory)?.label}`}
+                  {" "}· <span className="text-emerald-600 dark:text-emerald-400 font-medium">{unusedQuestions.length} available</span>
+                  {(() => {
+                    const hidden = langFilteredQuestions.length - unusedQuestions.length;
+                    return hidden > 0 ? (
+                      <span className="ml-1 text-amber-500">({hidden} used by other exams, hidden)</span>
+                    ) : null;
+                  })()}
                 </p>
               </div>
               <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">

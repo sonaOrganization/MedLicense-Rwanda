@@ -66,6 +66,9 @@ export default async function AdminExamsPage({ searchParams }: Props) {
     license_category: c.license_category ?? null,
   }));
 
+  // All question IDs already assigned to any exam — used to filter the picker
+  const allUsedQuestionIds = [...new Set(examList.flatMap((e) => e.exam_question_ids))];
+
   const questionList = (questions ?? []).map((q: {
     id: string;
     text_en: string;
@@ -93,6 +96,7 @@ export default async function AdminExamsPage({ searchParams }: Props) {
         exams={examList}
         categories={categoryList}
         questions={questionList}
+        usedQuestionIds={allUsedQuestionIds}
         currentCategory={category ?? ""}
         currentPublished={published ?? ""}
       />
