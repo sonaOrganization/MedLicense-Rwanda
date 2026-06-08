@@ -14,6 +14,7 @@ const adminNavItems = [
   { label: "Questions",          href: "/admin/questions",  icon: FileQuestion    },
   { label: "Remove Duplicates",  href: "/admin/questions/dedup", icon: Copy        },
   { label: "Exams",              href: "/admin/exams",      icon: FileText        },
+  { label: "Fix Exam Dupes",     href: "/admin/exams/fix-dupes", icon: Copy       },
   { label: "Users",              href: "/admin/users",      icon: Users           },
   { label: "Payments",           href: "/admin/payments",   icon: CreditCard      },
   { label: "Analytics",          href: "/admin/analytics",  icon: BarChart2       },
@@ -64,7 +65,17 @@ export function AdminSidebar({ onClose }: Props) {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
         {adminNavItems.map(({ label, href, icon: Icon }) => {
-          const active = pathname === href || (href !== "/admin" && pathname.startsWith(href));
+          const active =
+            pathname === href ||
+            (href !== "/admin" &&
+              pathname.startsWith(href) &&
+              (pathname.length === href.length || pathname[href.length] === "/") &&
+              !adminNavItems.some(
+                (other) =>
+                  other.href !== href &&
+                  other.href.startsWith(href + "/") &&
+                  pathname.startsWith(other.href)
+              ));
           return (
             <Link
               key={href}
