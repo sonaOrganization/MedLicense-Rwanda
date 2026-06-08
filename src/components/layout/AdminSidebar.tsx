@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Users, FileQuestion, FileText,
-  CreditCard, BarChart2, Video, Bell,
+  CreditCard, BarChart2, Video, Bell, Copy,
   LogOut, Stethoscope, Shield, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 const adminNavItems = [
   { label: "Overview",           href: "/admin",            icon: LayoutDashboard },
   { label: "Questions",          href: "/admin/questions",  icon: FileQuestion    },
+  { label: "Remove Duplicates",  href: "/admin/questions/dedup", icon: Copy        },
   { label: "Exams",              href: "/admin/exams",      icon: FileText        },
   { label: "Users",              href: "/admin/users",      icon: Users           },
   { label: "Payments",           href: "/admin/payments",   icon: CreditCard      },
