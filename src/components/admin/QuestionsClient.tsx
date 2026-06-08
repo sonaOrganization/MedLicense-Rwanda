@@ -1,8 +1,8 @@
-﻿"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+"use client";
+import { useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2, Wrench, BookOpen, Search, X } from "lucide-react";
+import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2, Wrench, BookOpen, Search, X, Hash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { QuestionFormModal } from "./QuestionFormModal";
 import { CSVUploadModal } from "./CSVUploadModal";
@@ -39,8 +39,11 @@ const DIFF: Record<string, string> = {
   HARD:   "bg-red-100 text-red-700 border-red-200",
 };
 
+const UUID_LIKE = /^[0-9a-f]{8}/i;
+
 export function QuestionsClient({ questions, categories, currentCategory, currentApproved, currentIncomplete, totalCount, enCount, frCount }: Props) {
-  const router = useRouter();
+  const router      = useRouter();
+  const searchParams = useSearchParams();
   const [addOpen,    setAddOpen]    = useState(false);
   const [csvOpen,    setCsvOpen]    = useState(false);
   const [editQ,      setEditQ]      = useState<Question | null>(null);
@@ -49,6 +52,19 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
   const [fixingLic,      setFixingLic]      = useState(false);
   const [fixingDiffLang, setFixingDiffLang] = useState(false);
   const [search,         setSearch]         = useState("");
+
+  const isIdSearch = UUID_LIKE.test(search.trim());
+
+  const handleIdSearch = useCallback(() => {
+    if (!search.trim()) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("q", search.trim());
+    router.push(`/admin/questions?${params.toString()}`);
+  }, [search, searchParams, router]);
+
+  function handleSearchKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && isIdSearch) handleIdSearch();
+  }
 
   async function handleFixLanguage() {
     if (!confirm("Auto-assign language tags to all untagged questions?\nâ€¢ Has French text â†’ FR\nâ€¢ No French text â†’ EN\n\nAlready tagged questions are not affected.")) return;
@@ -246,22 +262,47 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
         </div>
       </div>
 
-      {/* â”€â”€ Search â”€â”€ */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search questions by text, French text, or categoryâ€¦"
-          className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        {search && (
-          <button
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+      {/* Search */}
+      <div className="space-y-1.5">
+        <div className="relative">
+          {isIdSearch
+            ? <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-500 pointer-events-none" />
+            : <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          }
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearchKey}
+            placeholder="Search by text, category, or paste a question ID..."
+            className={cn(
+              "w-full pl-10 py-2.5 text-sm rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent",
+              isIdSearch
+                ? "border-purple-400 dark:border-purple-600 focus:ring-purple-500 pr-36"
+                : "border-gray-300 dark:border-gray-700 focus:ring-blue-500 pr-10"
+            )}
+          />
+          {isIdSearch && (
+            <button
+              onClick={handleIdSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+            >
+              <Hash className="w-3 h-3" /> Search by ID
+            </button>
+          )}
+          {search && !isIdSearch && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {isIdSearch && (
+          <p className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1.5 px-1">
+            <Hash className="w-3 h-3 flex-shrink-0" />
+            ID detected — click Search by ID or press Enter to look up across all questions
+          </p>
         )}
       </div>
 
@@ -432,4 +473,5 @@ export function QuestionsClient({ questions, categories, currentCategory, curren
     </>
   );
 }
+
 

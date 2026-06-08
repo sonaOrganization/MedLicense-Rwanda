@@ -1,10 +1,13 @@
 import { supabase } from "@/lib/supabase";
 import { QuestionsClient } from "@/components/admin/QuestionsClient";
 
-interface Props { searchParams: Promise<{ category?: string; approved?: string; incomplete?: string }> }
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PARTIAL_UUID_RE = /^[0-9a-f]{8,}/i;
+
+interface Props { searchParams: Promise<{ category?: string; approved?: string; incomplete?: string; q?: string }> }
 
 export default async function AdminQuestionsPage({ searchParams }: Props) {
-  const { category, approved, incomplete } = await searchParams;
+  const { category, approved, incomplete, q } = await searchParams;
 
   let query = supabase
     .from("questions")
@@ -12,15 +15,24 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
     .order("created_at", { ascending: false })
     .limit(200);
 
-  if (category)  query = query.eq("category_id", category);
-  if (approved !== undefined && approved !== "") query = query.eq("is_approved", approved === "true");
+  // ID search: exact or partial UUID — bypasses the 200 limit
+  if (q && (UUID_RE.test(q.trim()) || PARTIAL_UUID_RE.test(q.trim()))) {
+    query = supabase
+      .from("questions")
+      .select("*, category:categories(*), answers(*)")
+      .ilike("id", `${q.trim()}%`)
+      .limit(50);
+  } else {
+    if (category)  query = query.eq("category_id", category);
+    if (approved !== undefined && approved !== "") query = query.eq("is_approved", approved === "true");
 
-  // When filtering for incomplete, raise limit and also do DB-level filter for field issues
-  if (incomplete === "true") {
-    // DB-level: missing language, missing license, or FR question without text_fr
-    query = query
-      .or("language.is.null,license_categories.eq.{},and(language.eq.FR,text_fr.is.null)")
-      .range(0, 1999);
+    // When filtering for incomplete, raise limit and also do DB-level filter for field issues
+    if (incomplete === "true") {
+      // DB-level: missing language, missing license, or FR question without text_fr
+      query = query
+        .or("language.is.null,license_categories.eq.{},and(language.eq.FR,text_fr.is.null)")
+        .range(0, 1999);
+    }
   }
 
   const [{ data: questions }, { data: categories }, { count: totalCount }, { count: enCount }, { count: frCount }] = await Promise.all([
