@@ -234,6 +234,15 @@ export async function POST(request: Request) {
 
   const allDupIds = pairs.map((p) => p.dup_id);
 
+  // Delete attempt_answers that reference duplicate questions or their answers
+  // (attempt_answers has FK on both question_id and answer_id — must go first)
+  const { error: attemptAnswersErr } = await supabase
+    .from("attempt_answers")
+    .delete()
+    .in("question_id", allDupIds);
+
+  if (attemptAnswersErr) errors.push(`Delete attempt_answers: ${attemptAnswersErr.message}`);
+
   const { error: answersErr } = await supabase
     .from("answers")
     .delete()
