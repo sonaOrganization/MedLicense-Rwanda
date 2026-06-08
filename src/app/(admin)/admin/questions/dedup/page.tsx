@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Trash2, CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { AlertTriangle, Trash2, CheckCircle, Eye, EyeOff, Loader2, Upload, ChevronDown, ChevronUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -42,6 +42,294 @@ interface ExecuteResult {
   remapped: number;
   replacementsAdded?: number;
   errors: string[];
+}
+
+interface UploadPair {
+  dup_id: string;
+  keeper_id?: string;
+}
+
+interface UploadPreview {
+  found: number;
+  notFound: string[];
+  inExams: number;
+  pairs: UploadPair[];
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseUploadText(text: string): UploadPair[] {
+  const pairs: UploadPair[] = [];
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const parts = line.split(/[,;\t]+/).map((p) => p.trim());
+    const dup_id = parts[0];
+    const keeper_id = parts[1];
+    if (!UUID_RE.test(dup_id)) continue;
+    if (keeper_id && UUID_RE.test(keeper_id)) {
+      pairs.push({ dup_id, keeper_id });
+    } else {
+      pairs.push({ dup_id });
+    }
+  }
+  // Deduplicate by dup_id
+  const seen = new Set<string>();
+  return pairs.filter((p) => { if (seen.has(p.dup_id)) return false; seen.add(p.dup_id); return true; });
+}
+
+function UploadByIds() {
+  const [open, setOpen] = useState(false);
+  const [rawText, setRawText] = useState("");
+  const [parsed, setParsed] = useState<UploadPair[]>([]);
+  const [preview, setPreview] = useState<UploadPreview | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [executing, setExecuting] = useState(false);
+  const [result, setResult] = useState<{ deleted: number; remapped: number; errors: string[] } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function handleTextChange(text: string) {
+    setRawText(text);
+    setPreview(null);
+    setResult(null);
+    setParsed(parseUploadText(text));
+  }
+
+  function handleFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = (e) => handleTextChange((e.target?.result as string) ?? "");
+    reader.readAsText(file);
+  }
+
+  async function handlePreview() {
+    if (parsed.length === 0) return;
+    setLoadingPreview(true);
+    setPreview(null);
+    try {
+      const res = await fetch("/api/admin/questions/dedup/by-ids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "preview", pairs: parsed }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Preview failed");
+      setPreview(json as UploadPreview);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Preview failed");
+    } finally {
+      setLoadingPreview(false);
+    }
+  }
+
+  async function handleExecute() {
+    if (!preview || preview.found === 0) return;
+    setExecuting(true);
+    setConfirmOpen(false);
+    try {
+      const res = await fetch("/api/admin/questions/dedup/by-ids", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "execute", pairs: preview.pairs }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Execution failed");
+      setResult(json);
+      setPreview(null);
+      setRawText("");
+      setParsed([]);
+      if (json.errors?.length > 0) toast.error(`Completed with ${json.errors.length} error(s)`);
+      else toast.success(`Deleted ${json.deleted} questions`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Execution failed");
+    } finally {
+      setExecuting(false);
+    }
+  }
+
+  function reset() {
+    setRawText(""); setParsed([]); setPreview(null); setResult(null);
+  }
+
+  return (
+    <div className="rounded-xl bg-gray-900 border border-gray-700 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-800/50 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <Upload className="w-4 h-4 text-indigo-400" />
+          <span className="text-sm font-semibold text-white">Upload IDs to Delete</span>
+          <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 text-[11px] font-medium border border-indigo-500/25">
+            Manual mode
+          </span>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-800 px-5 py-5 space-y-4">
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Paste or upload a file containing duplicate question IDs to remove directly — bypassing the text-scan.<br />
+            <span className="text-gray-500">
+              Supported formats (one entry per line):<br />
+              · <code className="bg-gray-800 px-1 rounded text-gray-300">dup_id</code> — deletes the question, removes it from all exams<br />
+              · <code className="bg-gray-800 px-1 rounded text-gray-300">dup_id,keeper_id</code> — remaps exam references to keeper before deleting
+            </span>
+          </p>
+
+          {/* File drop / paste area */}
+          <div className="relative">
+            <textarea
+              value={rawText}
+              onChange={(e) => handleTextChange(e.target.value)}
+              placeholder={"038945d3-f74a-4c26-a481-225d813c461b\nb2f1c3d4-...,a1b2c3d4-...  ← dup,keeper\n..."}
+              rows={6}
+              className="w-full px-3 py-2.5 text-xs font-mono rounded-lg border border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+            />
+            {rawText && (
+              <button
+                type="button"
+                onClick={reset}
+                className="absolute top-2 right-2 p-1 rounded text-gray-500 hover:text-gray-300 hover:bg-gray-700"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs font-medium text-gray-300 transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload .csv / .txt
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,.txt,.tsv"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+            />
+
+            {parsed.length > 0 && (
+              <span className="text-xs text-emerald-400 font-medium">
+                {parsed.length} valid ID{parsed.length !== 1 ? "s" : ""} parsed
+                {parsed.filter(p => p.keeper_id).length > 0 && (
+                  <span className="text-gray-500 ml-1">
+                    ({parsed.filter(p => p.keeper_id).length} with keeper)
+                  </span>
+                )}
+              </span>
+            )}
+
+            {parsed.length > 0 && !preview && (
+              <button
+                type="button"
+                onClick={handlePreview}
+                disabled={loadingPreview}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+              >
+                {loadingPreview ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Checking…</> : <><Eye className="w-3.5 h-3.5" />Preview</>}
+              </button>
+            )}
+          </div>
+
+          {/* Preview results */}
+          {preview && (
+            <div className="rounded-lg border border-gray-700 overflow-hidden">
+              <div className="px-4 py-3 bg-gray-800/60 border-b border-gray-700 flex items-center justify-between flex-wrap gap-2">
+                <p className="text-xs font-semibold text-white">Preview</p>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="text-emerald-400">{preview.found} found in DB</span>
+                  {preview.inExams > 0 && <span className="text-amber-400">{preview.inExams} in exams (will remap)</span>}
+                  {preview.notFound.length > 0 && <span className="text-red-400">{preview.notFound.length} not found</span>}
+                </div>
+              </div>
+
+              {preview.notFound.length > 0 && (
+                <div className="px-4 py-2.5 bg-red-500/5 border-b border-gray-800">
+                  <p className="text-[11px] text-red-400 font-medium mb-1">IDs not found in database:</p>
+                  <p className="text-[11px] font-mono text-red-400/70 break-all leading-relaxed">
+                    {preview.notFound.slice(0, 10).join(", ")}
+                    {preview.notFound.length > 10 && ` … +${preview.notFound.length - 10} more`}
+                  </p>
+                </div>
+              )}
+
+              {preview.found > 0 && !confirmOpen && (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete {preview.found} Question{preview.found !== 1 ? "s" : ""}
+                  </button>
+                  <button type="button" onClick={() => setPreview(null)} className="text-xs text-gray-500 hover:text-gray-300">
+                    Cancel
+                  </button>
+                </div>
+              )}
+
+              {confirmOpen && (
+                <div className="px-4 py-3 bg-red-500/5 border-t border-red-500/20 space-y-3">
+                  <p className="text-xs text-red-300">
+                    Permanently delete <strong className="text-red-400">{preview.found} questions</strong>?
+                    {preview.inExams > 0 && <> Exam references will be {preview.pairs.some(p => p.keeper_id) ? "remapped to keeper" : "removed"}.</>}
+                    {" "}This cannot be undone.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleExecute}
+                      disabled={executing}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors disabled:opacity-50"
+                    >
+                      {executing ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Deleting…</> : <><Trash2 className="w-3.5 h-3.5" />Confirm Delete</>}
+                    </button>
+                    <button type="button" onClick={() => setConfirmOpen(false)} disabled={executing} className="text-xs text-gray-500 hover:text-gray-300">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Execution result */}
+          {result && (
+            <div className={cn(
+              "flex items-start gap-3 px-4 py-3 rounded-lg border",
+              result.errors.length === 0 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-amber-500/10 border-amber-500/30"
+            )}>
+              {result.errors.length === 0
+                ? <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                : <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />}
+              <div className="space-y-1">
+                <p className={cn("text-xs font-semibold", result.errors.length === 0 ? "text-emerald-300" : "text-amber-300")}>
+                  Deleted {result.deleted} questions, remapped {result.remapped} exam references.
+                </p>
+                {result.errors.length > 0 && (
+                  <ul className="text-[11px] text-amber-400 space-y-0.5 list-disc list-inside">
+                    {result.errors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
+                <button type="button" onClick={reset} className="text-xs text-gray-500 hover:text-gray-300 underline">
+                  Upload another batch
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function shortId(id: string) {
@@ -285,6 +573,9 @@ export default function DedupPage() {
             </p>
           </div>
         </div>
+
+        {/* Upload by IDs */}
+        <UploadByIds />
 
         {/* Warning banner */}
         {data.toDelete > 0 && !result && (
