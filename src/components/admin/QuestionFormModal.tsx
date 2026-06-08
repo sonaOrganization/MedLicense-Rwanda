@@ -5,6 +5,7 @@ import { X, Plus, Trash2, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categories";
+import { FlagIcon } from "@/components/ui/FlagIcon";
 
 interface Category { id: string; name_en: string; license_category?: string | null; }
 interface AnswerField { text_en: string; text_fr: string; is_correct: boolean; }
@@ -221,7 +222,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                     : "border-gray-200 dark:border-gray-700 text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
-                {l === "EN" ? "🇬🇧" : "🇫🇷"}
+                <FlagIcon lang={l as "EN" | "FR"} size={14} />
                 {l === "EN" ? "English" : "French"}
                 {language === l && (
                   <span className={cn(
@@ -255,7 +256,8 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
                     : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 )}
               >
-                {l === "EN" ? "🇬🇧 English" : "🇫🇷 Français"}
+                <FlagIcon lang={l as "EN" | "FR"} size={14} />
+                {l === "EN" ? "English" : "Français"}
                 {isPrimary && <span className="text-[10px] text-red-500 font-bold">*</span>}
                 {showCheck  && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                 {showDot    && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}

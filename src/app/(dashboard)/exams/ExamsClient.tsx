@@ -8,6 +8,7 @@ import { Clock, FileText, Star, Lock } from "lucide-react";
 import { useLanguage, t } from "@/lib/language";
 import { useT } from "@/lib/translations";
 import { cn } from "@/lib/utils";
+import { FlagIcon } from "@/components/ui/FlagIcon";
 
 interface Category { name_en: string; name_fr?: string | null; }
 interface Exam {
@@ -57,8 +58,8 @@ export function ExamsClient({ exams, isPremium }: Props) {
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {([
           { value: "ALL" as LangFilter, label: "All Exams",      count: exams.length,  flag: null   },
-          { value: "EN"  as LangFilter, label: "English",         count: enCount,        flag: "🇬🇧" },
-          { value: "FR"  as LangFilter, label: "Français",        count: frCount,        flag: "🇫🇷" },
+          { value: "EN"  as LangFilter, label: "English",         count: enCount,        flag: "EN" as const },
+          { value: "FR"  as LangFilter, label: "Français",        count: frCount,        flag: "FR" as const },
         ]).map((tab) => (
           <button
             key={tab.value}
@@ -70,7 +71,7 @@ export function ExamsClient({ exams, isPremium }: Props) {
                 : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700"
             )}
           >
-            {tab.flag && <span>{tab.flag}</span>}
+            {tab.flag && <FlagIcon lang={tab.flag} size={14} />}
             {tab.label}
             <span className={cn(
               "text-[11px] font-bold px-1.5 py-0.5 rounded-full",
@@ -98,10 +99,10 @@ export function ExamsClient({ exams, isPremium }: Props) {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {categoryName && <Badge variant="info">{categoryName}</Badge>}
                     {exam.target_language === "FR" && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/40">🇫🇷 FR</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/40"><FlagIcon lang="FR" size={10} /> FR</span>
                     )}
                     {(exam.target_language === "EN" || !exam.target_language) && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">🇬🇧 EN</span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700"><FlagIcon lang="EN" size={10} /> EN</span>
                     )}
                   </div>
                   {exam.is_free ? (

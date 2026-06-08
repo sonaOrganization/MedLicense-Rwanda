@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { X, Search, CheckSquare, Square, Wand2, List, RefreshCw, Loader2, Clock, Trophy, Star } from "lucide-react";
+import { FlagIcon } from "@/components/ui/FlagIcon";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS, getLicenseCategoryLabel } from "@/lib/license-categories";
@@ -290,8 +291,8 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
             </label>
             <div className="flex gap-3">
               {([
-                { value: "EN" as ExamLang, flag: "🇬🇧", label: "English",  sub: "Uses English questions" },
-                { value: "FR" as ExamLang, flag: "🇫🇷", label: "French",   sub: "Uses French questions"  },
+                { value: "EN" as ExamLang, label: "English",  sub: "Uses English questions" },
+                { value: "FR" as ExamLang, label: "French",   sub: "Uses French questions"  },
               ]).map((opt) => (
                 <button
                   key={opt.value}
@@ -306,7 +307,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                   )}
                 >
-                  <span className="text-2xl">{opt.flag}</span>
+                  <FlagIcon lang={opt.value} size={22} />
                   <div>
                     <p className={cn("text-sm font-semibold", examLanguage === opt.value
                       ? opt.value === "EN" ? "text-blue-700 dark:text-blue-300" : "text-indigo-700 dark:text-indigo-300"
@@ -452,7 +453,7 @@ export function ExamFormModal({ open, onClose, categories, questions, exam }: Pr
                   <span className="font-normal text-gray-400 ml-1">({selectedIds.length} selected)</span>
                 </label>
                 <p className="text-[11px] text-gray-400 mt-0.5">
-                  Showing {examLanguage === "EN" ? "🇬🇧 English" : "🇫🇷 French"} questions
+                  Showing{" "}<span className="inline-flex items-center align-middle"><FlagIcon lang={examLanguage} size={11} /></span>{" "}{examLanguage === "EN" ? "English" : "French"} questions
                   {licenseCategory && ` · ${LICENSE_CATEGORIES.find(c => c.id === licenseCategory)?.label}`}
                 </p>
               </div>
