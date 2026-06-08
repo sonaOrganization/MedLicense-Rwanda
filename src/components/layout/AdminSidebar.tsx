@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Users, FileQuestion, FileText,
-  CreditCard, BarChart2, Video,
+  CreditCard, BarChart2, Video, Bell,
   LogOut, Stethoscope, Shield, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,8 @@ const adminNavItems = [
   { label: "Users",              href: "/admin/users",      icon: Users           },
   { label: "Payments",           href: "/admin/payments",   icon: CreditCard      },
   { label: "Analytics",          href: "/admin/analytics",  icon: BarChart2       },
-  { label: "Content Management", href: "/admin/content",    icon: Video           },
+  { label: "Notifications",      href: "/admin/notifications",   icon: Bell            },
+  { label: "Content Management", href: "/admin/content",         icon: Video           },
 ];
 
 interface Props {
@@ -96,3 +97,5 @@ export function AdminSidebar({ onClose }: Props) {
     </aside>
   );
 }
+
+
