@@ -9,7 +9,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
   }
 
   const { userId } = await params;
-  const { action } = await req.json();
+  const body = await req.json();
+  const { action } = body;
 
   switch (action) {
     case "ban":
@@ -24,6 +25,36 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
     case "make_student":
       await supabase.from("users").update({ role: "STUDENT" }).eq("id", userId);
       break;
+    case "grant_subscription": {
+      const { plan, months, end_date } = body as { plan?: string; months?: number; end_date?: string };
+      let endDate: Date;
+      if (end_date) {
+        endDate = new Date(end_date);
+      } else {
+        endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + (months ?? 1));
+      }
+      const { error } = await supabase.from("subscriptions").upsert(
+        {
+          user_id:    userId,
+          status:     "ACTIVE",
+          plan:       plan ?? "pro",
+          start_date: new Date().toISOString(),
+          end_date:   endDate.toISOString(),
+          auto_renew: false,
+        },
+        { onConflict: "user_id" }
+      );
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      break;
+    }
+    case "revoke_subscription": {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "CANCELLED", end_date: new Date().toISOString() })
+        .eq("user_id", userId);
+      break;
+    }
     default:
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
