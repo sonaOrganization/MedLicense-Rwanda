@@ -5,7 +5,7 @@ import { LicenseFocusCard } from "@/components/dashboard/overview/LicenseFocusCa
 import { RecentActivity } from "@/components/dashboard/overview/RecentActivity";
 import { ExamCountdown } from "@/components/dashboard/overview/ExamCountdown";
 import { WelcomeBanner } from "@/components/dashboard/overview/WelcomeBanner";
-import { SessionTypeModal, SessionChoicePill } from "@/components/dashboard/overview/SessionTypeModal";
+import { SessionChoicePill } from "@/components/dashboard/overview/SessionTypeModal";
 import { Target, TrendingUp, CheckCircle, BookOpen, ArrowRight, Zap, FileText, Bookmark, Video, BarChart2, CreditCard } from "lucide-react";
 import { useLanguage } from "@/lib/language";
 import { useT } from "@/lib/translations";
@@ -60,7 +60,6 @@ export function DashboardOverviewClient({
     <div className="pb-6 space-y-4 sm:space-y-6 max-w-7xl">
 
       {/* ── Welcome Banner ── */}
-      <SessionTypeModal />
       <WelcomeBanner
         name={userName}
         streak={streak}

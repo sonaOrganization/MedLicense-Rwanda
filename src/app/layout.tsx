@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme";
 import "./globals.css";
 import { Providers } from "./providers";
+import { SessionTypeModal } from "@/components/dashboard/overview/SessionTypeModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-slate-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <Providers>
+            <SessionTypeModal />
             {children}
           </Providers>
         </ThemeProvider>
