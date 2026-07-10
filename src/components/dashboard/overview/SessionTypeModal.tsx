@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { BookOpen, Stethoscope, Sparkles, X } from "lucide-react";
 import { useLanguage } from "@/lib/language";
@@ -9,6 +10,8 @@ import { cn } from "@/lib/utils";
 
 const CHOICE_KEY = "medlicense_session_choice_v1";
 const DISMISS_KEY = "medlicense_session_modal_dismissed_v1";
+const DAILY_KEY = "medlicense_session_daily_v1";
+export const PENDING_INTENT_KEY = "medlicense_pending_session_intent_v1";
 export const SESSION_MODAL_REOPEN_EVENT = "medlicense:reopen-session-modal";
 const SESSION_CHOICE_CHANGED_EVENT = "medlicense:session-choice-changed";
 
@@ -19,40 +22,71 @@ export function getSessionChoice(): SessionChoice {
   return (localStorage.getItem(CHOICE_KEY) as SessionChoice) ?? null;
 }
 
+/** Destination page for a given session type — each type gets its own page. */
+export function sessionDestination(type: "theory" | "practical"): string {
+  return type === "theory" ? "/exams" : "/practical";
+}
+
 export function openSessionTypeModal() {
   window.dispatchEvent(new Event(SESSION_MODAL_REOPEN_EVENT));
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function SessionTypeModal() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const { status } = useSession();
   const { language } = useLanguage();
   const T = useT(language);
 
   useEffect(() => {
-    const saved = localStorage.getItem(CHOICE_KEY);
-    const dismissed = sessionStorage.getItem(DISMISS_KEY);
-    if (!saved && !dismissed) setOpen(true);
+    if (status === "loading") return;
+
+    if (status === "authenticated") {
+      // Already signed in — only ask once inside the dashboard, and only once per day.
+      if (pathname !== "/dashboard") return;
+      const raw = localStorage.getItem(DAILY_KEY);
+      const daily = raw ? (JSON.parse(raw) as { date: string }) : null;
+      if (!daily || daily.date !== todayStr()) setOpen(true);
+    } else {
+      // First-time / logged-out visitor — ask once, anywhere on the site.
+      const saved = localStorage.getItem(CHOICE_KEY);
+      const dismissed = sessionStorage.getItem(DISMISS_KEY);
+      if (!saved && !dismissed) setOpen(true);
+    }
 
     const reopen = () => setOpen(true);
     window.addEventListener(SESSION_MODAL_REOPEN_EVENT, reopen);
     return () => window.removeEventListener(SESSION_MODAL_REOPEN_EVENT, reopen);
-  }, []);
+  }, [status, pathname]);
 
   function choose(type: "theory" | "practical") {
+    setOpen(false);
     localStorage.setItem(CHOICE_KEY, type);
     window.dispatchEvent(new Event(SESSION_CHOICE_CHANGED_EVENT));
-    setOpen(false);
-    if (type === "theory") {
-      router.push("/exams");
+
+    if (status === "authenticated") {
+      localStorage.setItem(DAILY_KEY, JSON.stringify({ date: todayStr() }));
+      if (type === "practical") toast.success(T("session_practical_toast"));
+      router.push(sessionDestination(type));
     } else {
-      toast.success(T("session_practical_toast"));
-      router.push("/login");
+      // Not signed in yet — remember their intent and send them to create an account first.
+      localStorage.setItem(PENDING_INTENT_KEY, type);
+      toast.success(T("session_signup_toast"));
+      router.push("/register");
     }
   }
 
   function dismiss() {
-    sessionStorage.setItem(DISMISS_KEY, "1");
+    if (status === "authenticated") {
+      localStorage.setItem(DAILY_KEY, JSON.stringify({ date: todayStr() }));
+    } else {
+      sessionStorage.setItem(DISMISS_KEY, "1");
+    }
     setOpen(false);
   }
 

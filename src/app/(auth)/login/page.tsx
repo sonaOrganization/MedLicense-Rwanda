@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
+import { PENDING_INTENT_KEY, sessionDestination } from "@/components/dashboard/overview/SessionTypeModal";
 
 function LoginForm() {
   const router       = useRouter();
@@ -34,7 +35,13 @@ function LoginForm() {
     if (res?.error) {
       toast.error(res.error === "Account suspended" ? "Your account has been suspended. Please contact support." : "Invalid email or password.");
     } else {
-      router.push("/dashboard");
+      const intent = localStorage.getItem(PENDING_INTENT_KEY);
+      if (intent === "theory" || intent === "practical") {
+        localStorage.removeItem(PENDING_INTENT_KEY);
+        router.push(sessionDestination(intent));
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     }
   }

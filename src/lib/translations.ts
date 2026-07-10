@@ -65,11 +65,17 @@ const T = {
   session_practical_desc:  { EN: "Hands-on clinical scenarios and skills stations.", FR: "Mises en situation cliniques et ateliers de compétences pratiques." },
   session_practical_badge: { EN: "Coming Soon",                                   FR: "Bientôt disponible" },
   session_practical_toast: { EN: "Practical sessions are coming soon — we'll let you know when they're ready!", FR: "Les sessions pratiques arrivent bientôt — nous vous préviendrons dès qu'elles seront prêtes !" },
+  session_signup_toast:    { EN: "Create your free account to start your session!",  FR: "Créez votre compte gratuit pour commencer votre session !" },
   session_modal_footer:    { EN: "You can change this anytime from your dashboard.", FR: "Vous pouvez changer ceci à tout moment depuis votre tableau de bord." },
   session_modal_later:     { EN: "Maybe later",                                   FR: "Plus tard" },
   session_current_theory:  { EN: "Session: Theory",                               FR: "Session : Théorique" },
   session_current_practical:{ EN: "Session: Practical (waitlisted)",              FR: "Session : Pratique (liste d'attente)" },
   session_change:          { EN: "Change",                                       FR: "Changer" },
+  practical_title:         { EN: "Practical Sessions",                           FR: "Sessions pratiques" },
+  practical_sub:           { EN: "Hands-on clinical scenarios and skills stations", FR: "Mises en situation cliniques et ateliers de compétences" },
+  practical_coming_title:  { EN: "Coming Soon",                                  FR: "Bientôt disponible" },
+  practical_coming_desc:   { EN: "We're building practical exam content for your license category. You'll be notified as soon as it's ready.", FR: "Nous préparons le contenu des examens pratiques pour votre catégorie de licence. Vous serez averti dès qu'il sera prêt." },
+  practical_cta_theory:    { EN: "Practice Theory Sessions Meanwhile",           FR: "Pratiquer les sessions théoriques en attendant" },
 
   // ── Quick Actions ─────────────────────────────────────────────
   qa_daily:         { EN: "Daily Quiz",          FR: "Quiz quotidien" },
