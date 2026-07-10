@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/lib/theme";
 import "./globals.css";
 import { Providers } from "./providers";
-import { DisclaimerModal } from "@/components/ui/DisclaimerModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -44,7 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-slate-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <Providers>
-            <DisclaimerModal />
             {children}
           </Providers>
         </ThemeProvider>
