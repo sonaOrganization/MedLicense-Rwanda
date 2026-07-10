@@ -47,6 +47,7 @@ export function SessionTypeModal() {
       router.push("/exams");
     } else {
       toast.success(T("session_practical_toast"));
+      router.push("/login");
     }
   }
 
