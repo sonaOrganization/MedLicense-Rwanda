@@ -15,6 +15,7 @@ const adminNavItems = [
   { label: "Remove Duplicates",  href: "/admin/questions/dedup", icon: Copy        },
   { label: "Exams",              href: "/admin/exams",      icon: FileText        },
   { label: "Fix Exam Dupes",     href: "/admin/exams/fix-dupes", icon: Copy       },
+  { label: "Practical Exams",    href: "/admin/practical",  icon: Stethoscope     },
   { label: "Users",              href: "/admin/users",      icon: Users           },
   { label: "Payments",           href: "/admin/payments",   icon: CreditCard      },
   { label: "Analytics",          href: "/admin/analytics",  icon: BarChart2       },

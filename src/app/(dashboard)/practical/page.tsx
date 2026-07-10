@@ -1,37 +1,81 @@
-"use client";
-import Link from "next/link";
-import { Stethoscope, Clock } from "lucide-react";
-import { useLanguage } from "@/lib/language";
-import { useT } from "@/lib/translations";
+import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/auth";
+import { PracticalListClient } from "./PracticalListClient";
 
-export default function PracticalPage() {
-  const { language } = useLanguage();
-  const T = useT(language);
+export default async function PracticalPage() {
+  const session = await auth();
+  const userId = session!.user.id;
+
+  const { data: subscription } = await supabase
+    .from("subscriptions").select("*").eq("user_id", userId).single();
+  const isPremium = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
+
+  const licenseCategory = session?.user?.licenseCategory;
+
+  let examsQuery = supabase
+    .from("practical_exams")
+    .select("*, category:categories(name_en, name_fr)")
+    .eq("is_published", true);
+
+  if (licenseCategory) {
+    examsQuery = examsQuery.or(`license_category.eq.${licenseCategory},license_category.is.null`);
+  }
+
+  const [{ data: exams }, { data: attempts }] = await Promise.all([
+    examsQuery.order("is_free", { ascending: false }).order("created_at", { ascending: false }),
+    supabase
+      .from("practical_attempts")
+      .select("practical_exam_id, status, score, submitted_at")
+      .eq("user_id", userId)
+      .order("submitted_at", { ascending: false }),
+  ]);
+
+  // One relevant attempt per exam — prefer an in-progress attempt (to resume) over the most recent completed one.
+  const attemptsByExam = new Map<string, { status: string; score: number | null }>();
+  for (const a of attempts ?? []) {
+    const existing = attemptsByExam.get(a.practical_exam_id);
+    if (!existing) attemptsByExam.set(a.practical_exam_id, { status: a.status, score: a.score });
+    else if (a.status === "IN_PROGRESS" && existing.status !== "IN_PROGRESS")
+      attemptsByExam.set(a.practical_exam_id, { status: a.status, score: a.score });
+  }
+
+  const examList = (exams ?? []).map((e) => {
+    const latest = attemptsByExam.get(e.id);
+    return {
+      ...e,
+      attemptStatus: (latest?.status as "IN_PROGRESS" | "COMPLETED" | undefined) ?? null,
+      lastScore: latest?.score ?? null,
+    };
+  });
+
+  const completed = (attempts ?? []).filter((a) => a.status === "COMPLETED");
+  const casesReviewed = completed.length;
+  const accuracy = completed.length > 0
+    ? Math.round(completed.reduce((s, a) => s + (a.score ?? 0), 0) / completed.length)
+    : null;
+
+  const dateSet = new Set(
+    completed
+      .filter((a) => a.submitted_at)
+      .map((a) => new Date(a.submitted_at as string).toISOString().slice(0, 10))
+  );
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  let cursor = dateSet.has(todayStr) ? now : new Date(now.getTime() - ONE_DAY);
+  let streak = 0;
+  while (dateSet.has(cursor.toISOString().slice(0, 10))) {
+    streak++;
+    cursor = new Date(cursor.getTime() - ONE_DAY);
+  }
 
   return (
-    <div className="max-w-2xl">
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{T("practical_title")}</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{T("practical_sub")}</p>
-      </div>
-
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 p-8 text-center">
-        <div className="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
-          <Stethoscope className="w-7 h-7 text-amber-500" />
-        </div>
-        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-3">
-          <Clock className="w-3 h-3" /> {T("practical_coming_title")}
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed mb-6">
-          {T("practical_coming_desc")}
-        </p>
-        <Link
-          href="/exams"
-          className="inline-flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
-        >
-          {T("practical_cta_theory")}
-        </Link>
-      </div>
-    </div>
+    <PracticalListClient
+      exams={examList}
+      isPremium={isPremium}
+      casesReviewed={casesReviewed}
+      accuracy={accuracy}
+      streak={streak}
+    />
   );
 }
