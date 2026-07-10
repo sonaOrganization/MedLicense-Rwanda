@@ -55,6 +55,22 @@ const T = {
   wb_start:         { EN: "Start Exam",          FR: "Commencer l'examen" },
   wb_unlock:        { EN: "Unlock Full Access",  FR: "Accès complet" },
 
+  // ── Session type modal ─────────────────────────────────────────
+  session_modal_title:     { EN: "Welcome to MedLicense",                         FR: "Bienvenue sur MedLicense" },
+  session_modal_subtitle:  { EN: "How would you like to prepare today?",          FR: "Comment souhaitez-vous vous préparer aujourd'hui ?" },
+  session_theory_title:    { EN: "Theory Session",                                FR: "Session théorique" },
+  session_theory_desc:     { EN: "Practice exam questions across all your license categories.", FR: "Entraînez-vous avec des questions d'examen dans toutes vos catégories de licence." },
+  session_theory_badge:    { EN: "Available Now",                                 FR: "Disponible" },
+  session_practical_title: { EN: "Practical Session",                             FR: "Session pratique" },
+  session_practical_desc:  { EN: "Hands-on clinical scenarios and skills stations.", FR: "Mises en situation cliniques et ateliers de compétences pratiques." },
+  session_practical_badge: { EN: "Coming Soon",                                   FR: "Bientôt disponible" },
+  session_practical_toast: { EN: "Practical sessions are coming soon — we'll let you know when they're ready!", FR: "Les sessions pratiques arrivent bientôt — nous vous préviendrons dès qu'elles seront prêtes !" },
+  session_modal_footer:    { EN: "You can change this anytime from your dashboard.", FR: "Vous pouvez changer ceci à tout moment depuis votre tableau de bord." },
+  session_modal_later:     { EN: "Maybe later",                                   FR: "Plus tard" },
+  session_current_theory:  { EN: "Session: Theory",                               FR: "Session : Théorique" },
+  session_current_practical:{ EN: "Session: Practical (waitlisted)",              FR: "Session : Pratique (liste d'attente)" },
+  session_change:          { EN: "Change",                                       FR: "Changer" },
+
   // ── Quick Actions ─────────────────────────────────────────────
   qa_daily:         { EN: "Daily Quiz",          FR: "Quiz quotidien" },
   qa_daily_desc:    { EN: "5-min practice",      FR: "5 min d'entraînement" },
