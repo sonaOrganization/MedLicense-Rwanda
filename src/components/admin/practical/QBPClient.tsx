@@ -24,9 +24,9 @@ interface CaseItem {
   subquestions: Subquestion[];
 }
 
-function subLabel(subIndex: number, totalSubsInGroup: number) {
-  const base = "Question";
-  return totalSubsInGroup > 1 ? `${base} ${String.fromCharCode(65 + subIndex)}` : base;
+function subLabel(caseOrder: number, subIndex: number, totalSubsInGroup: number) {
+  const base = `Q${caseOrder + 1}`;
+  return totalSubsInGroup > 1 ? `${base}.${String.fromCharCode(65 + subIndex)}` : base;
 }
 
 export function QBPClient({ cases }: { cases: CaseItem[] }) {
@@ -227,7 +227,7 @@ export function QBPClient({ cases }: { cases: CaseItem[] }) {
                     <div key={sub.id} className="flex items-start gap-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-1">
-                          {subLabel(si, c.subquestions.length)}
+                          {subLabel(c.order, si, c.subquestions.length)}
                         </p>
                         <p className="text-xs text-gray-700 dark:text-gray-300">{sub.prompt_en}</p>
                         <p className="text-[11px] text-gray-400 mt-1">

@@ -30,11 +30,11 @@ interface Props {
   groups: Group[];
 }
 
-/** Derive the sub-question label: single sub in a group -> plain "Question N",
- *  multiple subs -> "Question N" + letter (A/B/C...). */
+/** Derive the sub-question label: single sub in a group -> plain "QN",
+ *  multiple subs -> "QN.A" / "QN.B" / "QN.C"... */
 function subLabel(groupIndex: number, subIndex: number, totalSubsInGroup: number) {
-  const base = `Question ${groupIndex + 1}`;
-  return totalSubsInGroup > 1 ? `${base}${String.fromCharCode(65 + subIndex)}` : base;
+  const base = `Q${groupIndex + 1}`;
+  return totalSubsInGroup > 1 ? `${base}.${String.fromCharCode(65 + subIndex)}` : base;
 }
 
 export function PracticalExamEditorClient({ exam, groups }: Props) {

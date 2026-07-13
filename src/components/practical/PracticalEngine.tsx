@@ -37,8 +37,8 @@ interface PracticalExamData {
 type Phase = "prompt" | "thinking" | "revealed" | "group-done";
 
 function subLabel(groupIndex: number, subIndex: number, totalSubsInGroup: number) {
-  const base = `Question ${groupIndex + 1}`;
-  return totalSubsInGroup > 1 ? `${base}${String.fromCharCode(65 + subIndex)}` : base;
+  const base = `Q${groupIndex + 1}`;
+  return totalSubsInGroup > 1 ? `${base}.${String.fromCharCode(65 + subIndex)}` : base;
 }
 
 export function PracticalEngine({ exam }: { exam: PracticalExamData }) {
