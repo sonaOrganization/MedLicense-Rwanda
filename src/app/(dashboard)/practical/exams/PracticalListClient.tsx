@@ -9,7 +9,6 @@ import { useLanguage, t } from "@/lib/language";
 import { useT } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 import { FlagIcon } from "@/components/ui/FlagIcon";
-import { PracticalStatsStrip } from "@/components/practical/PracticalStatsStrip";
 
 interface Category { name_en: string; name_fr?: string | null; }
 interface PracticalExam {
@@ -29,14 +28,11 @@ interface PracticalExam {
 interface Props {
   exams: PracticalExam[];
   isPremium: boolean;
-  casesReviewed: number;
-  accuracy: number | null;
-  streak: number;
 }
 
 type LangFilter = "ALL" | "EN" | "FR";
 
-export function PracticalListClient({ exams, isPremium, casesReviewed, accuracy, streak }: Props) {
+export function PracticalListClient({ exams, isPremium }: Props) {
   const { language } = useLanguage();
   const T = useT(language);
   const [langFilter, setLangFilter] = useState<LangFilter>("ALL");
@@ -55,11 +51,9 @@ export function PracticalListClient({ exams, isPremium, casesReviewed, accuracy,
   return (
     <div className="max-w-5xl space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{T("practical_title")}</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{T("practical_sub")}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{T("practical_exams_title")}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{T("practical_exams_sub")}</p>
       </div>
-
-      <PracticalStatsStrip casesReviewed={casesReviewed} accuracy={accuracy} streak={streak} />
 
       {/* Language filter tabs */}
       <div className="flex items-center gap-2 flex-wrap">

@@ -1,8 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/auth";
-import { PracticalListClient } from "./PracticalListClient";
+import { PracticalDashboardClient } from "@/components/practical/PracticalDashboardClient";
 
-export default async function PracticalPage() {
+export default async function PracticalDashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
 
@@ -14,41 +14,41 @@ export default async function PracticalPage() {
 
   let examsQuery = supabase
     .from("practical_exams")
-    .select("*, category:categories(name_en, name_fr)")
+    .select("id", { count: "exact", head: true })
     .eq("is_published", true);
-
   if (licenseCategory) {
     examsQuery = examsQuery.or(`license_category.eq.${licenseCategory},license_category.is.null`);
   }
 
-  const [{ data: exams }, { data: attempts }] = await Promise.all([
-    examsQuery.order("is_free", { ascending: false }).order("created_at", { ascending: false }),
+  const [{ count: casesAvailable }, { data: attempts }] = await Promise.all([
+    examsQuery,
     supabase
       .from("practical_attempts")
-      .select("practical_exam_id, status, score, submitted_at")
+      .select("id, practical_exam_id, status, score, submitted_at, exam:practical_exams(title_en, title_fr)")
       .eq("user_id", userId)
-      .order("submitted_at", { ascending: false }),
+      .order("submitted_at", { ascending: false, nullsFirst: true }),
   ]);
 
-  // One relevant attempt per exam — prefer an in-progress attempt (to resume) over the most recent completed one.
-  const attemptsByExam = new Map<string, { status: string; score: number | null }>();
-  for (const a of attempts ?? []) {
-    const existing = attemptsByExam.get(a.practical_exam_id);
-    if (!existing) attemptsByExam.set(a.practical_exam_id, { status: a.status, score: a.score });
-    else if (a.status === "IN_PROGRESS" && existing.status !== "IN_PROGRESS")
-      attemptsByExam.set(a.practical_exam_id, { status: a.status, score: a.score });
+  const allAttempts = attempts ?? [];
+  const inProgress = allAttempts.find((a) => a.status === "IN_PROGRESS");
+  const completed = allAttempts.filter((a) => a.status === "COMPLETED");
+
+  function examTitle(a: (typeof allAttempts)[number]) {
+    const exam = Array.isArray(a.exam) ? a.exam[0] : a.exam;
+    return exam?.title_fr && session?.user?.language === "FR" ? exam.title_fr : exam?.title_en ?? "";
   }
 
-  const examList = (exams ?? []).map((e) => {
-    const latest = attemptsByExam.get(e.id);
-    return {
-      ...e,
-      attemptStatus: (latest?.status as "IN_PROGRESS" | "COMPLETED" | undefined) ?? null,
-      lastScore: latest?.score ?? null,
-    };
-  });
+  const resume = inProgress
+    ? { examId: inProgress.practical_exam_id, examTitle: examTitle(inProgress) }
+    : null;
 
-  const completed = (attempts ?? []).filter((a) => a.status === "COMPLETED");
+  const recentAttempts = completed.slice(0, 5).map((a) => ({
+    id: a.id,
+    examTitle: examTitle(a),
+    score: a.score,
+    submittedAt: a.submitted_at,
+  }));
+
   const casesReviewed = completed.length;
   const accuracy = completed.length > 0
     ? Math.round(completed.reduce((s, a) => s + (a.score ?? 0), 0) / completed.length)
@@ -70,12 +70,15 @@ export default async function PracticalPage() {
   }
 
   return (
-    <PracticalListClient
-      exams={examList}
+    <PracticalDashboardClient
+      userName={session?.user?.name ?? ""}
       isPremium={isPremium}
+      casesAvailable={casesAvailable ?? 0}
       casesReviewed={casesReviewed}
       accuracy={accuracy}
       streak={streak}
+      resume={resume}
+      recentAttempts={recentAttempts}
     />
   );
 }
