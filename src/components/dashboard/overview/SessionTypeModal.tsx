@@ -162,10 +162,9 @@ export function SessionTypeModal() {
   );
 }
 
-export function SessionChoicePill({ className }: { className?: string }) {
+/** Tracks the user's current Theory/Practical session choice, updating live as it changes. */
+export function useSessionChoice(): SessionChoice {
   const [choice, setChoice] = useState<SessionChoice>(null);
-  const { language } = useLanguage();
-  const T = useT(language);
 
   useEffect(() => {
     setChoice(getSessionChoice());
@@ -177,6 +176,14 @@ export function SessionChoicePill({ className }: { className?: string }) {
       window.removeEventListener(SESSION_CHOICE_CHANGED_EVENT, refresh);
     };
   }, []);
+
+  return choice;
+}
+
+export function SessionChoicePill({ className }: { className?: string }) {
+  const choice = useSessionChoice();
+  const { language } = useLanguage();
+  const T = useT(language);
 
   if (!choice) return null;
 

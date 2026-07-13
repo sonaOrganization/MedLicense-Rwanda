@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language";
 import { useT } from "@/lib/translations";
 import { FeedbackWidget } from "@/components/dashboard/FeedbackWidget";
+import { useSessionChoice } from "@/components/dashboard/overview/SessionTypeModal";
 
 interface Props {
   mobile?: boolean;
@@ -20,10 +21,12 @@ export function DashboardSidebar({ onClose }: Props) {
   const pathname = usePathname();
   const { language } = useLanguage();
   const T = useT(language);
+  const sessionChoice = useSessionChoice();
+  const examsHref = sessionChoice === "practical" ? "/practical/exams" : "/exams";
 
   const navItems = [
     { label: T("nav_dashboard"),    href: "/dashboard",    icon: LayoutDashboard },
-    { label: T("nav_exams"),        href: "/exams",        icon: FileText },
+    { label: T("nav_exams"),        href: examsHref,       icon: FileText },
     { label: T("nav_results"),      href: "/results",      icon: Trophy },
     { label: T("nav_analytics"),    href: "/analytics",    icon: BarChart2 },
     { label: T("nav_saved"),        href: "/saved",        icon: Bookmark },

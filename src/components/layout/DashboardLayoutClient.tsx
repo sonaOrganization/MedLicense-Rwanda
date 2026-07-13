@@ -7,6 +7,7 @@ import { DashboardHeader } from "./DashboardHeader";
 import { WhatsAppButton } from "./WhatsAppButton";
 import { LayoutDashboard, FileText, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSessionChoice } from "@/components/dashboard/overview/SessionTypeModal";
 
 interface Props {
   user: { name?: string | null; email?: string | null; image?: string | null };
@@ -16,12 +17,14 @@ interface Props {
 export function DashboardLayoutClient({ user, children }: Props) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
+  const sessionChoice = useSessionChoice();
+  const examsHref = sessionChoice === "practical" ? "/practical/exams" : "/exams";
 
   // Close drawer on route change
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
 
-  // Hide bottom nav and WhatsApp button when taking an exam (exam engine has its own full-screen UI)
-  const isExamPage = /^\/exams\/[^/]+/.test(pathname);
+  // Hide bottom nav and WhatsApp button when taking an exam (the engines have their own full-screen UI)
+  const isExamPage = /^\/exams\/[^/]+/.test(pathname) || /^\/practical\/(?!exams|results)[^/]+/.test(pathname);
 
   return (
     <div className="flex h-[100dvh] bg-gray-50 dark:bg-[#0a0d16] overflow-hidden" suppressHydrationWarning>
@@ -61,7 +64,7 @@ export function DashboardLayoutClient({ user, children }: Props) {
         <div className="flex items-stretch h-16">
           {[
             { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard"     },
-            { href: "/exams",         icon: FileText,        label: "Exams"         },
+            { href: examsHref,        icon: FileText,        label: "Exams"         },
             { href: "/subscription",  icon: CreditCard,      label: "Subscription"  },
           ].map(({ href, icon: Icon, label }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
