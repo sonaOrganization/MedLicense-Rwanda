@@ -194,12 +194,20 @@ export function PracticalEngine({ exam }: { exam: PracticalExamData }) {
 
             <div className="px-4 sm:px-6 py-5">
               {phase === "prompt" && (
-                <button
-                  onClick={() => setPhase("thinking")}
-                  className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold transition-colors shadow-sm"
-                >
-                  <Brain className="w-4 h-4" /> {T("practical_engine_start_thinking")}
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => setPhase("thinking")}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold transition-colors shadow-sm"
+                  >
+                    <Brain className="w-4 h-4" /> {T("practical_engine_start_thinking")}
+                  </button>
+                  <button
+                    onClick={() => setPhase("revealed")}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl border-2 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/10 text-sm font-bold transition-colors"
+                  >
+                    <Eye className="w-4 h-4" /> {T("practical_engine_review_answer")}
+                  </button>
+                </div>
               )}
 
               {phase === "thinking" && (
