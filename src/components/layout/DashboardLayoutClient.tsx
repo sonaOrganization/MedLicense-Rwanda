@@ -19,6 +19,7 @@ export function DashboardLayoutClient({ user, children }: Props) {
   const pathname = usePathname();
   const sessionChoice = useSessionChoice();
   const examsHref = sessionChoice === "practical" ? "/practical/exams" : "/exams";
+  const dashboardHref = sessionChoice === "practical" ? "/practical" : "/dashboard";
 
   // Close drawer on route change
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
@@ -63,11 +64,11 @@ export function DashboardLayoutClient({ user, children }: Props) {
       <nav className={cn("fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800", isExamPage && "hidden")}>
         <div className="flex items-stretch h-16">
           {[
-            { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard"     },
+            { href: dashboardHref,    icon: LayoutDashboard, label: "Dashboard"     },
             { href: examsHref,        icon: FileText,        label: "Exams"         },
             { href: "/subscription",  icon: CreditCard,      label: "Subscription"  },
           ].map(({ href, icon: Icon, label }) => {
-            const active = pathname === href || pathname.startsWith(href + "/");
+            const active = pathname === href || (href !== dashboardHref && pathname.startsWith(href + "/"));
             return (
               <Link
                 key={href}

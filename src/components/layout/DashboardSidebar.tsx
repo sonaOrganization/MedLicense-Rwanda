@@ -22,14 +22,19 @@ export function DashboardSidebar({ onClose }: Props) {
   const { language } = useLanguage();
   const T = useT(language);
   const sessionChoice = useSessionChoice();
-  const examsHref = sessionChoice === "practical" ? "/practical/exams" : "/exams";
+  const isPractical = sessionChoice === "practical";
+  const examsHref = isPractical ? "/practical/exams" : "/exams";
+  const dashboardHref = isPractical ? "/practical" : "/dashboard";
 
   const navItems = [
-    { label: T("nav_dashboard"),    href: "/dashboard",    icon: LayoutDashboard },
+    { label: T("nav_dashboard"),    href: dashboardHref,   icon: LayoutDashboard },
     { label: T("nav_exams"),        href: examsHref,       icon: FileText },
-    { label: T("nav_results"),      href: "/results",      icon: Trophy },
-    { label: T("nav_analytics"),    href: "/analytics",    icon: BarChart2 },
-    { label: T("nav_saved"),        href: "/saved",        icon: Bookmark },
+    // Theory-only — no Practical equivalent yet, so hidden while in Practical mode.
+    ...(isPractical ? [] : [
+      { label: T("nav_results"),      href: "/results",      icon: Trophy },
+      { label: T("nav_analytics"),    href: "/analytics",    icon: BarChart2 },
+      { label: T("nav_saved"),        href: "/saved",        icon: Bookmark },
+    ]),
     { label: T("nav_subscription"), href: "/subscription", icon: CreditCard },
     { label: T("nav_profile"),      href: "/profile",      icon: User },
   ];
@@ -67,7 +72,7 @@ export function DashboardSidebar({ onClose }: Props) {
       {/* Nav items */}
       <nav className="flex-1 px-3 pb-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ label, href, icon: Icon }) => {
-          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const active = pathname === href || (href !== dashboardHref && pathname.startsWith(href));
           return (
             <Link
               key={href}

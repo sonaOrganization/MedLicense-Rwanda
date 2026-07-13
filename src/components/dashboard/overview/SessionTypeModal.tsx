@@ -22,6 +22,15 @@ export function getSessionChoice(): SessionChoice {
   return (localStorage.getItem(CHOICE_KEY) as SessionChoice) ?? null;
 }
 
+/**
+ * Also mirrored into a cookie (same name as CHOICE_KEY) so the server-side
+ * proxy (src/proxy.ts) can redirect Theory-only pages away when the user is
+ * in Practical mode — localStorage isn't readable there.
+ */
+function setSessionChoiceCookie(type: "theory" | "practical") {
+  document.cookie = `${CHOICE_KEY}=${type}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+}
+
 /** Destination page for a given session type — each type gets its own page. */
 export function sessionDestination(type: "theory" | "practical"): string {
   return type === "theory" ? "/exams" : "/practical";
@@ -67,6 +76,7 @@ export function SessionTypeModal() {
   function choose(type: "theory" | "practical") {
     setOpen(false);
     localStorage.setItem(CHOICE_KEY, type);
+    setSessionChoiceCookie(type);
     window.dispatchEvent(new Event(SESSION_CHOICE_CHANGED_EVENT));
 
     if (status === "authenticated") {
@@ -167,7 +177,12 @@ export function useSessionChoice(): SessionChoice {
   const [choice, setChoice] = useState<SessionChoice>(null);
 
   useEffect(() => {
-    setChoice(getSessionChoice());
+    const saved = getSessionChoice();
+    setChoice(saved);
+    // Backfill the cookie for users who chose before the cookie mirror existed,
+    // so the server-side proxy can enforce it on their very next request.
+    if (saved && !document.cookie.includes(`${CHOICE_KEY}=`)) setSessionChoiceCookie(saved);
+
     const refresh = () => setChoice(getSessionChoice());
     window.addEventListener("storage", refresh);
     window.addEventListener(SESSION_CHOICE_CHANGED_EVENT, refresh);

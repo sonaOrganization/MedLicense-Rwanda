@@ -3,8 +3,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const AUTH_PATHS      = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
-const PROTECTED_PATHS = ["/dashboard", "/exams", "/results", "/analytics", "/saved", "/subscription", "/profile", "/settings"];
+const PROTECTED_PATHS = ["/dashboard", "/exams", "/results", "/analytics", "/saved", "/subscription", "/profile", "/settings", "/practical"];
 const ADMIN_PATHS     = ["/admin"];
+
+// Pages that only make sense for the Theory session — hidden entirely once the
+// user has chosen Practical. Must match SessionTypeModal.tsx's CHOICE_KEY.
+const THEORY_ONLY_PATHS   = ["/dashboard", "/exams", "/results", "/analytics", "/saved"];
+const SESSION_CHOICE_COOKIE = "medlicense_session_choice_v1";
 
 function supabaseAdmin() {
   return createClient(
@@ -72,6 +77,14 @@ export default auth(async (req) => {
     }
   }
   // ────────────────────────────────────────────────────────────────────────
+
+  // Hide Theory-only pages once the user has chosen Practical mode
+  if (session && THEORY_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+    const sessionChoice = req.cookies.get(SESSION_CHOICE_COOKIE)?.value;
+    if (sessionChoice === "practical") {
+      return NextResponse.redirect(new URL("/practical", req.url));
+    }
+  }
 
   return NextResponse.next();
 });
