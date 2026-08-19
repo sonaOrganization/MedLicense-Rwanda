@@ -124,21 +124,19 @@ export function SessionTypeModal() {
         {/* Options */}
         <div className="p-6 grid sm:grid-cols-2 gap-3">
           <button
-            disabled
-            aria-disabled="true"
-            title={T("session_theory_badge")}
-            className="text-left rounded-xl border-2 border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/20 p-4 opacity-60 cursor-not-allowed"
+            onClick={() => choose("theory")}
+            className="group text-left rounded-xl border-2 border-teal-300 dark:border-teal-800 hover:border-teal-500 dark:hover:border-teal-600 bg-teal-50/60 dark:bg-teal-950/20 p-4 transition-colors"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-teal-700 flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-white" />
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300">
                 {T("session_theory_badge")}
               </span>
             </div>
-            <p className="font-semibold text-gray-500 dark:text-gray-400 text-sm mb-1">{T("session_theory_title")}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">{T("session_theory_desc")}</p>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">{T("session_theory_title")}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{T("session_theory_desc")}</p>
           </button>
 
           <button
