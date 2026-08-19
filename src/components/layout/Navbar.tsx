@@ -47,12 +47,12 @@ export function Navbar() {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-md">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-700 flex items-center justify-center shadow-md shadow-teal-950/10">
                 <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div className="leading-none">
                 <span className="font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white tracking-tight">Med</span>
-                <span className="font-bold text-[16px] sm:text-[17px] text-blue-700 dark:text-blue-400 tracking-tight">License</span>
+                <span className="font-bold text-[16px] sm:text-[17px] text-teal-700 dark:text-teal-400 tracking-tight">License</span>
               </div>
             </Link>
 
@@ -67,13 +67,13 @@ export function Navbar() {
                     className={cn(
                       "relative px-3.5 py-2 text-[13.5px] font-medium rounded-lg transition-colors duration-150",
                       active
-                        ? "text-blue-700 dark:text-blue-400"
+                        ? "text-teal-700 dark:text-teal-400"
                         : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60"
                     )}
                   >
                     {link.label}
                     {active && (
-                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-blue-700 dark:bg-blue-400" />
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-teal-700 dark:bg-teal-400" />
                     )}
                   </Link>
                 );
@@ -107,7 +107,7 @@ export function Navbar() {
                       </Button>
                     </Link>
                     <Link href="/register">
-                      <Button size="sm" className="h-9 px-5 text-[13px] font-semibold bg-blue-700 hover:bg-blue-800 text-white shadow-sm">
+                      <Button size="sm" className="h-9 px-5 text-[13px] font-semibold bg-teal-700 hover:bg-teal-800 text-white shadow-sm">
                         Get Started Free
                       </Button>
                     </Link>
@@ -143,11 +143,11 @@ export function Navbar() {
             {/* Drawer header */}
             <div className="px-5 py-4 border-b border-gray-800/60 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                <div className="w-8 h-8 rounded-xl bg-blue-700 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-teal-700 flex items-center justify-center">
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
                 <span className="font-bold text-[15px] text-white tracking-tight">
-                  Med<span className="text-blue-400">License</span>
+                  Med<span className="text-teal-400">License</span>
                 </span>
               </Link>
               <button
@@ -170,7 +170,7 @@ export function Navbar() {
                     className={cn(
                       "flex items-center justify-between px-4 py-3 rounded-xl text-[14px] font-medium transition-all",
                       active
-                        ? "bg-blue-700 text-white shadow-md shadow-blue-900/40"
+                        ? "bg-teal-700 text-white shadow-md shadow-teal-900/40"
                         : "text-gray-400 hover:bg-gray-800/80 hover:text-white"
                     )}
                   >
@@ -185,7 +185,7 @@ export function Navbar() {
             <div className="px-4 py-4 border-t border-gray-800/60 space-y-2">
               {status === "authenticated" && session ? (
                 <Link href="/dashboard" className="block" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-blue-700 hover:bg-blue-600 font-semibold gap-1.5">
+                  <Button className="w-full bg-teal-700 hover:bg-teal-600 font-semibold gap-1.5">
                     <LayoutDashboard className="w-4 h-4" /> Go to Dashboard
                   </Button>
                 </Link>
@@ -197,7 +197,7 @@ export function Navbar() {
                     </Button>
                   </Link>
                   <Link href="/register" className="block" onClick={() => setMobileOpen(false)}>
-                    <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white font-semibold">
+                    <Button className="w-full bg-teal-700 hover:bg-teal-600 text-white font-semibold">
                       Get Started Free
                     </Button>
                   </Link>

@@ -13,6 +13,7 @@ interface Question { id: string; textEn: string; textFr?: string | null; imageUr
 interface ExamData {
   id: string; titleEn: string; titleFr?: string | null; durationMinutes: number; passingScore: number;
   negativeMarking: boolean; attemptId: string; questions: Question[];
+  initialState?: { answers?: Record<string, string | null>; flagged?: Record<string, boolean>; currentIndex?: number; timeLeft?: number } | null;
 }
 
 const DIFF_STYLE = {
@@ -25,10 +26,10 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
   const router = useRouter();
   const { language } = useLanguage();
   const T = useT(language);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers,      setAnswers]      = useState<Record<string, string | null>>({});
-  const [flagged,      setFlagged]      = useState<Record<string, boolean>>({});
-  const [timeLeft,     setTimeLeft]     = useState(exam.durationMinutes * 60);
+  const [currentIndex, setCurrentIndex] = useState(exam.initialState?.currentIndex ?? 0);
+  const [answers,      setAnswers]      = useState<Record<string, string | null>>(exam.initialState?.answers ?? {});
+  const [flagged,      setFlagged]      = useState<Record<string, boolean>>(exam.initialState?.flagged ?? {});
+  const [timeLeft,     setTimeLeft]     = useState(exam.initialState?.timeLeft ?? exam.durationMinutes * 60);
   const [showSubmitModal,  setShowSubmitModal]  = useState(false);
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);

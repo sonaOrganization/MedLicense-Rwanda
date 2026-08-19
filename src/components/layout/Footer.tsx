@@ -49,11 +49,11 @@ export function Footer() {
           {/* Brand col */}
           <div className="xl:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4 sm:mb-5 group">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/50">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-700 flex items-center justify-center shadow-lg shadow-teal-950/40">
                 <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <span className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Med<span className="text-blue-400">License</span>
+                Med<span className="text-teal-400">License</span>
               </span>
             </Link>
 

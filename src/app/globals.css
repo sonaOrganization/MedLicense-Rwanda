@@ -7,8 +7,8 @@
   /* Light mode — soft warm gray, not pure white */
   --background: #f1f5f9;
   --foreground: #1e293b;
-  --primary: #1d4ed8;
-  --primary-dark: #1e40af;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
   --surface: #ffffff;
   --border: #e2e8f0;
 }
@@ -28,6 +28,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
 }
+
+::selection { background: rgba(20, 184, 166, .24); }
+
+.hero-grid {
+  background-image: linear-gradient(rgba(148,163,184,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.055) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 92%);
+}
+
+.professional-surface {
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 32px rgba(15, 23, 42, .04);
+}
+
+.page-shell { width: min(100% - 2rem, 80rem); margin-inline: auto; }
+.page-heading { font-weight: 650; letter-spacing: -.035em; color: var(--foreground); }
 
 * {
   box-sizing: border-box;

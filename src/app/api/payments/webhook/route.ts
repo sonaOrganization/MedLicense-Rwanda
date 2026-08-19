@@ -1,73 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { parsePaymentPayload, verifyPaymentSignature } from "@/lib/payments";
 
 const planMonths: Record<string, number> = { pro: 1 };
+const paidStatuses = new Set(["success", "completed", "paid"]);
 
-async function activate(clientToken: string, status: string) {
+async function activate(clientToken: string, status: string, transactionId: string | null) {
   if (!clientToken.startsWith("ML_")) return null;
-
-  const isPaid = ["success", "completed", "PAID", "paid"].includes(status);
-  if (!isPaid) return { activated: false };
+  if (!paidStatuses.has(status.toLowerCase())) return { activated: false };
 
   const paymentId = clientToken.slice(3);
-
-  const { data: payment } = await supabase
-    .from("payments")
-    .select("*")
-    .eq("id", paymentId)
-    .single();
-
+  const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).single();
   if (!payment || payment.status === "completed") return { activated: false };
 
-  const months  = planMonths[payment.plan] ?? 1;
   const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + months);
+  endDate.setMonth(endDate.getMonth() + (planMonths[payment.plan] ?? 1));
+  const { error: paymentError } = await supabase
+    .from("payments")
+    .update({ status: "completed", transaction_id: transactionId })
+    .eq("id", paymentId)
+    .eq("status", "pending");
+  if (paymentError) throw paymentError;
 
-  await supabase.from("payments").update({ status: "completed" }).eq("id", paymentId);
-  await supabase.from("subscriptions").upsert(
-    {
-      user_id:    payment.user_id,
-      status:     "ACTIVE",
-      plan:       payment.plan,
-      start_date: new Date().toISOString(),
-      end_date:   endDate.toISOString(),
-      auto_renew: false,
-    },
-    { onConflict: "user_id" }
-  );
-
+  const { error: subscriptionError } = await supabase.from("subscriptions").upsert({
+    user_id: payment.user_id,
+    status: "ACTIVE",
+    plan: payment.plan,
+    start_date: new Date().toISOString(),
+    end_date: endDate.toISOString(),
+    auto_renew: false,
+  }, { onConflict: "user_id" });
+  if (subscriptionError) throw subscriptionError;
   return { activated: true };
 }
 
-// GET — health check so the other website can verify this endpoint exists
 export async function GET() {
   return NextResponse.json({ ok: true, endpoint: "MedLicense AfriPay webhook active" });
 }
 
-// POST — called by the other website when it receives an ML_ callback from AfriPay
 export async function POST(req: NextRequest) {
-  // No secret required — the ML_<uuid> client_token is unpredictable enough
-  // and we cross-check against our own DB before activating anything.
-
-  let clientToken = "";
-  let status      = "";
-
   const contentType = req.headers.get("content-type") ?? "";
-
-  if (contentType.includes("application/json")) {
-    const body = await req.json().catch(() => ({}));
-    clientToken = body.client_token ?? "";
-    status      = body.status ?? "";
-  } else {
-    // form-encoded (AfriPay's native format)
-    const text   = await req.text();
-    const params = new URLSearchParams(text);
-    clientToken  = params.get("client_token") ?? "";
-    status       = params.get("status")       ?? "";
+  const rawBody = await req.text();
+  const signature = req.headers.get("x-afripay-signature") ?? req.headers.get("x-webhook-signature");
+  if (!verifyPaymentSignature(rawBody, signature)) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
-
-  const result = await activate(clientToken, status);
+  const { clientToken, status, transactionId } = parsePaymentPayload(rawBody, contentType);
+  const result = await activate(clientToken, status, transactionId);
   if (!result) return NextResponse.json({ error: "Not a MedLicense payment" }, { status: 400 });
-
   return NextResponse.json({ received: true, ...result });
 }

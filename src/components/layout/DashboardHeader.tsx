@@ -86,7 +86,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
 
         {/* User avatar + name */}
         <div className="flex items-center gap-2 pl-1 pr-1.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-700 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
             {initials}
           </div>
           <div className="hidden sm:block leading-none">

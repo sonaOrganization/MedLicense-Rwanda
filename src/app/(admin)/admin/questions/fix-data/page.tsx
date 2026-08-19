@@ -69,7 +69,7 @@ export default async function QuestionFixPage() {
 
   // Fetch exam associations for corrupt question IDs
   const questionIds = Array.from(corrupt.keys());
-  let examMap: Record<string, { examId: string; title: string }[]> = {};
+  const examMap: Record<string, { examId: string; title: string }[]> = {};
 
   if (questionIds.length > 0) {
     const { data: eq } = await supabase

@@ -154,7 +154,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
     setCatRows((prev) => prev.map((r) => ({ ...r, enabled: false, count: 0 })));
     setBreakdown(null);
     setSelectedIds([]);
-  }, [examLanguage, licenseCategory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [examLanguage, licenseCategory]);
 
   // ── Populate on open ──
   useEffect(() => {

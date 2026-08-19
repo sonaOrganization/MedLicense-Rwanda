@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { emitAutomationEvent } from "@/lib/automation";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ attemptId: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { attemptId } = await params;
-  const { answers } = (await req.json()) as { answers: Record<string, boolean> };
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body.answers !== "object" || body.answers === null) {
+    return NextResponse.json({ error: "Invalid answers" }, { status: 400 });
+  }
+  const answers = body.answers as Record<string, boolean>;
 
   const { data: attempt } = await supabase
     .from("practical_attempts")
@@ -16,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ att
     .eq("user_id", session.user.id)
     .single();
 
-  if (!attempt || attempt.status === "COMPLETED") {
+  if (!attempt || attempt.status !== "IN_PROGRESS") {
     return NextResponse.json({ error: "Attempt not found or already submitted" }, { status: 404 });
   }
 
@@ -39,10 +44,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ att
   const timeTaken = Math.round((Date.now() - new Date(attempt.started_at).getTime()) / 1000);
 
   if (answerRecords.length > 0) {
-    await supabase.from("practical_attempt_answers").insert(answerRecords);
+    const { error } = await supabase.from("practical_attempt_answers").upsert(answerRecords, {
+      onConflict: "attempt_id,subquestion_id",
+    });
+    if (error) return NextResponse.json({ error: "Could not save answers" }, { status: 500 });
   }
 
-  await supabase
+  const { data: updatedAttempt, error: updateError } = await supabase
     .from("practical_attempts")
     .update({
       status: "COMPLETED",
@@ -54,7 +62,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ att
       submitted_at: new Date().toISOString(),
       saved_state: null,
     })
-    .eq("id", attemptId);
+    .eq("id", attemptId)
+    .eq("status", "IN_PROGRESS")
+    .select("id")
+    .maybeSingle();
+  if (updateError) return NextResponse.json({ error: "Could not finalize attempt" }, { status: 500 });
+  if (!updatedAttempt) return NextResponse.json({ error: "Attempt already submitted" }, { status: 409 });
+
+  await emitAutomationEvent({
+    type: "practical.completed",
+    userId: session.user.id,
+    data: { attemptId, practicalExamId: attempt.practical_exam_id, score, correct, incorrect, reviewedCount },
+  }).catch((error) => console.error("[AUTOMATION_PRACTICAL_COMPLETED]", error));
 
   return NextResponse.json({ ok: true, score, correct, incorrect, reviewedCount, attemptId });
 }

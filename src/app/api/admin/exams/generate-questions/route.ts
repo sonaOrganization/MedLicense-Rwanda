@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const ratios = MIXES[difficulty_mix] ?? MIXES.progressive;
 
   // Build exclusion set: all question IDs already in any exam, minus those in the current exam being edited
-  let excludeSet = new Set<string>();
+  const excludeSet = new Set<string>();
   {
     const { data: usedRows } = await supabase
       .from("exam_questions")

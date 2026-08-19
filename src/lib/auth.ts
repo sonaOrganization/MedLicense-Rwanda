@@ -16,12 +16,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { data: user, error: dbError } = await supabase
             .from("users")
-            .select("id, email, name, role, password, is_banned, license_category, language")
-            .eq("email", credentials.email as string)
+            .select("id, email, name, role, password, is_banned, email_verified, license_category, language")
+            .eq("email", String(credentials.email).trim().toLowerCase())
             .single();
 
           if (dbError || !user || !user.password) return null;
           if (user.is_banned) throw new Error("Account suspended");
+          if (!user.email_verified) throw new Error("Email not verified");
 
           const valid = await bcrypt.compare(credentials.password as string, user.password);
           if (!valid) return null;
@@ -55,7 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             deviceType,
           };
         } catch (err) {
-          if (err instanceof Error && err.message === "Account suspended") throw err;
+          if (err instanceof Error && ["Account suspended", "Email not verified"].includes(err.message)) throw err;
           console.error("[AUTH_AUTHORIZE]", err);
           return null;
         }

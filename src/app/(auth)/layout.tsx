@@ -31,12 +31,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 mb-auto group">
-            <div className="w-9 h-9 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/50">
+            <div className="w-9 h-9 rounded-xl bg-teal-700 flex items-center justify-center shadow-lg shadow-teal-950/50">
               <Stethoscope className="w-5 h-5 text-white" />
             </div>
             <div className="leading-none">
               <span className="font-bold text-xl text-white tracking-tight">Med</span>
-              <span className="font-bold text-xl text-cyan-300 tracking-tight">License</span>
+              <span className="font-bold text-xl text-teal-300 tracking-tight">License</span>
             </div>
           </Link>
 
@@ -95,11 +95,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between px-6 pt-6 pb-4">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-teal-700 flex items-center justify-center">
               <Stethoscope className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-[16px] text-gray-900 dark:text-white">
-              Med<span className="text-blue-700">License</span>
+              Med<span className="text-teal-700">License</span>
             </span>
           </Link>
           <Link

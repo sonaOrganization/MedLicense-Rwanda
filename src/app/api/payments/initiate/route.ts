@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
       client_token: `ML_${payment.id}`,                 // ML_ prefix identifies MedLicense payments in shared callback
       return_url:   `${appUrl}/subscription?paid=true`, // redirect after payment
       app_id:       process.env.AFRIPAY_PUBLIC_KEY,
-      app_secret:   process.env.AFRIPAY_SECRET_KEY,
     },
   });
 }

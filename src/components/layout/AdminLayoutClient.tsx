@@ -11,7 +11,7 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   useEffect(() => { setMobileNavOpen(false); }, [pathname]);
 
   return (
-    <div className="flex h-[100dvh] bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-[100dvh] bg-slate-50 dark:bg-[#07131b] overflow-hidden">
 
       {/* Desktop sidebar */}
       <div className="flex-shrink-0 hidden md:flex">
@@ -44,11 +44,11 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center shadow-sm">
               <Stethoscope className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="font-bold text-[14px] text-white tracking-tight">
-              Med<span className="text-indigo-400">License</span>
+              Med<span className="text-teal-400">License</span>
               <span className="ml-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-500">Admin</span>
             </span>
           </div>

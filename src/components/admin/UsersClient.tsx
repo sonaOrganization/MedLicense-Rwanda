@@ -74,6 +74,7 @@ function StatCard({ icon: Icon, label, value, accent }: {
 }
 
 export function UsersClient({ users }: { users: User[] }) {
+  const [renderedAt] = useState(() => Date.now());
   const [search,      setSearch]      = useState("");
   const [role,        setRole]        = useState("");
   const [planStatus,  setPlanStatus]  = useState("");
@@ -363,7 +364,7 @@ export function UsersClient({ users }: { users: User[] }) {
                         <div>
                           <p className="text-gray-400">{fmtDate(user.last_login_at)}</p>
                           <p className="text-gray-600 mt-0.5">
-                            {Math.ceil((Date.now() - new Date(user.last_login_at).getTime()) / 86_400_000)}d ago
+                            {Math.ceil((renderedAt - new Date(user.last_login_at).getTime()) / 86_400_000)}d ago
                           </p>
                         </div>
                       ) : (

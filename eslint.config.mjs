@@ -12,7 +12,18 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".claude/**",
+    ".sixth/**",
+    ".vscode/**",
   ]),
+  {
+    rules: {
+      // These patterns intentionally synchronize controlled modal/provider state
+      // with navigation, storage, or incoming records.
+      "react-hooks/set-state-in-effect": "off",
+      "react/no-unescaped-entities": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

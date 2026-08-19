@@ -33,7 +33,7 @@ export default async function DashboardPage() {
     supabase.from("saved_questions").select("*", { count: "exact", head: true }).eq("user_id", userId),
     supabase
       .from("users")
-      .select("*, exam_attempts(count)")
+      .select("id, name, exam_attempts(score, status)")
       .eq("role", "STUDENT")
       .eq("is_banned", false)
       .order("created_at", { ascending: true })
@@ -59,18 +59,19 @@ export default async function DashboardPage() {
   const readiness = Math.min(100, Math.round(avgScore * 0.6 + passRate * 0.3 + Math.min(totalExams * 5, 10)));
 
   const performers = topUsers
-    .map((u: { id: string; name?: string; exam_attempts: { count: number }[] }, i: number) => ({
-      rank: i + 1,
-      name: u.name ?? "Anonymous",
-      score: Math.round(50 + Math.random() * 45),
-      exams: u.exam_attempts[0]?.count ?? 0,
-      isCurrentUser: u.id === userId,
-    }))
+    .map((u: { id: string; name?: string; exam_attempts: { score: number | null; status: string }[] }) => {
+      const completed = u.exam_attempts.filter((attempt) => attempt.status === "COMPLETED");
+      return {
+        rank: 0,
+        name: u.name ?? "Anonymous",
+        score: completed.length ? Math.round(completed.reduce((sum, attempt) => sum + (attempt.score ?? 0), 0) / completed.length) : 0,
+        exams: completed.length,
+        isCurrentUser: u.id === userId,
+      };
+    })
     .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
     .slice(0, 5)
     .map((p: { rank: number; name: string; score: number; exams: number; isCurrentUser: boolean }, i: number) => ({ ...p, rank: i + 1 }));
-
-  const currentUserRank = performers.find((p: { isCurrentUser: boolean }) => p.isCurrentUser)?.rank;
 
   const isPremium = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
 

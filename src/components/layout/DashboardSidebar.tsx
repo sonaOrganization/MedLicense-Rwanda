@@ -45,12 +45,12 @@ export function DashboardSidebar({ onClose }: Props) {
       {/* Logo + close button (mobile) */}
       <div className="px-5 py-5 border-b border-gray-800/60 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group" onClick={onClose}>
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center shadow-md shadow-teal-950/40">
             <Stethoscope className="w-[18px] h-[18px] text-white" />
           </div>
           <div className="leading-none">
             <span className="font-bold text-[15px] text-white tracking-tight">Med</span>
-            <span className="font-bold text-[15px] text-indigo-400 tracking-tight">License</span>
+            <span className="font-bold text-[15px] text-teal-400 tracking-tight">License</span>
           </div>
         </Link>
         {onClose && (
@@ -81,13 +81,13 @@ export function DashboardSidebar({ onClose }: Props) {
               className={cn(
                 "flex items-center gap-3 px-3 py-3 md:py-2.5 rounded-xl text-[14px] md:text-[13.5px] font-medium transition-all duration-150",
                 active
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-900/50"
+                  ? "bg-teal-700 text-white shadow-md shadow-teal-950/50"
                   : "text-gray-500 hover:bg-gray-800/70 hover:text-gray-200"
               )}
             >
               <Icon className={cn("w-[18px] h-[18px] flex-shrink-0", active ? "text-white" : "text-gray-500")} />
               {label}
-              {active && <span className="ml-auto w-1 h-4 rounded-full bg-indigo-300/60" />}
+              {active && <span className="ml-auto w-1 h-4 rounded-full bg-teal-300/60" />}
             </Link>
           );
         })}

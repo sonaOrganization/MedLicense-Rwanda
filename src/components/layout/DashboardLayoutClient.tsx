@@ -28,7 +28,7 @@ export function DashboardLayoutClient({ user, children }: Props) {
   const isExamPage = /^\/exams\/[^/]+/.test(pathname) || /^\/practical\/(?!exams|results)[^/]+/.test(pathname);
 
   return (
-    <div className="flex h-[100dvh] bg-gray-50 dark:bg-[#0a0d16] overflow-hidden" suppressHydrationWarning>
+    <div className="flex h-[100dvh] bg-slate-50 dark:bg-[#07131b] overflow-hidden" suppressHydrationWarning>
 
       {/* ── Desktop sidebar ── */}
       <div className="hidden md:flex flex-shrink-0">
@@ -76,13 +76,13 @@ export function DashboardLayoutClient({ user, children }: Props) {
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
                   active
-                    ? "text-indigo-600 dark:text-indigo-400"
+                    ? "text-teal-700 dark:text-teal-400"
                     : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 )}
               >
-                <Icon className={cn("w-5 h-5", active && "text-indigo-600 dark:text-indigo-400")} />
+                <Icon className={cn("w-5 h-5", active && "text-teal-700 dark:text-teal-400")} />
                 {label}
-                {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />}
+                {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-teal-600 dark:bg-teal-400 rounded-full" />}
               </Link>
             );
           })}

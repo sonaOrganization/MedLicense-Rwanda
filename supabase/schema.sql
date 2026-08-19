@@ -51,6 +51,16 @@ CREATE TABLE verification_tokens (
   UNIQUE(identifier, token)
 );
 
+-- One active login per user and device class.
+CREATE TABLE user_sessions (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_type TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, device_type)
+);
+
 -- categories
 CREATE TABLE categories (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
@@ -152,6 +162,9 @@ CREATE TABLE attempt_answers (
   is_correct BOOLEAN NOT NULL DEFAULT false,
   time_taken INT
 );
+CREATE UNIQUE INDEX idx_attempt_answers_attempt_question ON attempt_answers (attempt_id, question_id);
+CREATE UNIQUE INDEX idx_exam_attempts_one_in_progress
+  ON exam_attempts (user_id, exam_id) WHERE status = 'IN_PROGRESS';
 
 -- saved_questions
 CREATE TABLE saved_questions (

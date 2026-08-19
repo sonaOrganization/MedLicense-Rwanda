@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { auth } from "@/lib/auth";
 import { PracticalEngine } from "@/components/practical/PracticalEngine";
+import { canAccessExam } from "@/lib/subscriptions";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -20,6 +21,7 @@ export default async function PracticalExamPage({ params }: Props) {
     .single();
 
   if (!exam) notFound();
+  if (!(await canAccessExam(session.user.id, exam.is_free))) redirect("/subscription?required=true");
 
   const groups = [...(exam.groups ?? [])]
     .sort((a, b) => a.order - b.order)
