@@ -2,9 +2,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, X, Edit, Trash2, ExternalLink, Stethoscope } from "lucide-react";
+import { Search, X, Edit, Trash2, ExternalLink, Stethoscope, Plus, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import { PracticalSubquestionFormModal } from "./PracticalSubquestionFormModal";
+import { PracticalQuestionFormModal } from "./PracticalQuestionFormModal";
+import { PracticalCSVUploadModal } from "./PracticalCSVUploadModal";
 
 interface Subquestion {
   id: string;
@@ -29,7 +31,9 @@ function subLabel(caseOrder: number, subIndex: number, totalSubsInGroup: number)
   return totalSubsInGroup > 1 ? `${base}.${String.fromCharCode(65 + subIndex)}` : base;
 }
 
-export function QBPClient({ cases }: { cases: CaseItem[] }) {
+interface ExamOption { id: string; title_en: string }
+
+export function QBPClient({ cases, exams }: { cases: CaseItem[]; exams: ExamOption[] }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -39,6 +43,8 @@ export function QBPClient({ cases }: { cases: CaseItem[] }) {
   const [editStemFr, setEditStemFr] = useState("");
 
   const [subModal, setSubModal] = useState<{ groupId: string; subquestion?: Subquestion } | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
 
   const totalSubquestions = cases.reduce((s, c) => s + c.subquestions.length, 0);
   const examCount = new Set(cases.map((c) => c.exam?.id).filter(Boolean)).size;
@@ -112,11 +118,21 @@ export function QBPClient({ cases }: { cases: CaseItem[] }) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">QBP — Question Bank Practical</h1>
-        <p className="text-sm text-gray-400 mt-0.5">
-          {cases.length} case{cases.length !== 1 ? "s" : ""} · {totalSubquestions} sub-question{totalSubquestions !== 1 ? "s" : ""} · across {examCount} exam{examCount !== 1 ? "s" : ""}
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">QBP — Question Bank Practical</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {cases.length} case{cases.length !== 1 ? "s" : ""} · {totalSubquestions} sub-question{totalSubquestions !== 1 ? "s" : ""} · across {examCount} exam{examCount !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setCsvOpen(true)} className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800">
+            <Upload className="h-4 w-4" /> Upload CSV
+          </button>
+          <button onClick={() => setManualOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">
+            <Plus className="h-4 w-4" /> Add manually
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -262,6 +278,8 @@ export function QBPClient({ cases }: { cases: CaseItem[] }) {
           onSaved={() => router.refresh()}
         />
       )}
+      <PracticalQuestionFormModal open={manualOpen} onClose={() => setManualOpen(false)} exams={exams} onSaved={() => router.refresh()} />
+      <PracticalCSVUploadModal open={csvOpen} onClose={() => setCsvOpen(false)} exams={exams} onImported={() => router.refresh()} />
     </div>
   );
 }

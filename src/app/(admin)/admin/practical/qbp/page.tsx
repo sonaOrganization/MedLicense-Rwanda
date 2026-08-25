@@ -2,10 +2,13 @@ import { supabase } from "@/lib/supabase";
 import { QBPClient } from "@/components/admin/practical/QBPClient";
 
 export default async function QBPPage() {
-  const { data: groups } = await supabase
-    .from("practical_groups")
-    .select("*, exam:practical_exams(id, title_en), subquestions:practical_subquestions(*)")
-    .order("practical_exam_id", { ascending: true });
+  const [{ data: groups }, { data: exams }] = await Promise.all([
+    supabase
+      .from("practical_groups")
+      .select("*, exam:practical_exams(id, title_en), subquestions:practical_subquestions(*)")
+      .order("practical_exam_id", { ascending: true }),
+    supabase.from("practical_exams").select("id, title_en").order("title_en"),
+  ]);
 
   const caseList = (groups ?? []).map((g) => ({
     id: g.id,
@@ -16,5 +19,5 @@ export default async function QBPPage() {
     subquestions: [...(g.subquestions ?? [])].sort((a, b) => a.order - b.order),
   }));
 
-  return <QBPClient cases={caseList} />;
+  return <QBPClient cases={caseList} exams={exams ?? []} />;
 }
