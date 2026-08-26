@@ -127,10 +127,10 @@ export function QBPClient({ cases, exams }: { cases: CaseItem[]; exams: ExamOpti
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setCsvOpen(true)} className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800">
-            <Upload className="h-4 w-4" /> Upload CSV
+            <Upload className="h-4 w-4" /> Upload Cases CSV
           </button>
           <button onClick={() => setManualOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700">
-            <Plus className="h-4 w-4" /> Add manually
+            <Plus className="h-4 w-4" /> Add Practical Case
           </button>
         </div>
       </div>
@@ -237,8 +237,14 @@ export function QBPClient({ cases, exams }: { cases: CaseItem[]; exams: ExamOpti
                 </div>
               </div>
 
-              {c.subquestions.length > 0 && (
-                <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 p-4 space-y-2">
+              <div className="border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 p-4 space-y-2">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Sub-questions</p>
+                  <button onClick={() => setSubModal({ groupId: c.id })} className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/20">
+                    <Plus className="h-3.5 w-3.5" /> Add sub-question
+                  </button>
+                </div>
+                {c.subquestions.length === 0 && <p className="py-3 text-center text-xs text-gray-400">No sub-questions in this case yet.</p>}
                   {c.subquestions.map((sub, si) => (
                     <div key={sub.id} className="flex items-start gap-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-3">
                       <div className="flex-1 min-w-0">
@@ -263,7 +269,6 @@ export function QBPClient({ cases, exams }: { cases: CaseItem[]; exams: ExamOpti
                     </div>
                   ))}
                 </div>
-              )}
             </div>
           );
         })}
