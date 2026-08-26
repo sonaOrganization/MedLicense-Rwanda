@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
       if (!stem) { failed.push({ row: i + 1, reason: `First row for case_key "${key}" must include stem_en` }); continue; }
       const { data: group, error } = await supabase.from("practical_groups").insert({ practical_exam_id: examId, stem_en: stem, stem_fr: get(row, "stem_fr") || null, order: (existingGroups ?? 0) + createdGroups }).select("id").single();
       if (error || !group) { failed.push({ row: i + 1, reason: error?.message || "Could not create case" }); continue; }
-      groupId = group.id; groups.set(key, groupId); createdGroups++;
+      const createdGroupId: string = group.id;
+      groupId = createdGroupId;
+      groups.set(key, createdGroupId);
+      createdGroups++;
     }
     const { count } = await supabase.from("practical_subquestions").select("id", { count: "exact", head: true }).eq("group_id", groupId);
     const { error } = await supabase.from("practical_subquestions").insert({ group_id: groupId, prompt_en: prompt, prompt_fr: get(row, "prompt_fr") || null, model_answer_en: answer, model_answer_fr: get(row, "model_answer_fr") || null, order: count ?? 0 });
