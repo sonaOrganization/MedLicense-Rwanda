@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const AUTH_PATHS      = ["/login", "/register", "/forgot-password", "/verify-email", "/reset-password"];
+const AUTH_PATHS      = ["/login", "/register", "/forgot-password", "/reset-password"];
 const PROTECTED_PATHS = ["/dashboard", "/exams", "/results", "/analytics", "/saved", "/subscription", "/profile", "/settings", "/practical"];
 const ADMIN_PATHS     = ["/admin"];
 

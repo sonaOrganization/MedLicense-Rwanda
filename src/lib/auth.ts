@@ -1,8 +1,13 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
 import { getDeviceType } from "./device";
+
+// Auth.js only forwards `code` to the browser for CredentialsSignin subclasses —
+// plain Errors thrown here become an opaque "Configuration" error on the client.
+class InvalidCredentials extends CredentialsSignin { code = "invalid_credentials"; }
+class AccountSuspended  extends CredentialsSignin { code = "account_suspended"; }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
@@ -15,19 +20,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials, req) {
+        const email    = String(credentials?.email ?? "").trim().toLowerCase();
+        const password = String(credentials?.password ?? "");
+        if (!email || !password) throw new InvalidCredentials();
+
         try {
           const { data: user, error: dbError } = await supabase
             .from("users")
-            .select("id, email, name, role, password, is_banned, email_verified, license_category, language")
-            .eq("email", String(credentials.email).trim().toLowerCase())
-            .single();
+            .select("id, email, name, role, password, is_banned, license_category, language")
+            .eq("email", email)
+            .maybeSingle();
 
-          if (dbError || !user || !user.password) return null;
-          if (user.is_banned) throw new Error("Account suspended");
-          if (!user.email_verified) throw new Error("Email not verified");
+          if (dbError) {
+            console.error("[AUTH_AUTHORIZE]", dbError);
+            throw new InvalidCredentials();
+          }
+          if (!user || !user.password) throw new InvalidCredentials();
+          if (user.is_banned) throw new AccountSuspended();
 
-          const valid = await bcrypt.compare(credentials.password as string, user.password);
-          if (!valid) return null;
+          const valid = await bcrypt.compare(password, user.password);
+          if (!valid) throw new InvalidCredentials();
 
           // Detect device type from user-agent
           const userAgent  = (req as Request).headers?.get?.("user-agent") ?? "";
@@ -58,9 +70,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             deviceType,
           };
         } catch (err) {
-          if (err instanceof Error && ["Account suspended", "Email not verified"].includes(err.message)) throw err;
+          if (err instanceof CredentialsSignin) throw err;
           console.error("[AUTH_AUTHORIZE]", err);
-          return null;
+          throw new InvalidCredentials();
         }
       },
     }),

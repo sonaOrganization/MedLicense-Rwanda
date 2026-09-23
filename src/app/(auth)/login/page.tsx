@@ -12,6 +12,14 @@ import { Mail, Lock, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { PENDING_INTENT_KEY, sessionDestination } from "@/components/dashboard/overview/SessionTypeModal";
 
+// Auth.js sends back a generic `error` type plus, for credentials failures, the
+// `code` our CredentialsSignin subclasses set in src/lib/auth.ts.
+function signInMessage(error: string, code?: string) {
+  if (code === "account_suspended") return "Your account has been suspended. Please contact support.";
+  if (error === "Configuration")    return "Sign-in is temporarily unavailable. Please try again shortly.";
+  return "Invalid email or password.";
+}
+
 function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
@@ -33,7 +41,7 @@ function LoginForm() {
     setLoading(false);
 
     if (res?.error) {
-      toast.error(res.error === "Account suspended" ? "Your account has been suspended. Please contact support." : "Invalid email or password.");
+      toast.error(signInMessage(res.error, res.code));
     } else {
       const intent = localStorage.getItem(PENDING_INTENT_KEY);
       if (intent === "theory" || intent === "practical") {

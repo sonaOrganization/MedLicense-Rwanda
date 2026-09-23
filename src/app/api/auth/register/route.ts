@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
 import { registerSchema } from "@/lib/validations";
-import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
-import { createHash, randomBytes } from "node:crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,30 +22,20 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 12);
 
+    // Accounts are usable immediately — there is no email-verification step.
     const { error } = await supabase.from("users").insert({
       name,
       email,
       password: hashed,
       phone: phone ?? null,
       license_category: licenseCategory,
-      email_verified: null,
+      email_verified: new Date().toISOString(),
     });
 
     if (error) {
       console.error("[REGISTER]", error);
       return NextResponse.json({ error: "Could not create account. Please try again." }, { status: 500 });
     }
-
-    // Send welcome email — fire-and-forget (don't block registration on email failure)
-    const token = randomBytes(32).toString("base64url");
-    const tokenHash = createHash("sha256").update(token).digest("hex");
-    await supabase.from("verification_tokens").insert({
-      identifier: `email-verification:${email}`,
-      token: tokenHash,
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    });
-    sendVerificationEmail(email, token).catch((err) => console.error("[VERIFY_EMAIL]", err));
-    sendWelcomeEmail(email, name).catch((err) => console.error("[WELCOME_EMAIL]", err));
 
     return NextResponse.json({ ok: true });
   } catch (err) {
