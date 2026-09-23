@@ -13,7 +13,7 @@ export async function GET() {
     .from("subscriptions")
     .select("status, end_date")
     .eq("user_id", session.user.id)
-    .single();
+    .maybeSingle();
 
   const isActive = data?.status === "ACTIVE" || data?.status === "TRIAL";
   return NextResponse.json({ isActive, status: data?.status ?? "FREE" });

@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import { formatPrice, type Plan } from "@/lib/plans";
 
 interface PaymentButtonsProps {
-  planId:   string;
-  amount:   number;
-  currency: string;
+  plan: Plan;
 }
 
-export function PaymentButtons({ planId, amount, currency }: PaymentButtonsProps) {
+export function PaymentButtons({ plan }: PaymentButtonsProps) {
   const [loading, setLoading] = useState(false);
 
   async function pay() {
@@ -18,7 +17,7 @@ export function PaymentButtons({ planId, amount, currency }: PaymentButtonsProps
       const res = await fetch("/api/payments/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId: plan.id }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -47,11 +46,16 @@ export function PaymentButtons({ planId, amount, currency }: PaymentButtonsProps
 
   return (
     <Button
-      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+      size="lg"
+      className={
+        plan.highlighted
+          ? "w-full bg-teal-400 text-slate-950 shadow-lg shadow-teal-950/30 hover:bg-teal-300"
+          : "w-full bg-teal-700 text-white hover:bg-teal-800"
+      }
       loading={loading}
       onClick={pay}
     >
-      Pay {amount.toLocaleString()} {currency} with Afripay
+      Pay {formatPrice(plan)}
     </Button>
   );
 }

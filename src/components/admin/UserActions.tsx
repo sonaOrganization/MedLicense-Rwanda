@@ -40,7 +40,7 @@ function GrantModal({ userId, onClose }: { userId: string; onClose: () => void }
     }
     setSubmitting(true);
     try {
-      const body: Record<string, unknown> = { action: "grant_subscription", plan: "pro" };
+      const body: Record<string, unknown> = { action: "grant_subscription", plan: "monthly" };
       if (isCustom) body.end_date = customDate;
       else body.months = duration;
 

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { parsePaymentPayload, verifyPaymentSignature } from "@/lib/payments";
+import { planEndDate } from "@/lib/plans";
 
-const planMonths: Record<string, number> = { pro: 1 };
 const paidStatuses = new Set(["success", "completed", "paid"]);
 
 async function activate(clientToken: string, status: string, transactionId: string | null) {
@@ -13,8 +13,21 @@ async function activate(clientToken: string, status: string, transactionId: stri
   const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).single();
   if (!payment || payment.status === "completed") return { activated: false };
 
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + (planMonths[payment.plan] ?? 1));
+  // Stack onto an unexpired subscription so a second purchase adds time
+  // instead of discarding whatever the user has already paid for.
+  const { data: current } = await supabase
+    .from("subscriptions")
+    .select("end_date, status")
+    .eq("user_id", payment.user_id)
+    .maybeSingle();
+
+  const now = new Date();
+  const remainingUntil =
+    current && current.status === "ACTIVE" && current.end_date && new Date(current.end_date) > now
+      ? new Date(current.end_date)
+      : now;
+  const endDate = planEndDate(payment.plan, remainingUntil);
+
   const { error: paymentError } = await supabase
     .from("payments")
     .update({ status: "completed", transaction_id: transactionId })
@@ -26,7 +39,7 @@ async function activate(clientToken: string, status: string, transactionId: stri
     user_id: payment.user_id,
     status: "ACTIVE",
     plan: payment.plan,
-    start_date: new Date().toISOString(),
+    start_date: now.toISOString(),
     end_date: endDate.toISOString(),
     auto_renew: false,
   }, { onConflict: "user_id" });

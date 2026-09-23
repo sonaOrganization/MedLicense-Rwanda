@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-
-const PLANS: Record<string, { amount: number; currency: string; months: number; label: string }> = {
-  pro: { amount: 4000, currency: "RWF", months: 1, label: "MedLicense Pro Plan" },
-};
+import { getPlan } from "@/lib/plans";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { planId } = await req.json();
-  const plan = PLANS[planId];
+  // Price is resolved server-side from the catalog — never trusted from the client.
+  const plan = getPlan(planId);
   if (!plan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
   // Create a pending payment — the UUID becomes client_token sent to AfriPay
@@ -20,10 +18,10 @@ export async function POST(req: NextRequest) {
     .from("payments")
     .insert({
       user_id:  session.user.id,
-      amount:   plan.amount,
+      amount:   plan.price,
       currency: plan.currency,
       provider: "afripay",
-      plan:     planId,
+      plan:     plan.id,
       status:   "pending",
     })
     .select()
@@ -39,9 +37,9 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     action: "https://www.afripay.africa/checkout/index.php",
     fields: {
-      amount:       plan.amount,
+      amount:       plan.price,
       currency:     plan.currency,
-      comment:      plan.label,
+      comment:      plan.checkoutLabel,
       client_token: `ML_${payment.id}`,                 // ML_ prefix identifies MedLicense payments in shared callback
       return_url:   `${appUrl}/subscription?paid=true`, // redirect after payment
       app_id:       process.env.AFRIPAY_PUBLIC_KEY,

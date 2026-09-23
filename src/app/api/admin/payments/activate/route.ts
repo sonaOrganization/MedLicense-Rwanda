@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-
-const planMonths: Record<string, number> = { pro: 1 };
+import { planEndDate } from "@/lib/plans";
 
 // POST /api/admin/payments/activate
 // Admin-only: manually activate a pending payment by ID
@@ -25,9 +24,8 @@ export async function POST(req: NextRequest) {
   if (payment.status === "completed")
     return NextResponse.json({ ok: true, note: "Already activated" });
 
-  const months  = planMonths[payment.plan] ?? 1;
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + months);
+  const now     = new Date();
+  const endDate = planEndDate(payment.plan, now);
 
   await supabase.from("payments").update({ status: "completed" }).eq("id", paymentId);
   await supabase.from("subscriptions").upsert(
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
       user_id:    payment.user_id,
       status:     "ACTIVE",
       plan:       payment.plan,
-      start_date: new Date().toISOString(),
+      start_date: now.toISOString(),
       end_date:   endDate.toISOString(),
       auto_renew: false,
     },

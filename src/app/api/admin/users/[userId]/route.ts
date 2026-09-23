@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
         {
           user_id:    userId,
           status:     "ACTIVE",
-          plan:       plan ?? "pro",
+          plan:       plan ?? "monthly",
           start_date: new Date().toISOString(),
           end_date:   endDate.toISOString(),
           auto_renew: false,
