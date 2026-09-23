@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
-import { MoreHorizontal, Ban, UserCheck, Shield, UserMinus, CreditCard, XCircle, X, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Ban, UserCheck, Shield, UserMinus, CreditCard, XCircle, X, CheckCircle, Trash2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface UserActionsProps {
   userId: string;
+  email: string;
+  name?: string | null;
   isBanned: boolean;
   role: string;
   hasActiveSubscription?: boolean;
@@ -89,8 +91,8 @@ function GrantModal({ userId, onClose }: { userId: string; onClose: () => void }
           <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
             <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             <div>
-              <p className="text-xs font-bold text-emerald-300">Pro Plan</p>
-              <p className="text-[11px] text-emerald-500/80">Full access to all exams and features</p>
+              <p className="text-xs font-bold text-emerald-300">Full access</p>
+              <p className="text-[11px] text-emerald-500/80">All exams, cases and features for the duration below</p>
             </div>
           </div>
 
@@ -165,9 +167,103 @@ function GrantModal({ userId, onClose }: { userId: string; onClose: () => void }
   );
 }
 
-export function UserActions({ userId, isBanned, role, hasActiveSubscription }: UserActionsProps) {
+function DeleteModal({ userId, email, name, onClose }: { userId: string; email: string; name?: string | null; onClose: () => void }) {
+  const router = useRouter();
+  const [confirmText, setConfirmText] = useState("");
+  const [submitting, setSubmitting]   = useState(false);
+
+  // Typing the address is deliberate friction — this cannot be undone.
+  const canDelete = confirmText.trim().toLowerCase() === email.toLowerCase();
+
+  async function handleDelete() {
+    if (!canDelete) return;
+    setSubmitting(true);
+    try {
+      const res  = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`Deleted ${data.deleted ?? email}`);
+      onClose();
+      router.refresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete user");
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-700 bg-gray-900 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-gray-800 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/20">
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </div>
+            <h2 className="text-sm font-bold text-white">Delete User</h2>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-4">
+          <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2.5">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
+            <div>
+              <p className="text-xs font-bold text-red-300">This cannot be undone</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-red-400/80">
+                Exam attempts, results, notes, subscription and payment records for this account are
+                permanently removed. Submitted feedback is kept but detached.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-gray-700 bg-gray-800/60 px-3 py-2.5">
+            <p className="truncate text-sm font-medium text-white">{name ?? "—"}</p>
+            <p className="truncate text-xs text-gray-400">{email}</p>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-400">
+              Type the email to confirm
+            </label>
+            <input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={email}
+              autoComplete="off"
+              spellCheck={false}
+              className="w-full rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 border-t border-gray-800 px-5 py-4">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-xl border border-gray-700 px-4 py-2 text-sm text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={!canDelete || submitting}
+            className="flex-1 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? "Deleting…" : "Delete User"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function UserActions({ userId, email, name, isBanned, role, hasActiveSubscription }: UserActionsProps) {
   const [open,        setOpen]        = useState(false);
   const [grantOpen,   setGrantOpen]   = useState(false);
+  const [deleteOpen,  setDeleteOpen]  = useState(false);
   const [loading,     setLoading]     = useState(false);
   const router = useRouter();
 
@@ -261,12 +357,28 @@ export function UserActions({ userId, isBanned, role, hasActiveSubscription }: U
                   Demote to Student
                 </button>
               )}
+
+              <div className="h-px bg-gray-700/60 my-1" />
+
+              {/* Delete — admins must be demoted first, which the API enforces too */}
+              <button
+                onClick={() => { setOpen(false); setDeleteOpen(true); }}
+                disabled={role === "ADMIN"}
+                title={role === "ADMIN" ? "Demote this admin to student before deleting" : undefined}
+                className="w-full text-left px-3 py-2 text-sm flex items-center gap-2.5 hover:bg-red-500/10 text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
+                <Trash2 className="w-4 h-4 flex-shrink-0" />
+                Delete User
+              </button>
             </div>
           </>
         )}
       </div>
 
       {grantOpen && <GrantModal userId={userId} onClose={() => setGrantOpen(false)} />}
+      {deleteOpen && (
+        <DeleteModal userId={userId} email={email} name={name} onClose={() => setDeleteOpen(false)} />
+      )}
     </>
   );
 }

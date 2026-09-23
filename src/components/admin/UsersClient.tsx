@@ -386,6 +386,8 @@ export function UsersClient({ users }: { users: User[] }) {
                     <td className="px-4 py-3.5 text-right">
                       <UserActions
                         userId={user.id}
+                        email={user.email}
+                        name={user.name}
                         isBanned={user.is_banned}
                         role={user.role}
                         hasActiveSubscription={user.subscription?.status === "ACTIVE"}

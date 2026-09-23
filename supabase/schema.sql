@@ -247,7 +247,7 @@ CREATE TABLE notifications (
 -- feedback
 CREATE TABLE feedback (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  user_id TEXT REFERENCES users(id),
+  user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
   name TEXT,
   email TEXT,
   subject TEXT NOT NULL,
