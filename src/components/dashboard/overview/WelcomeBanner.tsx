@@ -1,4 +1,5 @@
 "use client";
+import styles from "@/components/layout/MobileDashboard.module.css";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Flame } from "lucide-react";
@@ -92,7 +93,7 @@ export function WelcomeBanner({ name, streak, subscriptionStatus, licenseCategor
   const licenseLabel = licenseCategory ? getLicenseCategoryLabel(licenseCategory) : null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-700 text-white px-5 py-5 sm:p-8">
+    <div className={`${styles.welcome} relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-700 text-white px-5 py-5 sm:p-8`}>
       {/* Decorative blobs */}
       <div className="absolute right-0 top-0 w-52 h-52 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
       <div className="absolute right-16 bottom-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 pointer-events-none" />

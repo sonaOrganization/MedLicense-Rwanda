@@ -1,4 +1,5 @@
 "use client";
+import styles from "@/components/layout/MobileDashboard.module.css";
 import Link from "next/link";
 import { ReadinessGauge } from "@/components/dashboard/overview/ReadinessGauge";
 import { LicenseFocusCard } from "@/components/dashboard/overview/LicenseFocusCard";
@@ -57,7 +58,7 @@ export function DashboardOverviewClient({
   ];
 
   return (
-    <div className="pb-6 space-y-4 sm:space-y-6 max-w-7xl">
+    <div className={cn(styles.overview, "pb-6 space-y-4 sm:space-y-6 max-w-7xl")}>
 
       {/* ── Welcome Banner ── */}
       <WelcomeBanner
@@ -69,11 +70,11 @@ export function DashboardOverviewClient({
       <SessionChoicePill className="-mt-2" />
 
       {/* ── Stat chips ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className={cn(styles.stats, "grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4")}>
         {statCards.map(({ icon: Icon, label, value, color, bg, border }) => (
           <div
             key={label}
-            className={cn("rounded-2xl border p-3.5 sm:p-5 flex flex-col gap-2", bg, border,
+            className={cn(styles.stat, "rounded-2xl border p-3.5 sm:p-5 flex flex-col gap-2", bg, border,
               "bg-white dark:bg-gray-900/80")}
           >
             <div className="flex items-center justify-between">
@@ -90,13 +91,13 @@ export function DashboardOverviewClient({
       {/* ── Mobile: Quick Actions (2×3 grid) — hidden on lg+ (shown in sidebar column) ── */}
       <div className="lg:hidden">
         <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 px-0.5">{T("dash_quick")}</h2>
-        <div className="grid grid-cols-3 gap-2">
+        <div className={cn(styles.actions, "grid grid-cols-3 gap-2")}>
           {quickActions.map(({ icon: Icon, label, href, color, bg, border }) => (
             <Link
               key={label}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition-all active:scale-95",
+                styles.action, "flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition-all active:scale-95",
                 bg, border
               )}
             >

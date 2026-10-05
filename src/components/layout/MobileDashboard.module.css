@@ -1,0 +1,37 @@
+.navigation { display: none; }
+@media (max-width: 767px) {
+  .shell { background: #f4f6fc; }
+  :global(.dark) .shell { background: #0c1425; }
+  .content { padding: 20px 16px calc(156px + env(safe-area-inset-bottom)); scroll-padding-bottom: 120px; }
+  .examContent { padding-bottom: 24px; }
+  .header { height: 80px; padding: max(12px, env(safe-area-inset-top)) 16px 12px; background: #f4f6fc; border: 0; }
+  :global(.dark) .header { background: #0c1425; }
+  .header button { min-height: 44px; min-width: 44px; }
+  .header a { min-height: 44px; }
+  .navigation { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); position: fixed; z-index: 40; bottom: calc(12px + env(safe-area-inset-bottom)); left: 16px; right: 16px; max-width: 500px; margin-inline: auto; min-height: 78px; padding: 8px; border: 1px solid #7895e9; border-radius: 30px; background: #4166c7; box-shadow: 0 12px 32px #1b3f8a33; }
+  :global(.dark) .navigation { background: #2c4893; border-color: #4965a7; }
+  .navItem { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px; min-width: 0; color: #e9efff; font-size: 10px; font-weight: 600; text-align: center; border-radius: 22px; padding: 2px; }
+  .navIcon { display: grid; place-items: center; height: 35px; width: 42px; border-radius: 18px; transition: background 150ms; }
+  .active { color: #fff; }
+  .active .navIcon { color: #3457b3; background: #fff; box-shadow: 0 3px 8px #17316822; }
+  .navItem:focus-visible { outline: 2px solid white; outline-offset: 1px; }
+  .overview { gap: 20px; }
+  .welcome { border-radius: 28px; padding: 24px; background: linear-gradient(125deg, #3658b7, #5279cd 65%, #7396d6); box-shadow: 0 12px 28px #4669b820; }
+  .welcome p { color: #f0f5ff; }
+  .welcome h1 { font-size: clamp(24px, 6vw, 30px); letter-spacing: -.04em; }
+  .welcome button { min-height: 46px; border-radius: 18px; }
+  .stats { gap: 12px; }
+  .stat { border: 1px solid #e5eaf5; border-radius: 24px; padding: 18px; box-shadow: 0 4px 16px #24375b04; }
+  :global(.dark) .stat { border-color: #24334d; background: #152137; }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .action { flex-direction: row; justify-content: flex-start; text-align: left; padding: 16px 12px; border-radius: 22px; min-height: 76px; }
+  .action { background: #fff; border-color: #e5eaf5; }
+  .action > div { flex-shrink: 0; background: #eef3ff; }
+  .action svg { color: #4166b9; }
+  :global(.dark) .action { background: #152137; border-color: #24334d; }
+  :global(.dark) .action > div { background: #223757; }
+  :global(.dark) .action svg { color: #a8c3ff; }
+  .action > span { font-size: 12px; color: #334155; }
+  :global(.dark) .action > span { color: #e2e8f0; }
+}
+@media (prefers-reduced-motion: reduce) { .navIcon { transition: none; } }

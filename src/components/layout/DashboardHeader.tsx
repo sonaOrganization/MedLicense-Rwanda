@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import styles from "./MobileDashboard.module.css";
 import { Moon, Sun, ChevronDown, Menu } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useLanguage } from "@/lib/language";
@@ -37,7 +39,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
   const page = PAGE_TITLES[pathname] ?? { title: T("nav_dashboard"), subtitle: "" };
 
   return (
-    <header className="h-[60px] md:h-[64px] flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800/60 flex-shrink-0">
+    <header className={`${styles.header} h-[60px] md:h-[64px] flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800/60 flex-shrink-0`}>
 
       {/* Left — hamburger (mobile) + page title */}
       <div className="flex items-center gap-3 min-w-0">
@@ -85,7 +87,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
         <div className="h-5 w-px bg-gray-200 dark:bg-gray-800 mx-0.5 hidden sm:block" />
 
         {/* User avatar + name */}
-        <div className="flex items-center gap-2 pl-1 pr-1.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+        <Link href="/profile" aria-label={T("nav_profile")} className="flex items-center gap-2 pl-1 pr-1.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-700 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
             {initials}
           </div>
@@ -96,7 +98,7 @@ export function DashboardHeader({ user, onMenuClick }: DashboardHeaderProps) {
             </p>
           </div>
           <ChevronDown className="hidden sm:block w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
-        </div>
+        </Link>
       </div>
     </header>
   );
