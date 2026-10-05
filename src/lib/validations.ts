@@ -1,17 +1,21 @@
 import { z } from "zod";
+import { LICENSE_CATEGORIES } from "./license-categories";
 
 export const registerSchema = z
   .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
+    name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+    email: z.string().trim().email("Invalid email address").max(254),
     phone: z
       .string()
       .min(8, "Enter a valid phone number")
+      .max(30)
       .regex(/^\+?[\d\s\-()]+$/, "Invalid phone number format"),
-    licenseCategory: z.string().min(1, "Please select your license category"),
+    licenseCategory: z.string().refine((value) => LICENSE_CATEGORIES.some((category) => category.id === value), "Please select a valid license category"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
+      .max(72, "Password must be at most 72 characters")
+      .refine((value) => new TextEncoder().encode(value).length <= 72, "Password is too long in UTF-8")
       .regex(/[A-Z]/, "Must contain at least one uppercase letter")
       .regex(/[0-9]/, "Must contain at least one number"),
     confirmPassword: z.string(),
@@ -22,12 +26,12 @@ export const registerSchema = z
   });
 
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().trim().email("Invalid email address").max(254),
   password: z.string().min(1, "Password is required"),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().trim().email("Invalid email address").max(254),
 });
 
 export const resetPasswordSchema = z
@@ -35,6 +39,8 @@ export const resetPasswordSchema = z
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
+      .max(72, "Password must be at most 72 characters")
+      .refine((value) => new TextEncoder().encode(value).length <= 72, "Password is too long in UTF-8")
       .regex(/[A-Z]/, "Must contain at least one uppercase letter")
       .regex(/[0-9]/, "Must contain at least one number"),
     confirmPassword: z.string(),
@@ -45,9 +51,9 @@ export const resetPasswordSchema = z
   });
 
 export const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().optional(),
-  country: z.string().optional(),
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  phone: z.string().trim().max(30).optional(),
+  country: z.string().trim().max(100).optional(),
   language: z.enum(["EN", "FR"]),
 });
 

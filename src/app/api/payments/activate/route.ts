@@ -1,20 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
-// GET /api/payments/activate — poll subscription status
-// Called by the client while waiting for AfriPay's webhook to fire.
-// Does NOT activate anything — only reads current DB state.
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data } = await supabase
-    .from("subscriptions")
-    .select("status, end_date")
-    .eq("user_id", session.user.id)
-    .maybeSingle();
-
-  const isActive = data?.status === "ACTIVE" || data?.status === "TRIAL";
-  return NextResponse.json({ isActive, status: data?.status ?? "FREE" });
+  const paymentId = req.nextUrl.searchParams.get("paymentId");
+  if (!paymentId) return NextResponse.json({ error: "paymentId required" }, { status: 400 });
+  const { data, error } = await supabase.from("payments").select("status").eq("id", paymentId).eq("user_id", session.user.id).maybeSingle();
+  if (error) return NextResponse.json({ error: "Could not check payment" }, { status: 500 });
+  if (!data) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+  return NextResponse.json({ isPaid: data.status === "completed", status: data.status }, { headers: { "Cache-Control": "no-store" } });
 }

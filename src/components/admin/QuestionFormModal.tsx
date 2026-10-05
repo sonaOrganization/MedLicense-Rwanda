@@ -8,7 +8,7 @@ import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categ
 import { FlagIcon } from "@/components/ui/FlagIcon";
 
 interface Category { id: string; name_en: string; license_category?: string | null; }
-interface AnswerField { text_en: string; text_fr: string; is_correct: boolean; }
+interface AnswerField { id?: string; text_en: string; text_fr: string; is_correct: boolean; }
 
 type Lang = "EN" | "FR";
 
@@ -64,6 +64,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
       setLanguage((question.language as Lang) ?? "EN");
       setLicenseCategories(question.license_categories ?? []);
       setAnswers(question.answers.map((a) => ({
+        id: a.id,
         text_en: a.text_en ?? "",
         text_fr: a.text_fr ?? "",
         is_correct: a.is_correct,
@@ -154,6 +155,7 @@ export function QuestionFormModal({ open, onClose, categories, question }: Quest
           category_id: categoryId,
           license_categories: licenseCategories,
           answers: answers.map((a) => ({
+            id: a.id,
             text_en: a.text_en.trim() || null,
             text_fr: a.text_fr.trim() || null,
             is_correct: a.is_correct,

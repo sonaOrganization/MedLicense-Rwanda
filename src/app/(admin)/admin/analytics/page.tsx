@@ -27,14 +27,14 @@ export default async function AdminAnalyticsPage() {
     supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "STUDENT"),
     supabase.from("exams").select("*", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("questions").select("*", { count: "exact", head: true }).eq("is_approved", true),
-    supabase.from("exam_attempts").select("*", { count: "exact", head: true }).eq("status", "COMPLETED"),
+    supabase.from("exam_attempts").select("*", { count: "exact", head: true }).in("status", ["COMPLETED", "TIMED_OUT"]),
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).in("status", ["ACTIVE", "TRIAL"]),
-    supabase.from("exam_attempts").select("score, correct, wrong").eq("status", "COMPLETED"),
-    supabase.from("exam_attempts").select("exam_id, exam:exams(title_en)").eq("status", "COMPLETED").limit(200),
+    supabase.from("exam_attempts").select("score, correct, wrong").in("status", ["COMPLETED", "TIMED_OUT"]),
+    supabase.from("exam_attempts").select("exam_id, exam:exams(title_en)").in("status", ["COMPLETED", "TIMED_OUT"]).limit(200),
     supabase
       .from("exam_attempts")
       .select("*, user:users(name), exam:exams(title_en, passing_score)")
-      .eq("status", "COMPLETED")
+      .in("status", ["COMPLETED", "TIMED_OUT"])
       .order("submitted_at", { ascending: false })
       .limit(10),
     // Question usage: join exam_questions with questions

@@ -3,7 +3,6 @@ import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Plus, Upload, Edit, Trash2, CheckCircle, Clock, Wand2, Wrench, BookOpen, Search, X, Hash } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { QuestionFormModal } from "./QuestionFormModal";
 import { CSVUploadModal } from "./CSVUploadModal";
 import { getLicenseCategoryLabel } from "@/lib/license-categories";

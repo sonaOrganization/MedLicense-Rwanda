@@ -1,15 +1,13 @@
 import { supabase } from "@/lib/supabase";
+import { hasPremiumAccess } from "@/lib/subscriptions";
 import { auth } from "@/lib/auth";
 import { ExamsClient } from "./ExamsClient";
 
 export default async function ExamsPage() {
   const session = await auth();
-  const { data: subscription } = await supabase
-    .from("subscriptions").select("*").eq("user_id", session!.user.id).single();
-  const isPremium = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
+  const isPremium = await hasPremiumAccess(session!.user.id);
 
   const licenseCategory = session?.user?.licenseCategory;
-  const userLanguage    = (session?.user as { language?: string | null })?.language ?? "EN";
 
   // Show all published exams — students can filter by language using the tabs on the page
   let examsQuery = supabase

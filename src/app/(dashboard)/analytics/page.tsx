@@ -11,7 +11,7 @@ export default async function AnalyticsPage() {
     .from("exam_attempts")
     .select("*, exam:exams(title_en, passing_score, category:categories(name_en))")
     .eq("user_id", userId)
-    .eq("status", "COMPLETED")
+    .in("status", ["COMPLETED", "TIMED_OUT"])
     .order("submitted_at", { ascending: true });
 
   const attemptList = (attempts ?? []).filter(

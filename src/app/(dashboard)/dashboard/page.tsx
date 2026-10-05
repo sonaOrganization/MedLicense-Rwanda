@@ -1,3 +1,4 @@
+import { hasPremiumAccess } from "@/lib/subscriptions";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { DashboardOverviewClient } from "./DashboardOverviewClient";
@@ -13,31 +14,23 @@ export default async function DashboardPage() {
     streakRes,
     badgeCountRes,
     savedCountRes,
-    topUsersRes,
   ] = await Promise.all([
     supabase
       .from("exam_attempts")
       .select("*, exam:exams(title_en, passing_score, category:categories(name_en))")
       .eq("user_id", userId)
-      .eq("status", "COMPLETED")
+      .in("status", ["COMPLETED", "TIMED_OUT"])
       .order("submitted_at", { ascending: false })
       .limit(5),
     supabase
       .from("exam_attempts")
       .select("*, exam:exams(passing_score)")
       .eq("user_id", userId)
-      .eq("status", "COMPLETED"),
+      .in("status", ["COMPLETED", "TIMED_OUT"]),
     supabase.from("subscriptions").select("*").eq("user_id", userId).single(),
     supabase.from("daily_streaks").select("*").eq("user_id", userId).single(),
     supabase.from("user_badges").select("*", { count: "exact", head: true }).eq("user_id", userId),
     supabase.from("saved_questions").select("*", { count: "exact", head: true }).eq("user_id", userId),
-    supabase
-      .from("users")
-      .select("id, name, exam_attempts(score, status)")
-      .eq("role", "STUDENT")
-      .eq("is_banned", false)
-      .order("created_at", { ascending: true })
-      .limit(20),
   ]);
 
   const recentAttempts = recentAttemptsRes.data ?? [];
@@ -46,7 +39,6 @@ export default async function DashboardPage() {
   const streak = streakRes.data;
   const userBadgesCount = badgeCountRes.count ?? 0;
   const savedCount = savedCountRes.count ?? 0;
-  const topUsers = topUsersRes.data ?? [];
 
   const totalExams = allAttempts.length;
   const avgScore = totalExams > 0
@@ -58,22 +50,7 @@ export default async function DashboardPage() {
   const passRate = totalExams > 0 ? Math.round((passed / totalExams) * 100) : 0;
   const readiness = Math.min(100, Math.round(avgScore * 0.6 + passRate * 0.3 + Math.min(totalExams * 5, 10)));
 
-  const performers = topUsers
-    .map((u: { id: string; name?: string; exam_attempts: { score: number | null; status: string }[] }) => {
-      const completed = u.exam_attempts.filter((attempt) => attempt.status === "COMPLETED");
-      return {
-        rank: 0,
-        name: u.name ?? "Anonymous",
-        score: completed.length ? Math.round(completed.reduce((sum, attempt) => sum + (attempt.score ?? 0), 0) / completed.length) : 0,
-        exams: completed.length,
-        isCurrentUser: u.id === userId,
-      };
-    })
-    .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
-    .slice(0, 5)
-    .map((p: { rank: number; name: string; score: number; exams: number; isCurrentUser: boolean }, i: number) => ({ ...p, rank: i + 1 }));
-
-  const isPremium = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
+  const isPremium = await hasPremiumAccess(session!.user.id);
 
   return (
     <DashboardOverviewClient

@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     ".claude/**",
     ".sixth/**",
     ".vscode/**",
+    ".npm-cache/**",
   ]),
   {
     rules: {

@@ -32,6 +32,7 @@ interface PracticalExamData {
   attemptId: string;
   groups: Group[];
   initialState: InitialState | null;
+  initialRevision: number;
 }
 
 type Phase = "prompt" | "thinking" | "revealed" | "group-done";
@@ -51,6 +52,7 @@ export function PracticalEngine({ exam }: { exam: PracticalExamData }) {
   const [phase,      setPhase]      = useState<Phase>("prompt");
   const [answers,    setAnswers]    = useState<Record<string, boolean>>(exam.initialState?.answers ?? {});
   const [submitting, setSubmitting] = useState(false);
+  const revisionRef = useRef(exam.initialRevision);
   const answersRef = useRef(answers);
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
@@ -65,15 +67,20 @@ export function PracticalEngine({ exam }: { exam: PracticalExamData }) {
   const isLastGroup = groupIndex === exam.groups.length - 1;
 
   const save = useCallback(async (overrides?: Partial<{ groupIndex: number; subIndex: number; answers: Record<string, boolean> }>) => {
-    await fetch(`/api/practical/${exam.attemptId}/save`, {
+    revisionRef.current = Math.max(Date.now(), revisionRef.current + 1);
+    try {
+      const res = await fetch(`/api/practical/${exam.attemptId}/save`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        revision: revisionRef.current,
         groupIndex: overrides?.groupIndex ?? groupIndex,
         subIndex: overrides?.subIndex ?? subIndex,
         answers: overrides?.answers ?? answersRef.current,
       }),
-    }).catch(() => {});
+      });
+      if (!res.ok && res.status !== 409) throw new Error("Could not save progress");
+    } catch { toast.error("Progress could not be saved. Check your connection.", { id: "practical-save" }); }
   }, [exam.attemptId, groupIndex, subIndex]);
 
   // Auto-save every 30s
@@ -92,7 +99,7 @@ export function PracticalEngine({ exam }: { exam: PracticalExamData }) {
         body: JSON.stringify({ answers: answersRef.current }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok && !(res.status === 409 && data.error === "already_submitted")) throw new Error(data.error);
       router.push(`/practical/results/${exam.attemptId}`);
     } catch {
       toast.error("Failed to submit. Please try again.");

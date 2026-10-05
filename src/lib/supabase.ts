@@ -19,6 +19,8 @@ function getClient(): SupabaseClient {
 // Lazy proxy — client is only created when first used, not at import time
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_, prop) {
-    return getClient()[prop as keyof SupabaseClient];
+    const client = getClient();
+    const value = client[prop as keyof SupabaseClient];
+    return typeof value === "function" ? value.bind(client) : value;
   },
 });

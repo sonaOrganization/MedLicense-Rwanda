@@ -10,7 +10,7 @@ export default async function AdminUsersPage() {
     supabase
       .from("exam_attempts")
       .select("user_id, score, status")
-      .eq("status", "COMPLETED")
+      .in("status", ["COMPLETED", "TIMED_OUT"])
       .limit(5000),
   ]);
 

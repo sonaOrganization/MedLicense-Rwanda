@@ -1,141 +1,126 @@
-# MedLicense payment webhook
+# Secure payment flow
 
-AfriPay posts payment results to **SonaMovie**, which owns the AfriPay
-integration. SonaMovie forwards any payment whose `client_token` starts with
-`ML_` to MedLicense, and MedLicense grants the subscription.
+MedLicense creates an order with its server-owned plan and price. SonaMovie creates a hosted checkout. Only a verified SonaMovie webhook can mark the order paid and extend access. The browser return URL and polling endpoint never grant access.
 
-```
-user pays ──> AfriPay ──> SonaMovie ──> MedLicense webhook ──> subscription active
-                                         (this document)
-```
+## Deploy the database change first
 
-The browser is redirected separately to `/subscription?paid=true`, which polls
-until the webhook has landed. Nothing about activation depends on the browser.
+Apply `supabase/migrations/011_secure_workflows.sql` after migrations 001–010. It adds transactional payment activation, serialized renewals, server-owned exam deadlines, immutable attempt snapshots, atomic grading and admin editing, reset-token consumption, and distributed request limits. RPC execution is restricted to the Supabase service role.
 
-## Endpoint
+New installations use `supabase/schema.sql`, then all numbered migrations in order. This sequence is exercised by the PostgreSQL regression test. Do not apply the base schema again to an existing database.
 
-```
-POST https://<medlicense-domain>/api/payments/webhook
-```
+Deploy the updated application after the migration. Existing sessions missing a stored session ID must sign in again.
 
-`/api/payments/afripay-callback` is an alias of the same handler, kept for
-existing configuration. Use `/api/payments/webhook` for anything new.
+## Configuration
 
-## Authentication
+MedLicense requires:
 
-Both sides share one secret, set as `PAYMENT_WEBHOOK_SECRET` on MedLicense.
-Send it either way — pick whichever is easier in SonaMovie:
+- `PAYMENT_CHECKOUT_URL`: the exact HTTPS SonaMovie server endpoint that creates a hosted checkout.
+- `PAYMENT_CHECKOUT_SECRET`: a separate secret used only for the checkout API.
+- `PAYMENT_WEBHOOK_SECRET`: a separate secret shared with SonaMovie for confirmed-payment forwarding.
+- `NEXT_PUBLIC_APP_URL`: the MedLicense HTTPS origin in production.
+- `PAYMENT_CHECKOUT_ALLOWED_HOSTS`: comma-separated additional checkout hostnames, if needed. AfriPay and the configured relay hostname are allowed by default.
 
-**Shared secret header** (simplest):
+The legacy `AFRIPAY_WEBHOOK_SECRET` is accepted when `PAYMENT_WEBHOOK_SECRET` is unset. Never reuse the AfriPay checkout credential as the webhook secret.
 
-```http
-x-webhook-secret: <PAYMENT_WEBHOOK_SECRET>
-```
+AfriPay's supplied `https://www.afripay.africa/checkout/index.php` form requires a browser-visible `app_secret`. That URL does **not** implement the SonaMovie checkout contract below. MedLicense deliberately does not return that credential. A form hosted elsewhere still exposes its hidden fields to its visitors; preserving credential privacy requires a genuinely server-created hosted session supported by the provider or relay. Until a compatible checkout endpoint is configured, payment initiation returns 503 rather than exposing credentials.
 
-`Authorization: Bearer <secret>` is accepted as an equivalent.
+Rotate any AfriPay credential previously exposed in a browser, shared source file, or chat.
 
-**HMAC signature** (stronger; body is tamper-evident):
+## SonaMovie checkout contract
+
+MedLicense sends:
 
 ```http
-x-afripay-signature: sha256=<hex HMAC-SHA256 of the raw request body>
+POST <PAYMENT_CHECKOUT_URL>
+Authorization: Bearer <PAYMENT_CHECKOUT_SECRET>
+Content-Type: application/json
+Idempotency-Key: <payment UUID>
 ```
-
-Computed with the same secret over the exact bytes sent. If a signature header
-is present it **must** be valid — it never falls back to the header check.
-
-> The legacy `AFRIPAY_WEBHOOK_SECRET` name is still read, so existing
-> deployments keep working without an env change.
-
-## Request body
-
-JSON or form-encoded. Keys are accepted in snake_case or camelCase, so
-AfriPay's payload can be relayed without reshaping.
 
 ```json
 {
-  "client_token": "ML_<paymentId>",
-  "status": "success",
-  "transaction_id": "AFP-123456"
-}
-```
-
-| Field | Required | Notes |
-|---|---|---|
-| `client_token` | yes | Exactly as issued at checkout. Only `ML_`-prefixed tokens are MedLicense payments. |
-| `status` | yes | Activates on `success`, `completed`, `paid`, `successful`, `1`, `true` (case-insensitive). Anything else is recorded, not activated. |
-| `transaction_id` | no | Stored against the payment for reconciliation. |
-
-## Responses
-
-| Status | Meaning | Should SonaMovie retry? |
-|---|---|---|
-| `200` | Authenticated and processed. Read `activated` for the outcome. | No |
-| `400` | `client_token` missing. | No |
-| `401` | Bad or missing credentials. `reason` says which. | No — fix the secret |
-| `503` | `PAYMENT_WEBHOOK_SECRET` not set on MedLicense. | Yes, after it is configured |
-| `500` | Database error; the payment is genuinely unresolved. | Yes, with backoff |
-
-A 200 with `activated: false` is a decision, not a failure:
-
-```json
-{ "received": true, "activated": false, "reason": "already_activated" }
-```
-
-Reasons: `not_a_medlicense_payment`, `status_not_paid:<status>`,
-`payment_not_found`, `already_activated`.
-
-On success:
-
-```json
-{
-  "received": true,
-  "activated": true,
-  "userId": "…",
+  "amount": 3000,
+  "currency": "RWF",
+  "comment": "MedLicense Monthly Plan (30 days)",
+  "client_token": "ML_<payment UUID>",
   "plan": "monthly",
-  "endDate": "2026-10-23T09:00:00.000Z"
+  "return_url": "https://<medlicense-domain>/subscription?payment=<payment UUID>",
+  "webhook_url": "https://<medlicense-domain>/api/payments/webhook"
 }
 ```
 
-## Idempotency
+The relay must authenticate the server request, create a checkout using its provider integration, and preserve the exact client token. Return:
 
-Safe to retry. Activation claims the payment with a conditional update
-(`status = 'pending'` → `'completed'`); a concurrent or repeated call updates
-zero rows and returns `already_activated` without granting a second
-subscription.
-
-If a user pays again while still subscribed, the new plan is **added to their
-remaining days** rather than replacing them.
-
-## Plans
-
-| Plan id | Price | Access |
-|---|---|---|
-| `weekly` | 1,500 RWF | 7 days |
-| `monthly` | 3,000 RWF | 30 days |
-
-Plan and price come from the stored payment row, never from the webhook body —
-the callback cannot change what was bought. Legacy `pro` records resolve to 30
-days. Source of truth: `src/lib/plans.ts`.
-
-## Health check
-
-```
-GET /api/payments/webhook
-→ { "ok": true, "endpoint": "MedLicense payment webhook", "configured": true }
+```json
+{ "checkout_url": "https://<approved-checkout-host>/<hosted-session>" }
 ```
 
-`configured: false` means the secret is missing and every callback will be
-rejected with 503. The secret itself is never returned.
+A camelCase `checkoutUrl` response is also accepted. Responses containing raw provider HTML or provider credentials are not accepted. Secrets must not be embedded in checkout URL query parameters.
 
-## Setup checklist
+## Confirmed-payment webhook
 
-1. Generate a secret: `openssl rand -hex 32`
-2. Set `PAYMENT_WEBHOOK_SECRET` in the MedLicense Vercel project (all environments)
-3. Store the same value in SonaMovie
-4. Point SonaMovie's `ML_` forwarding at `https://<medlicense-domain>/api/payments/webhook`
-5. Confirm `GET /api/payments/webhook` reports `configured: true`
+After SonaMovie verifies payment with AfriPay, forward the actual settled amount, currency, and unique provider transaction ID:
 
-## Manual fallback
+```http
+POST https://<medlicense-domain>/api/payments/webhook
+Content-Type: application/json
+x-afripay-signature: sha256=<HMAC-SHA256 of the exact raw JSON body>
+```
 
-If a callback is missed, an admin can activate a pending payment from the admin
-payments page, which applies the same plan duration as the webhook.
+```json
+{
+  "client_token": "ML_<payment UUID>",
+  "status": "success",
+  "transaction_id": "AFP-123456",
+  "amount": 3000,
+  "currency": "RWF"
+}
+```
+
+Sign using `PAYMENT_WEBHOOK_SECRET`. Shared-secret headers (`x-webhook-secret` or `Authorization: Bearer`) remain supported, but an included signature must be valid and cannot fall back to a shared-secret header.
+
+Use the actual provider settlement fields. Never copy amount/currency from an untrusted browser or merely from the originally requested checkout fields. A paid status without transaction ID, amount, and currency is rejected.
+
+The PHP forwarding helper at `integrations/sonamovie/medlicense-forward.php` can be included in SonaMovie's existing verified-payment handler. It is not a publicly callable payment-confirmation endpoint.
+
+## Responses and retries
+
+| HTTP status | Meaning |
+| --- | --- |
+| 200 | Activated, already activated, or a non-paid/unrelated event. |
+| 400 | Invalid payload or missing settlement details. |
+| 401 | Missing or invalid authentication. |
+| 404 | Unknown MedLicense payment. Investigate and retry after reconciliation. |
+| 409 | Amount/currency mismatch, conflicting transaction, or non-payable order state. Investigate. |
+| 500 | Database transaction failed. Retry with backoff; no partial activation is committed. |
+| 503 | Webhook secret is not configured. Retry after configuration. |
+
+A replay of the same paid event returns `already_activated`. Different paid orders for one account serialize their subscription extensions so neither overwrites purchased time. Each transaction ID can belong to only one payment.
+
+Pending payment records are retained for late confirmations and reconciliation. The daily job no longer deletes them.
+
+## Browser and admin behavior
+
+The return page polls `GET /api/payments/activate?paymentId=<UUID>`, scoped to the signed-in account. It displays approval only after that particular order is marked completed. An existing subscription does not count as confirmation of a new payment.
+
+Manual payment activation is disabled. `POST /api/admin/payments/activate` returns 410 for administrators. Subscription grants remain a separate admin account-management action.
+
+## Video configuration
+
+Premium video uploads use Mux signed playback. Configure `MUX_WEBHOOK_SECRET`, `MUX_SIGNING_KEY_ID`, and `MUX_SIGNING_PRIVATE_KEY`. An absent webhook secret rejects all events.
+
+For legacy premium assets with public playback, unpublish and republish through the admin video controls after configuring signing keys. Publishing a premium video creates/reuses signed playback, revokes existing public playback IDs, and updates the database. Existing public playback links stop working. These provider changes occur when an administrator performs that action; this repository change does not modify live Mux assets by itself.
+
+## Validation
+
+```powershell
+npm.cmd test
+npx.cmd tsc --noEmit
+npm.cmd run lint -- --max-warnings=0
+npm.cmd run build
+npm.cmd audit --omit=dev
+```
+
+The tests run PostgreSQL in memory and never connect to the live Supabase database. They cover migration execution, rollback, renewal stacking, ownership, replay handling, grading, deadlines, snapshots, reset-token reuse, session revocation, validation, and webhook authentication.
+
+The development-only braces dependency has no upstream fixed release for GHSA-vfj7-8cjw-p6xm. `scripts/harden-braces.mjs` applies bounded nesting checks at install time and regression tests verify the guard. npm audit still reports the upstream package version and its development dependents. This mitigation is not an upstream version fix.

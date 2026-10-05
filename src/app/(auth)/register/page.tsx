@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@/lib/validations";
 import { LICENSE_CATEGORIES, LICENSE_CATEGORY_GROUPS } from "@/lib/license-categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Mail, Lock, Eye, EyeOff, Phone, GraduationCap } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, GraduationCap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -18,28 +18,24 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading,     setLoading]     = useState(false);
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterInput>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
-  const selectedCategory = watch("licenseCategory");
+  const selectedCategory = useWatch({ control, name: "licenseCategory" });
 
   async function onSubmit(data: RegisterInput) {
     setLoading(true);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const json = await res.json();
-    setLoading(false);
-
-    if (!res.ok) {
-      toast.error(json.error || "Registration failed");
-    } else {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Registration failed");
       toast.success("Account created! You can now sign in.");
       router.push("/login");
-    }
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Please check your connection."); }
+    finally { setLoading(false); }
   }
 
   return (

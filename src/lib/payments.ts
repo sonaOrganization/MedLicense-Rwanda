@@ -45,13 +45,13 @@ export function verifyWebhookAuth(headers: Headers, rawBody: string): WebhookAut
   if (!secret) return { ok: false, reason: "not_configured" };
 
   const signature = headers.get("x-afripay-signature") ?? headers.get("x-webhook-signature");
-  if (signature) {
+  if (signature !== null) {
     return verifyPaymentSignature(rawBody, signature)
       ? { ok: true, method: "signature" }
       : { ok: false, reason: "invalid_credentials" };
   }
 
-  const bearer   = headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+  const bearer = headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
   const supplied = headers.get("x-webhook-secret")?.trim() || bearer;
   if (!supplied) return { ok: false, reason: "missing_credentials" };
 
@@ -64,6 +64,8 @@ export interface PaymentPayload {
   clientToken: string;
   status: string;
   transactionId: string | null;
+  amount: number | null;
+  currency: string | null;
 }
 
 function pick(source: Record<string, unknown>, ...keys: string[]): string | null {
@@ -93,7 +95,11 @@ export function parsePaymentPayload(rawBody: string, contentType: string): Payme
     source = Object.fromEntries(new URLSearchParams(rawBody));
   }
 
+  const amountText = pick(source, "amount", "paid_amount", "paidAmount");
+  const amount = amountText && /^\d+(?:\.\d{1,2})?$/.test(amountText) ? Number(amountText) : null;
   return {
+    amount: amount !== null && Number.isFinite(amount) && amount > 0 ? amount : null,
+    currency: pick(source, "currency")?.toUpperCase() ?? null,
     clientToken:   pick(source, "client_token", "clientToken", "token", "reference") ?? "",
     status:        pick(source, "status", "payment_status", "paymentStatus", "state") ?? "",
     transactionId: pick(source, "transaction_id", "transactionId", "txn_id", "txnId"),

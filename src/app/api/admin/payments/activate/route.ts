@@ -1,44 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
-import { planEndDate } from "@/lib/plans";
-
-// POST /api/admin/payments/activate
-// Admin-only: manually activate a pending payment by ID
-// Body: { paymentId: string }
-export async function POST(req: NextRequest) {
+export async function POST() {
   const session = await auth();
-  if (!session || session.user.role !== "ADMIN")
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-
-  const { paymentId } = await req.json();
-  if (!paymentId) return NextResponse.json({ error: "paymentId required" }, { status: 400 });
-
-  const { data: payment } = await supabase
-    .from("payments")
-    .select("*")
-    .eq("id", paymentId)
-    .single();
-
-  if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
-  if (payment.status === "completed")
-    return NextResponse.json({ ok: true, note: "Already activated" });
-
-  const now     = new Date();
-  const endDate = planEndDate(payment.plan, now);
-
-  await supabase.from("payments").update({ status: "completed" }).eq("id", paymentId);
-  await supabase.from("subscriptions").upsert(
-    {
-      user_id:    payment.user_id,
-      status:     "ACTIVE",
-      plan:       payment.plan,
-      start_date: now.toISOString(),
-      end_date:   endDate.toISOString(),
-      auto_renew: false,
-    },
-    { onConflict: "user_id" }
-  );
-
-  return NextResponse.json({ ok: true, activated: true, userId: payment.user_id });
+  if (!session || session.user.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return NextResponse.json({ error: "Payment activation requires a verified provider webhook." }, { status: 410 });
 }

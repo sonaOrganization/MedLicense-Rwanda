@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const { csv } = await req.json();
-  if (!csv) return NextResponse.json({ error: "No CSV data" }, { status: 400 });
+  if (typeof csv !== "string" || csv.length > 2000000) return NextResponse.json({ error: "No CSV data" }, { status: 400 });
 
   const { data: categories } = await supabase.from("categories").select("id, slug, name_en, name");
   // Build lookup by slug AND by name (case-insensitive) so CSV can use either
@@ -148,47 +148,23 @@ export async function POST(req: NextRequest) {
       continue;
     }
 
-    // Store question text in the correct language column.
-    // text_en is kept non-null (stores FR text as fallback) to satisfy DB constraint.
-    const { data: dbQuestion, error: qErr } = await supabase
-      .from("questions")
-      .insert({
-        text_en:        lang === "EN" ? question : question, // always set for NOT NULL
-        text_fr:        lang === "FR" ? question : null,
-        explanation_en: expl || null,
-        explanation_fr: lang === "FR" ? (expl || null) : null,
-        difficulty:     ["EASY", "MEDIUM", "HARD"].includes(diff) ? diff : "MEDIUM",
-        category_id:    catId,
-        language:       lang,
-        license_categories: licCats,
-        type:           "MULTIPLE_CHOICE",
-        is_approved:    true,
-        is_active:      true,
-      })
-      .select()
-      .single();
-
-    if (qErr) { failed.push({ row: i + 1, reason: qErr.message }); continue; }
-
-    // Build answer rows — store in correct language column
+    if (lang !== "EN" && lang !== "FR") { failed.push({ row: i + 1, reason: "Invalid language" }); continue; }
     const answerTexts = [ansA, ansB, ansC, ansD, ansE];
-    const correctIdx  = ["A", "B", "C", "D", "E"].indexOf(correct);
+    const correctIdx = ["A", "B", "C", "D", "E"].indexOf(correct);
+    const answerRows = answerTexts.map((text, idx) => ({ text, idx })).filter(({ text }) => text).map(({ text, idx }) => ({
+      text_en: lang === "EN" ? text : null, text_fr: lang === "FR" ? text : null, is_correct: idx === correctIdx,
+    }));
+    const { data: questionId, error: saveError } = await supabase.rpc("save_question", {
+      p_id: null, p_question: {
+        text_en: lang === "EN" ? question : null, text_fr: lang === "FR" ? question : null,
+        explanation_en: lang === "EN" ? expl || null : null, explanation_fr: lang === "FR" ? expl || null : null,
+        difficulty: ["EASY", "MEDIUM", "HARD"].includes(diff) ? diff : "MEDIUM",
+        category_id: catId, language: lang, license_categories: licCats,
+      }, p_answers: answerRows,
+    });
+    if (saveError) { failed.push({ row: i + 1, reason: "Could not save question" }); continue; }
+    imported.push(questionId);
 
-    const answerRows = answerTexts
-      .map((t, idx) => ({ t, idx }))
-      .filter(({ t }) => t)
-      .map(({ t, idx }) => ({
-        question_id: dbQuestion.id,
-        text_en:     t,               // always set — satisfies NOT NULL constraint
-        text_fr:     lang === "FR" ? t : null,
-        is_correct:  idx === correctIdx,
-        order:       idx,
-      }));
-
-    const { error: aErr } = await supabase.from("answers").insert(answerRows);
-    if (aErr) { failed.push({ row: i + 1, reason: aErr.message }); continue; }
-
-    imported.push(dbQuestion.id);
   }
 
   return NextResponse.json({ imported: imported.length, failed });

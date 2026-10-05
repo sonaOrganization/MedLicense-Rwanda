@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { consumeLimit } from "@/lib/rate-limit";
 import { forgotPasswordSchema } from "@/lib/validations";
 import { sendPasswordResetEmail } from "@/lib/email";
 
@@ -8,6 +9,7 @@ export async function POST(req: NextRequest) {
   const parsed = forgotPasswordSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
   const email = parsed.data.email.trim().toLowerCase();
+  if (!(await consumeLimit("forgot-password", email, 5, 900))) return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   const { data: user } = await supabase.from("users").select("id").eq("email", email).maybeSingle();
 
   // Return the same response for existing and unknown accounts.

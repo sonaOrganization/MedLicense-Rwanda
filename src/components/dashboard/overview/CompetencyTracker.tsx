@@ -53,8 +53,8 @@ export function CompetencyTracker({ data }: CompetencyTrackerProps) {
 
   return (
     <div className="space-y-3">
-      {merged.map(({ name, nameFr, icon, score, attempts, trend }) => {
-        const { label, color } = getStatus(score);
+      {merged.map(({ name, icon, score, attempts, trend }) => {
+        const { color } = getStatus(score);
         return (
           <div key={name} className="flex items-center gap-3 group">
             <span className="text-xl w-7 flex-shrink-0">{icon}</span>

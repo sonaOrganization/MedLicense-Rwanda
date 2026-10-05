@@ -8,7 +8,14 @@ export async function POST(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN")
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
-  const { title_en, description, category_id, is_free } = await req.json();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body.title_en !== "string" || typeof body.category_id !== "string" || typeof body.is_free !== "boolean") {
+    return NextResponse.json({ error: "Invalid video details" }, { status: 400 });
+  }
+  const { title_en, description, category_id, is_free } = body;
+  if (!is_free && (!process.env.MUX_SIGNING_KEY_ID || !process.env.MUX_SIGNING_PRIVATE_KEY)) {
+    return NextResponse.json({ error: "Configure protected video playback before uploading premium videos" }, { status: 503 });
+  }
 
   if (!title_en?.trim())
     return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -23,7 +30,8 @@ export async function POST(req: NextRequest) {
       title: title_en.trim(),
       description: description?.trim() || null,
       category_id,
-      is_free: Boolean(is_free),
+      is_free,
+      playback_policy: is_free ? "public" : "signed",
       is_published: false,
     })
     .select("id")
@@ -36,7 +44,7 @@ export async function POST(req: NextRequest) {
     const upload = await mux.video.uploads.create({
       cors_origin: process.env.NEXT_PUBLIC_APP_URL ?? "*",
       new_asset_settings: {
-        playback_policy: ["public"],
+        playback_policy: [is_free ? "public" : "signed"],
         passthrough: video.id,
       },
     });

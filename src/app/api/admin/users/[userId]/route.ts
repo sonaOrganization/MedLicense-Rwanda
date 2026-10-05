@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { z } from "zod";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const session = await auth();
@@ -9,22 +10,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
   }
 
   const { userId } = await params;
-  const body = await req.json();
+  const parsed = z.object({
+    action: z.enum(["ban", "unban", "make_admin", "make_student", "grant_subscription", "revoke_subscription"]),
+    plan: z.enum(["weekly", "monthly", "pro"]).optional(), months: z.number().int().min(1).max(24).optional(),
+    end_date: z.iso.datetime().optional(),
+  }).safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid account action" }, { status: 400 });
+  const body = parsed.data;
   const { action } = body;
+  if (userId === session.user.id && ["ban", "make_student"].includes(action)) return NextResponse.json({ error: "You cannot suspend or demote yourself" }, { status: 400 });
+  const { data: target, error: targetError } = await supabase.from("users").select("id").eq("id", userId).maybeSingle();
+  if (targetError) return NextResponse.json({ error: "Could not load user" }, { status: 500 });
+  if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   switch (action) {
-    case "ban":
-      await supabase.from("users").update({ is_banned: true }).eq("id", userId);
+    case "ban": {
+      const { error } = await supabase.from("users").update({ is_banned: true }).eq("id", userId);
+      if (error) return NextResponse.json({ error: "Could not update user" }, { status: 500 });
       break;
-    case "unban":
-      await supabase.from("users").update({ is_banned: false }).eq("id", userId);
+    }
+    case "unban": {
+      const { error } = await supabase.from("users").update({ is_banned: false }).eq("id", userId);
+      if (error) return NextResponse.json({ error: "Could not update user" }, { status: 500 });
       break;
-    case "make_admin":
-      await supabase.from("users").update({ role: "ADMIN" }).eq("id", userId);
+    }
+    case "make_admin": {
+      const { error } = await supabase.from("users").update({ role: "ADMIN" }).eq("id", userId);
+      if (error) return NextResponse.json({ error: "Could not update user" }, { status: 500 });
       break;
-    case "make_student":
-      await supabase.from("users").update({ role: "STUDENT" }).eq("id", userId);
+    }
+    case "make_student": {
+      const { error } = await supabase.from("users").update({ role: "STUDENT" }).eq("id", userId);
+      if (error) return NextResponse.json({ error: "Could not update user" }, { status: 500 });
       break;
+    }
     case "grant_subscription": {
       const { plan, months, end_date } = body as { plan?: string; months?: number; end_date?: string };
       let endDate: Date;
@@ -49,10 +68,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
       break;
     }
     case "revoke_subscription": {
-      await supabase
+      const { error } = await supabase
         .from("subscriptions")
         .update({ status: "CANCELLED", end_date: new Date().toISOString() })
         .eq("user_id", userId);
+      if (error) return NextResponse.json({ error: "Could not revoke subscription" }, { status: 500 });
       break;
     }
     default:

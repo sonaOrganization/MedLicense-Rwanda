@@ -35,7 +35,10 @@ export default async function AdminFeedbackPage() {
 
   const feedback = (rows ?? []) as {
     id: string;
-    rating: number;
+    rating: number | null;
+    name: string | null;
+    email: string | null;
+    subject: string | null;
     category: string;
     message: string | null;
     created_at: string;
@@ -43,7 +46,8 @@ export default async function AdminFeedbackPage() {
   }[];
 
   const total    = feedback.length;
-  const avgRating = total ? +(feedback.reduce((s, f) => s + f.rating, 0) / total).toFixed(1) : 0;
+  const rated = feedback.filter((f) => f.rating !== null);
+  const avgRating = rated.length ? +(rated.reduce((s, f) => s + (f.rating ?? 0), 0) / rated.length).toFixed(1) : 0;
 
   // Rating distribution
   const dist = [5,4,3,2,1].map((star) => {
@@ -139,13 +143,15 @@ export default async function AdminFeedbackPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {f.user?.name ?? "Student"}
+                          {f.user?.name ?? f.name ?? "Visitor"}
                         </p>
-                        <Stars rating={f.rating} />
+                        {f.rating !== null && <Stars rating={f.rating} />}
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
                           {CATEGORY_LABELS[f.category] ?? f.category}
                         </span>
                       </div>
+                      {f.subject && <p className="mt-1 text-sm font-medium">{f.subject}</p>}
+                      {f.category === "contact" && f.email && <p className="text-xs text-gray-400">{f.email}</p>}
                       {f.message && (
                         <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{f.message}</p>
                       )}
@@ -198,7 +204,7 @@ export default async function AdminFeedbackPage() {
                   <div key={f.id} className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
                     <Stars rating={5} />
                     <p className="mt-1.5 text-xs text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-3">{f.message}</p>
-                    <p className="mt-1 text-[10px] text-gray-400">{f.user?.name ?? "Student"}</p>
+                    <p className="mt-1 text-[10px] text-gray-400">{f.user?.name ?? f.name ?? "Visitor"}</p>
                   </div>
                 ))}
               </div>

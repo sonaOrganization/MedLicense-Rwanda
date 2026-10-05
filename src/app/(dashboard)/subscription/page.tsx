@@ -1,3 +1,4 @@
+import { hasPremiumAccess } from "@/lib/subscriptions";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,15 +10,15 @@ import { PaymentSuccessBanner } from "@/components/dashboard/PaymentSuccessBanne
 import { PlanCard, PremiumFeatureList } from "@/components/pricing/PlanCard";
 import { PLAN_LIST, getPlan } from "@/lib/plans";
 
-interface Props { searchParams: Promise<{ paid?: string; success?: string }> }
+interface Props { searchParams: Promise<{ paid?: string; success?: string; payment?: string }> }
 
 function daysLeft(endDate: string) {
   return Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000));
 }
 
 export default async function SubscriptionPage({ searchParams }: Props) {
-  const { paid, success } = await searchParams;
-  const justPaid = paid === "true" || success === "true";
+  const { paid, success, payment } = await searchParams;
+  const justPaid = paid === "true" || success === "true" || Boolean(payment);
   const session = await auth();
   const { data: subscription } = await supabase
     .from("subscriptions")
@@ -32,7 +33,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
     .limit(5);
 
   const paymentList = payments ?? [];
-  const isActive    = subscription?.status === "ACTIVE" || subscription?.status === "TRIAL";
+  const isActive = await hasPremiumAccess(session!.user.id);
   const activePlan  = getPlan(subscription?.plan);
   const remaining   = isActive && subscription?.end_date ? daysLeft(subscription.end_date) : null;
 
@@ -43,7 +44,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your plan and billing</p>
       </div>
 
-      {justPaid && <PaymentSuccessBanner />}
+      {justPaid && (payment ?? paymentList.find((p: { status: string }) => p.status === "pending")?.id) && <PaymentSuccessBanner paymentId={payment ?? paymentList.find((p: { status: string }) => p.status === "pending")!.id} />}
 
       {/* Current status */}
       <Card>

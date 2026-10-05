@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import type { PracticalSnapshot } from "@/lib/exam-types";
 import { PracticalResultClient } from "./PracticalResultClient";
 
 interface Props { params: Promise<{ attemptId: string }> }
@@ -26,5 +27,14 @@ export default async function PracticalResultPage({ params }: Props) {
 
   if (!attempt || attempt.status !== "COMPLETED") notFound();
 
+  const snapshot = attempt.exam_snapshot as PracticalSnapshot | null;
+  if (snapshot) {
+    attempt.exam = snapshot;
+    attempt.answers = attempt.answers.map((answer: { subquestion_id: string }) => {
+      const group = snapshot.groups.find((g) => g.subquestions.some((s) => s.id === answer.subquestion_id));
+      const sub = group?.subquestions.find((s) => s.id === answer.subquestion_id);
+      return { ...answer, subquestion: sub ? { ...sub, group } : null };
+    });
+  }
   return <PracticalResultClient attempt={attempt} />;
 }

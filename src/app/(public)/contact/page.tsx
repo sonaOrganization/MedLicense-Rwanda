@@ -1,5 +1,4 @@
 "use client";
-import type { Metadata } from "next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +10,20 @@ export default function ContactPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    toast.success("Message sent! We'll get back to you within 24 hours.");
-    setLoading(false);
-    (e.target as HTMLFormElement).reset();
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error);
+      toast.success("Message sent. Our support team will review it.");
+      form.reset();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send your message.");
+    } finally { setLoading(false); }
   }
 
   return (
@@ -57,6 +65,7 @@ export default function ContactPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
+          <input name="website" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
           <Input label="Your Name" name="name" required placeholder="Enter your name" />
           <Input label="Email Address" name="email" type="email" required placeholder="you@example.com" />
           <Input label="Subject" name="subject" required placeholder="What is this about?" />

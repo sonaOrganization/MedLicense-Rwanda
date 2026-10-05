@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
+import { consumeLimit } from "@/lib/rate-limit";
 import { registerSchema } from "@/lib/validations";
 
 export async function POST(req: NextRequest) {
@@ -13,6 +14,7 @@ export async function POST(req: NextRequest) {
 
     const { name, password, phone, licenseCategory } = parsed.data;
     const email = parsed.data.email.trim().toLowerCase();
+  if (!(await consumeLimit("register", email, 5, 900))) return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
 
     // maybeSingle returns null (no error) when no row is found — cleaner than .single()
     const { data: existing } = await supabase.from("users").select("id").eq("email", email).maybeSingle();
@@ -33,6 +35,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
+      if (error.code === "23505") return NextResponse.json({ error: "Email already in use" }, { status: 409 });
       console.error("[REGISTER]", error);
       return NextResponse.json({ error: "Could not create account. Please try again." }, { status: 500 });
     }

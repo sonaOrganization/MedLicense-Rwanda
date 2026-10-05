@@ -11,7 +11,7 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
 
   let query = supabase
     .from("questions")
-    .select("*, category:categories(*), answers(*)")
+    .select("*, category:categories(*), answers(*)").eq("answers.is_active", true)
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -19,7 +19,7 @@ export default async function AdminQuestionsPage({ searchParams }: Props) {
   if (q && (UUID_RE.test(q.trim()) || PARTIAL_UUID_RE.test(q.trim()))) {
     query = supabase
       .from("questions")
-      .select("*, category:categories(*), answers(*)")
+      .select("*, category:categories(*), answers(*)").eq("answers.is_active", true)
       .ilike("id", `${q.trim()}%`)
       .limit(50);
   } else {

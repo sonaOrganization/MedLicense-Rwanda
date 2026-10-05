@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, Loader2, Clock } from "lucide-react";
 
-export function PaymentSuccessBanner() {
+export function PaymentSuccessBanner({ paymentId }: { paymentId: string }) {
   const router = useRouter();
   const [state, setState] = useState<"waiting" | "active" | "timeout">("waiting");
 
@@ -15,10 +15,10 @@ export function PaymentSuccessBanner() {
       attempts++;
       try {
         // Only reads DB — never activates anything itself
-        const res = await fetch("/api/payments/activate");
+        const res = await fetch("/api/payments/activate?paymentId=" + encodeURIComponent(paymentId));
         const data = await res.json();
 
-        if (data.isActive) {
+        if (res.ok && data.isPaid) {
           clearInterval(interval);
           setState("active");
           // Reload the page to show unlocked premium exams
@@ -36,7 +36,7 @@ export function PaymentSuccessBanner() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [paymentId, router]);
 
   if (state === "active") {
     return (
@@ -60,7 +60,7 @@ export function PaymentSuccessBanner() {
         <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-amber-800 dark:text-amber-300 text-sm">
-            Payment received — confirmation still processing
+            Payment confirmation is still pending
           </p>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
             AfriPay is confirming your payment. Please{" "}

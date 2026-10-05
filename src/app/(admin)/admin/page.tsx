@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
     supabase.from("videos").select("*", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("subscriptions").select("*", { count: "exact", head: true }).in("status", ["ACTIVE", "TRIAL"]),
     supabase.from("payments").select("amount").eq("status", "completed"),
-    supabase.from("exam_attempts").select("*", { count: "exact", head: true }).eq("status", "COMPLETED"),
+    supabase.from("exam_attempts").select("*", { count: "exact", head: true }).in("status", ["COMPLETED", "TIMED_OUT"]),
     supabase.from("feedback").select("rating").limit(500),
   ]);
 

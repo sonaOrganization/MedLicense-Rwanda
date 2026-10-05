@@ -19,13 +19,14 @@ export default function ForgotPasswordPage() {
 
   async function onSubmit(data: { email: string }) {
     setLoading(true);
-    const res = await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    setLoading(false);
-    setSent(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Could not request a reset. Please try again later.");
+      setSent(true);
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Please check your connection."); }
+    finally { setLoading(false); }
   }
 
   if (sent) {
@@ -36,7 +37,7 @@ export default function ForgotPasswordPage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Check your email</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-6">
-          We've sent a password reset link to your email. It expires in 1 hour.
+          If an account exists for this email, a password reset link will arrive shortly. It expires in 1 hour.
         </p>
         <Link href="/login" className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:underline">
           <ArrowLeft className="w-4 h-4" />

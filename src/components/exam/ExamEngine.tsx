@@ -12,7 +12,7 @@ interface Answer   { id: string; textEn: string; textFr?: string | null; }
 interface Question { id: string; textEn: string; textFr?: string | null; imageUrl?: string | null; difficulty: string; answers: Answer[]; }
 interface ExamData {
   id: string; titleEn: string; titleFr?: string | null; durationMinutes: number; passingScore: number;
-  negativeMarking: boolean; attemptId: string; questions: Question[];
+  negativeMarking: boolean; attemptId: string; deadlineAt: string; initialTimeLeft: number; initialRevision: number; questions: Question[];
   initialState?: { answers?: Record<string, string | null>; flagged?: Record<string, boolean>; currentIndex?: number; timeLeft?: number } | null;
 }
 
@@ -26,14 +26,15 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
   const router = useRouter();
   const { language } = useLanguage();
   const T = useT(language);
-  const [currentIndex, setCurrentIndex] = useState(exam.initialState?.currentIndex ?? 0);
+  const [currentIndex, setCurrentIndex] = useState(Math.min(Math.max(0, exam.initialState?.currentIndex ?? 0), exam.questions.length - 1));
   const [answers,      setAnswers]      = useState<Record<string, string | null>>(exam.initialState?.answers ?? {});
   const [flagged,      setFlagged]      = useState<Record<string, boolean>>(exam.initialState?.flagged ?? {});
-  const [timeLeft,     setTimeLeft]     = useState(exam.initialState?.timeLeft ?? exam.durationMinutes * 60);
+  const [timeLeft,     setTimeLeft]     = useState(exam.initialTimeLeft);
   const [showSubmitModal,  setShowSubmitModal]  = useState(false);
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted,  setSubmitted]  = useState(false);
+  const timeoutSubmitRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const q            = exam.questions[currentIndex];
@@ -41,29 +42,36 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
   const totalFlagged  = Object.values(flagged).filter(Boolean).length;
   const progressPct   = Math.round((totalAnswered / exam.questions.length) * 100);
 
-  // Auto-save every 30 s
+  const stateRef = useRef({ answers, flagged, currentIndex, revision: exam.initialRevision });
+  const save = useCallback(async () => {
+    const res = await fetch("/api/exams/" + exam.attemptId + "/save", {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(stateRef.current),
+    });
+    if (!res.ok && res.status !== 409) throw new Error("Could not save answers");
+  }, [exam.attemptId]);
   useEffect(() => {
-    const save = async () => {
-      await fetch(`/api/exams/${exam.attemptId}/save`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers, flagged, currentIndex, timeLeft }),
-      }).catch(() => {});
-    };
-    const id = setInterval(save, 30000);
-    return () => clearInterval(id);
-  }, [answers, flagged, currentIndex, timeLeft, exam.attemptId]);
+    stateRef.current = { answers, flagged, currentIndex, revision: Math.max(Date.now(), stateRef.current.revision + 1) };
+    if (!submitted && Date.now() < new Date(exam.deadlineAt).getTime()) {
+      void save().catch(() => toast.error("Answers could not be saved. Check your connection.", { id: "exam-save" }));
+    }
+  }, [answers, flagged, currentIndex, submitted, exam.deadlineAt, save]);
 
-  // Timer countdown
+  // This interval stays stable while the countdown and answers change.
   useEffect(() => {
+    if (submitted) return;
+    const id = setInterval(() => { void save().catch(() => toast.error("Answers could not be saved. Check your connection.", { id: "exam-save" })); }, 5000);
+    return () => clearInterval(id);
+  }, [save, submitted]);
+
+  useEffect(() => {
+    if (submitted) return;
     timerRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(timerRef.current!); setShowTimeoutModal(true); return 0; }
-        return t - 1;
-      });
-    }, 1000);
+      const remaining = Math.max(0, Math.ceil((new Date(exam.deadlineAt).getTime() - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining === 0) { clearInterval(timerRef.current!); setShowTimeoutModal(true); }
+    }, 500);
     return () => clearInterval(timerRef.current!);
-  }, []);
+  }, [exam.deadlineAt, submitted]);
 
   const handleSubmit = useCallback(async (timedOut = false) => {
     if (submitting || submitted) return;
@@ -76,7 +84,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
         body: JSON.stringify({ answers, timedOut }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok && !(res.status === 409 && data.error === "already_submitted")) throw new Error(data.error);
       setSubmitted(true);
       router.push(`/results/${exam.attemptId}`);
     } catch {
@@ -84,6 +92,14 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       setSubmitting(false);
     }
   }, [submitting, submitted, exam.attemptId, answers, router]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && !timeoutSubmitRef.current) {
+      timeoutSubmitRef.current = true;
+      setShowTimeoutModal(true);
+      void handleSubmit(true);
+    }
+  }, [timeLeft, handleSubmit]);
 
   function formatTime(secs: number) {
     const m = Math.floor(secs / 60).toString().padStart(2, "0");
@@ -410,7 +426,7 @@ export function ExamEngine({ exam }: { exam: ExamData }) {
       </Modal>
 
       {/* ── Time-out modal ── */}
-      <Modal open={showTimeoutModal} onClose={() => {}} title="Time&apos;s Up">
+      <Modal open={showTimeoutModal} onClose={() => {}} title="Time’s Up">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto">
             <Clock className="w-8 h-8 text-red-500" />

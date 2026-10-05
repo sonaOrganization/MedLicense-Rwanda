@@ -392,7 +392,7 @@ export function LicenseFocusCard({ licenseCategory }: Props) {
       <div className="px-5 pt-4 pb-2">
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Key Exam Subjects</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-          {col1.map((s, i) => (
+          {col1.map((s) => (
             <div key={s} className="flex items-center gap-2">
               <CheckCircle2 className={cn("w-3.5 h-3.5 flex-shrink-0", ac.check)} />
               <span className="text-xs text-gray-700 dark:text-gray-300">{s}</span>

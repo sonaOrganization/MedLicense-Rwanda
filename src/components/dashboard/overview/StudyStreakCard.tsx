@@ -1,5 +1,5 @@
 "use client";
-import { Flame, Trophy, Star, Zap } from "lucide-react";
+import { Flame, Trophy, Zap } from "lucide-react";
 
 interface StudyStreakCardProps {
   streak: number;

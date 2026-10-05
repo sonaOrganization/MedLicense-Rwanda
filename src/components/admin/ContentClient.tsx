@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Video, Clock, Play, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, Video, Clock, Play, Trash2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VideoToggle } from "./VideoToggle";
 import { VideoUploadModal } from "./VideoUploadModal";

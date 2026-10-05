@@ -3,6 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
 import { getDeviceType } from "./device";
+import { validateSessionToken } from "./session-validation";
+import { consumeLimit } from "./rate-limit";
 
 // Auth.js only forwards `code` to the browser for CredentialsSignin subclasses —
 // plain Errors thrown here become an opaque "Configuration" error on the client.
@@ -22,7 +24,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials, req) {
         const email    = String(credentials?.email ?? "").trim().toLowerCase();
         const password = String(credentials?.password ?? "");
-        if (!email || !password) throw new InvalidCredentials();
+        if (!email || !password || new TextEncoder().encode(password).length > 72) throw new InvalidCredentials();
+        if (!(await consumeLimit("login", email, 10, 900))) throw new InvalidCredentials();
 
         try {
           const { data: user, error: dbError } = await supabase
@@ -49,10 +52,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // UPSERT session — one row per (user, device_type).
           // If the same device type logs in again, the old sessionId is replaced,
           // which immediately invalidates the previous device's session.
-          await supabase.from("user_sessions").upsert(
+          const { error: sessionError } = await supabase.from("user_sessions").upsert(
             { user_id: user.id, session_id: sessionId, device_type: deviceType },
             { onConflict: "user_id,device_type" }
           );
+
+          if (sessionError) throw sessionError;
 
           await supabase
             .from("users")
@@ -87,7 +92,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.sessionId      = (user as { sessionId?: string }).sessionId;
         token.deviceType     = (user as { deviceType?: string }).deviceType;
       }
-      return token;
+      return validateSessionToken(token, {
+        user: async (id) => supabase.from("users").select("name, email, role, is_banned, license_category, language").eq("id", id).maybeSingle(),
+        session: async (id, device) => supabase.from("user_sessions").select("session_id").eq("user_id", id).eq("device_type", device).maybeSingle(),
+      });
     },
     async session({ session, token }) {
       if (token) {
@@ -105,12 +113,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Clean up session record when user signs out
     async signOut(message) {
       const token = (message as { token?: Record<string, unknown> }).token;
-      if (token?.id && token?.deviceType) {
+      if (token?.id && token?.deviceType && token?.sessionId) {
         await supabase
           .from("user_sessions")
           .delete()
           .eq("user_id",    token.id as string)
-          .eq("device_type", token.deviceType as string);
+          .eq("device_type", token.deviceType as string)
+          .eq("session_id", token.sessionId as string);
       }
     },
   },

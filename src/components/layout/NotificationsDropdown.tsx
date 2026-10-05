@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Bell, X, CheckCheck, Info, CheckCircle,
+  Bell, CheckCheck, Info, CheckCircle,
   AlertTriangle, AlertCircle, Inbox, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

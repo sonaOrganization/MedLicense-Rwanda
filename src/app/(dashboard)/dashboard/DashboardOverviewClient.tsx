@@ -28,7 +28,7 @@ interface Props {
 export function DashboardOverviewClient({
   userName, streak, subscriptionStatus, licenseCategory,
   totalExams, avgScore, passRate, passed, readiness,
-  recentAttempts, isPremium, savedCount,
+  recentAttempts, isPremium,
 }: Props) {
   const { language } = useLanguage();
   const T = useT(language);

@@ -60,5 +60,5 @@ export function useLanguage(): LanguageContextValue {
 /** Pick the right localised string, falling back to English if French is missing. */
 export function t(en: string | null | undefined, fr: string | null | undefined, lang: Language): string {
   if (lang === "FR" && fr) return fr;
-  return en ?? "";
+  return en || fr || "";
 }
