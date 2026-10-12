@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   if (rawBody.length > 16384) return NextResponse.json({ error: "Payload too large" }, { status: 413 });
-  const verification = verifyWebhookAuth(req.headers, rawBody);
+  const verification = verifyWebhookAuth(req.headers, rawBody, req.nextUrl.searchParams.get("key"));
   if (!verification.ok) return NextResponse.json({ error: "Webhook authentication failed" }, { status: verification.reason === "not_configured" ? 503 : 401 });
   const payload = parsePaymentPayload(rawBody, req.headers.get("content-type") ?? "");
   if (!payload.clientToken) return NextResponse.json({ error: "Missing client_token" }, { status: 400 });

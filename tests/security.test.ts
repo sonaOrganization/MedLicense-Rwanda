@@ -21,6 +21,9 @@ test("webhook authentication rejects forgeries and prevents signature downgrade"
     assert.equal(verifyWebhookAuth(new Headers({ "x-afripay-signature": signature }), body.replace("3000","1")).ok, false);
     assert.equal(verifyWebhookAuth(new Headers({ "x-webhook-secret": process.env.PAYMENT_WEBHOOK_SECRET }), body).ok, true);
     assert.equal(verifyWebhookAuth(new Headers({ authorization: "Bearer " + process.env.PAYMENT_WEBHOOK_SECRET }), body).ok, true);
+    assert.equal(verifyWebhookAuth(new Headers(), body, process.env.PAYMENT_WEBHOOK_SECRET).ok, true);
+    assert.equal(verifyWebhookAuth(new Headers(), body, "wrong-key").ok, false);
+    assert.equal(verifyWebhookAuth(new Headers({ "x-afripay-signature": "sha256=bad" }), body, process.env.PAYMENT_WEBHOOK_SECRET).ok, false);
     for (const invalid of ["", "sha256=bad", "0".repeat(64)]) {
       assert.equal(verifyWebhookAuth(new Headers({ "x-afripay-signature": invalid, "x-webhook-secret": process.env.PAYMENT_WEBHOOK_SECRET }), body).ok, false);
     }
@@ -38,6 +41,9 @@ test("webhook parsing validates paid amounts and accepts relay encodings", () =>
   assert.equal(json.amount, 3000);
   assert.equal(json.currency, "RWF");
   assert.equal(json.transactionId, "txn");
+  const afripay = parsePaymentPayload("status=success&amount=3000&currency=RWF&transaction_ref=AFP1&payment_method=momo&client_token=ML_order", "application/x-www-form-urlencoded");
+  assert.equal(afripay.transactionId, "AFP1");
+  assert.equal(afripay.amount, 3000);
   assert.equal(parsePaymentPayload("client_token=ML_order&status=paid&transaction_id=txn&amount=1500.00&currency=RWF", "application/x-www-form-urlencoded").amount, 1500);
   for (const amount of ["-1", "Infinity", "NaN", "1e3", "1.123", 0, null]) {
     assert.equal(parsePaymentPayload(JSON.stringify({ amount }), "application/json").amount, null);

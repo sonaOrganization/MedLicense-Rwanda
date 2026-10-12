@@ -18,7 +18,7 @@ Payment activation is exclusively through an authenticated webhook. SonaMovie mu
 
 The browser return URL does not grant access. Payment polling checks the specific order belonging to the current user. Pending orders are retained for reconciliation. Manual payment activation is disabled.
 
-Checkout uses a configured server-to-server SonaMovie hosted-checkout endpoint. The AfriPay browser-form URL is not a compatible hosted-checkout API and its hidden app_secret is visible to visitors. MedLicense does not return provider credentials and fails safely until a compatible relay endpoint is configured.
+Checkout posts AfriPay's own browser form (direct mode), or uses a SonaMovie hosted-checkout relay when `PAYMENT_CHECKOUT_URL` is set. AfriPay confirms payments through a secret callback URL. See `docs/payment-webhook.md`.
 
 See [the payment integration guide](docs/payment-webhook.md) for the exact checkout contract, webhook payload, retry rules, migration steps, and forwarding helper.
 

@@ -12,7 +12,23 @@ Deploy the updated application after the migration. Existing sessions missing a 
 
 ## Configuration
 
-MedLicense requires:
+### Direct AfriPay mode (default)
+
+- `AFRIPAY_APP_ID` / `AFRIPAY_APP_SECRET` (legacy `AFRIPAY_PUBLIC_KEY` / `AFRIPAY_SECRET_KEY` also read): from AfriPay's integration email.
+- `PAYMENT_WEBHOOK_SECRET` (or legacy `AFRIPAY_WEBHOOK_SECRET`): random secret, at least 32 bytes.
+- `NEXT_PUBLIC_APP_URL`: the MedLicense HTTPS origin.
+
+Payment initiation returns AfriPay's form fields and the browser POSTs them to `https://www.afripay.africa/checkout/index.php`. AfriPay's form carries `app_id` and `app_secret` in the page by design; that does not let anyone mark an order paid.
+
+Give AfriPay this callback URL:
+
+```
+https://<medlicense-domain>/api/payments/webhook?key=<PAYMENT_WEBHOOK_SECRET>
+```
+
+AfriPay POSTs `status`, `amount`, `currency`, `transaction_ref`, `payment_method`, `client_token`. It cannot sign callbacks, so the `key` query parameter authenticates it; the activation RPC still rejects any amount/currency that differs from the order. Treat the callback URL as a secret.
+
+### Relay mode (used when `PAYMENT_CHECKOUT_URL` and `PAYMENT_CHECKOUT_SECRET` are both set)
 
 - `PAYMENT_CHECKOUT_URL`: the exact HTTPS SonaMovie server endpoint that creates a hosted checkout.
 - `PAYMENT_CHECKOUT_SECRET`: a separate secret used only for the checkout API.
@@ -22,9 +38,7 @@ MedLicense requires:
 
 The legacy `AFRIPAY_WEBHOOK_SECRET` is accepted when `PAYMENT_WEBHOOK_SECRET` is unset. Never reuse the AfriPay checkout credential as the webhook secret.
 
-AfriPay's supplied `https://www.afripay.africa/checkout/index.php` form requires a browser-visible `app_secret`. That URL does **not** implement the SonaMovie checkout contract below. MedLicense deliberately does not return that credential. A form hosted elsewhere still exposes its hidden fields to its visitors; preserving credential privacy requires a genuinely server-created hosted session supported by the provider or relay. Until a compatible checkout endpoint is configured, payment initiation returns 503 rather than exposing credentials.
-
-Rotate any AfriPay credential previously exposed in a browser, shared source file, or chat.
+AfriPay's form URL does **not** implement the SonaMovie checkout contract below; use it only through direct mode.
 
 ## SonaMovie checkout contract
 
@@ -81,7 +95,16 @@ Sign using `PAYMENT_WEBHOOK_SECRET`. Shared-secret headers (`x-webhook-secret` o
 
 Use the actual provider settlement fields. Never copy amount/currency from an untrusted browser or merely from the originally requested checkout fields. A paid status without transaction ID, amount, and currency is rejected.
 
-The PHP forwarding helper at `integrations/sonamovie/medlicense-forward.php` can be included in SonaMovie's existing verified-payment handler. It is not a publicly callable payment-confirmation endpoint.
+### Relaying AfriPay callbacks from another site
+
+When AfriPay's callbackUrl points to another site, copy `integrations/sonamovie/medlicense-forward.php` there and add this at the top of its AfriPay callback handler:
+
+```php
+require_once __DIR__ . '/medlicense-forward.php';
+relayMedLicenseAfriPayCallback(); // exits for ML_ payments, returns otherwise
+```
+
+Set `MEDLICENSE_WEBHOOK_URL` (`https://<medlicense-domain>/api/payments/webhook`) and `MEDLICENSE_WEBHOOK_SECRET` (equal to MedLicense's `PAYMENT_WEBHOOK_SECRET`) on that site. Callbacks whose `client_token` starts with `ML_` are signed and forwarded immediately, with `transaction_ref` sent as `transaction_id`. Everything else falls through to the site's own logic. AfriPay callbacks are unsigned. Set `AFRIPAY_CALLBACK_KEY` and register the callback URL with `?key=<value>` so nobody can relay a fake success.
 
 ## Responses and retries
 

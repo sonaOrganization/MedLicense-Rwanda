@@ -36,11 +36,13 @@ export type WebhookAuth =
  *
  *   1. `x-webhook-secret: <secret>` (or `authorization: Bearer <secret>`)
  *   2. `x-afripay-signature: sha256=<hmac of the raw body>`
+ *   3. `?key=<secret>` on the callback URL, for AfriPay's direct callback,
+ *      which cannot send headers or signatures
  *
  * A signature header, once present, must be valid — it is never allowed to
  * fall through to the weaker check.
  */
-export function verifyWebhookAuth(headers: Headers, rawBody: string): WebhookAuth {
+export function verifyWebhookAuth(headers: Headers, rawBody: string, queryKey?: string | null): WebhookAuth {
   const secret = webhookSecret();
   if (!secret) return { ok: false, reason: "not_configured" };
 
@@ -52,7 +54,7 @@ export function verifyWebhookAuth(headers: Headers, rawBody: string): WebhookAut
   }
 
   const bearer = headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  const supplied = headers.get("x-webhook-secret")?.trim() || bearer;
+  const supplied = headers.get("x-webhook-secret")?.trim() || bearer || queryKey?.trim();
   if (!supplied) return { ok: false, reason: "missing_credentials" };
 
   return secretsMatch(supplied, secret)
@@ -102,6 +104,6 @@ export function parsePaymentPayload(rawBody: string, contentType: string): Payme
     currency: pick(source, "currency")?.toUpperCase() ?? null,
     clientToken:   pick(source, "client_token", "clientToken", "token", "reference") ?? "",
     status:        pick(source, "status", "payment_status", "paymentStatus", "state") ?? "",
-    transactionId: pick(source, "transaction_id", "transactionId", "txn_id", "txnId"),
+    transactionId: pick(source, "transaction_id", "transactionId", "transaction_ref", "transactionRef", "txn_id", "txnId"),
   };
 }

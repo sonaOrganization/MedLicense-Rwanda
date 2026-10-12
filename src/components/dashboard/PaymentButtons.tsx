@@ -22,8 +22,23 @@ export function PaymentButtons({ plan }: PaymentButtonsProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Redirect to the hosted checkout without exposing provider credentials.
-      window.location.assign(data.checkoutUrl);
+      if (data.checkoutUrl) {
+        window.location.assign(data.checkoutUrl);
+        return;
+      }
+      // AfriPay checkout is a browser form POST built from server-provided fields.
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = data.action;
+      for (const [name, value] of Object.entries(data.fields as Record<string, string>)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Payment failed. Please try again.");
       setLoading(false);
