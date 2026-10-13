@@ -16,7 +16,7 @@ export const questionApiSchema = z.object({
 });
 export const examApiSchema = z.object({
   title_en: z.string().trim().min(1).max(500), description: text, category_id: z.string().max(100).nullable().optional(),
-  license_category: z.string().max(100).nullable().optional(), target_language: z.enum(["EN", "FR"]).nullable().optional(),
+  license_category: z.string().trim().min(1, "Choose the license category this exam is for").max(100), target_language: z.enum(["EN", "FR"]).nullable().optional(),
   duration_minutes: z.coerce.number().int().min(1).max(240), passing_score: z.coerce.number().int().min(0).max(100),
   points_per_question: z.coerce.number().int().min(1).max(100).default(1),
   is_free: z.boolean().default(false), is_published: z.boolean().default(false),

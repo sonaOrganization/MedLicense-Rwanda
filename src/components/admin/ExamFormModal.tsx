@@ -235,6 +235,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
   // ── Save ──
   async function handleSave() {
     if (!titleEn.trim())          return toast.error("Exam title is required");
+    if (!licenseCategory)         return toast.error("Choose the license category this exam is for");
     if (selectedIds.length === 0) return toast.error("Select at least one question");
 
     setSaving(true);
@@ -248,7 +249,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
           title_en:           titleEn.trim(),
           description:        description.trim() || null,
           target_language:    examLanguage,
-          license_category:   licenseCategory || null,
+          license_category:   licenseCategory,
           duration_minutes:   duration,
           passing_score:      passingScore,
           points_per_question: pointsPerQuestion,
@@ -367,7 +368,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
           {/* ── Step 3: Target License Category ── */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
-              Target License Category
+              Target License Category *
               <span className="font-normal ml-1 text-gray-400">— filters questions and student visibility</span>
             </label>
             <select
@@ -375,7 +376,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
               onChange={(e) => setLicenseCategory(e.target.value)}
               className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              <option value="">All students (no restriction)</option>
+              <option value="">Select license category…</option>
               {LICENSE_CATEGORY_GROUPS.map((group) => (
                 <optgroup key={group} label={group}>
                   {LICENSE_CATEGORIES.filter((c) => c.group === group).map((c) => (
@@ -438,7 +439,7 @@ export function ExamFormModal({ open, onClose, categories, questions, usedQuesti
           {/* ── Toggles ── */}
           <div className="grid grid-cols-2 gap-3">
             {([
-              { label: "Free for all students",           value: isFree,      set: setIsFree      },
+              { label: "Free for this license category",           value: isFree,      set: setIsFree      },
               { label: "Published (visible to students)",  value: isPublished, set: setIsPublished },
               { label: "Shuffle questions",                value: shuffleQ,    set: setShuffleQ    },
               { label: "Shuffle answers",                  value: shuffleA,    set: setShuffleA    },

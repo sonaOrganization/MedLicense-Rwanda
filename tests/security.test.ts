@@ -88,8 +88,9 @@ test("admin validation rejects broken answer keys, unsafe fields, and duplicate 
   assert.equal(questionApiSchema.safeParse(q).success, true);
   assert.equal(questionApiSchema.safeParse({ ...q, answers: q.answers.map((a) => ({ ...a, is_correct: true })) }).success, false);
   assert.equal(questionApiSchema.safeParse({ ...q, answers: [{ text_fr: "Oui", is_correct: true }, { text_fr: "", is_correct: false }] }).success, false);
-  const exam = { title_en: "Exam", duration_minutes: 60, passing_score: 70, is_published: true, question_ids: ["q"] };
+  const exam = { title_en: "Exam", license_category: "medical_doctor", duration_minutes: 60, passing_score: 70, is_published: true, question_ids: ["q"] };
   assert.equal(examApiSchema.safeParse(exam).success, true);
+  assert.equal(examApiSchema.safeParse({ ...exam, license_category: "" }).success, false, "exams must target a license category");
   assert.equal(examApiSchema.safeParse({ ...exam, duration_minutes: -1 }).success, false);
   assert.equal(examApiSchema.safeParse({ ...exam, is_free: "false" }).success, false);
   assert.equal(examApiSchema.safeParse({ ...exam, question_ids: ["q", "q"] }).success, false);

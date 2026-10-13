@@ -8,6 +8,8 @@ export default async function PracticalExamPage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
   if (!session) redirect("/login");
+  const { data: target } = await supabase.from("practical_exams").select("license_category").eq("id", id).maybeSingle();
+  if (!target || (session.user.role !== "ADMIN" && target.license_category !== session.user.licenseCategory)) notFound();
   const { data, error } = await supabase.rpc("start_exam_attempt", { p_user_id: session.user.id, p_exam_id: id, p_kind: "practical" });
   if (error) { console.error("[START_PRACTICAL]", error); throw new Error("Could not start practical exam"); }
   const attempt = data as StartedAttempt<PracticalSnapshot, PracticalState> | null;

@@ -9,15 +9,13 @@ export default async function ExamsPage() {
 
   const licenseCategory = session?.user?.licenseCategory;
 
-  // Show all published exams — students can filter by language using the tabs on the page
   let examsQuery = supabase
     .from("exams")
     .select("*, category:categories(name_en, name_fr), questions:exam_questions(count)")
     .eq("is_published", true);
 
-  if (licenseCategory) {
-    examsQuery = examsQuery.or(`license_category.eq.${licenseCategory},license_category.is.null`);
-  }
+  // Exams (free or paid) are only shown to students of the exam's license category.
+  examsQuery = examsQuery.eq("license_category", licenseCategory ?? "");
 
   const { data: exams } = await examsQuery
     .order("is_free", { ascending: false })       // free exams first

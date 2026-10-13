@@ -28,6 +28,7 @@ export async function PATCH(
     title_en, description, category_id, license_category, target_language,
     is_free, is_published,
   } = body;
+  if (!license_category?.trim()) return NextResponse.json({ error: "Choose the license category this exam is for" }, { status: 400 });
 
   const { error } = await supabase
     .from("practical_exams")
@@ -36,7 +37,7 @@ export async function PATCH(
       title: title_en?.trim(),
       description: description?.trim() || null,
       category_id: category_id || null,
-      license_category: license_category || null,
+      license_category: license_category.trim(),
       target_language: target_language || null,
       is_free: Boolean(is_free),
       is_published: Boolean(is_published),

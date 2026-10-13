@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   } = await req.json();
 
   if (!title_en?.trim()) return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  if (!license_category?.trim()) return NextResponse.json({ error: "Choose the license category this exam is for" }, { status: 400 });
 
   const { data: exam, error } = await supabase
     .from("practical_exams")
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
       title: title_en.trim(),
       description: description?.trim() || null,
       category_id: category_id || null,
-      license_category: license_category || null,
+      license_category: license_category.trim(),
       target_language: target_language || null,
       is_free: Boolean(is_free),
       is_published: Boolean(is_published),

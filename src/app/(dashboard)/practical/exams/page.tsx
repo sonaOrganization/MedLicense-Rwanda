@@ -17,9 +17,8 @@ export default async function PracticalExamsPage() {
     .select("*, category:categories(name_en, name_fr)")
     .eq("is_published", true);
 
-  if (licenseCategory) {
-    examsQuery = examsQuery.or(`license_category.eq.${licenseCategory},license_category.is.null`);
-  }
+  // Exams (free or paid) are only shown to students of the exam's license category.
+  examsQuery = examsQuery.eq("license_category", licenseCategory ?? "");
 
   const [{ data: exams }, { data: attempts }] = await Promise.all([
     examsQuery.order("is_free", { ascending: false }).order("created_at", { ascending: false }),
