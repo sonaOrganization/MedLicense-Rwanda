@@ -4,18 +4,22 @@ import { useRouter } from "next/navigation";
 import { CheckCircle, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-export function ActivatePaymentButton({ paymentId }: { paymentId: string }) {
+export function ActivatePaymentButton({ paymentId, label }: { paymentId: string; label: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function activate() {
-    if (!confirm("Manually activate this payment and grant the user a subscription?")) return;
+    const transactionRef = prompt(`Mark ${label} as paid.
+
+Enter the AfriPay transaction reference for this payment (from the AfriPay dashboard or the student's receipt):`)?.trim();
+    if (!transactionRef) return;
+    if (!confirm(`Activate ${label} with AfriPay reference "${transactionRef}"? This grants the student access and cannot be undone here.`)) return;
     setLoading(true);
     try {
       const res = await fetch("/api/admin/payments/activate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentId }),
+        body: JSON.stringify({ paymentId, transactionRef }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -37,7 +41,7 @@ export function ActivatePaymentButton({ paymentId }: { paymentId: string }) {
       {loading
         ? <Loader2 className="w-3 h-3 animate-spin" />
         : <CheckCircle className="w-3 h-3" />}
-      Activate
+      Mark as paid
     </button>
   );
 }

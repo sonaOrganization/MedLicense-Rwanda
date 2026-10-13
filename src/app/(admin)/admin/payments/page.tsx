@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, TrendingUp, CheckCircle, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
+import { ActivatePaymentButton } from "@/components/admin/ActivatePaymentButton";
 import { PLANS } from "@/lib/plans";
 
 interface Props {
@@ -180,7 +181,12 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                   </td>
                   <td className="p-4 text-xs text-gray-400">{formatDate(new Date(p.created_at))}</td>
                   <td className="p-4">
-                    {p.status === "pending" && <span className="text-xs text-gray-400">Awaiting webhook</span>}
+                    {p.status === "pending" && (
+                      <ActivatePaymentButton
+                        paymentId={p.id}
+                        label={`${p.amount.toLocaleString()} ${p.currency} (${p.plan}) for ${p.user?.name ?? p.user?.email ?? "this student"}`}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
