@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, TrendingUp, CheckCircle, Clock } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
+import { PLANS } from "@/lib/plans";
 
 interface Props {
   searchParams: Promise<{ status?: string; plan?: string }>;
@@ -24,7 +26,10 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
 
   const completed = paymentList.filter((p: { status: string }) => p.status === "completed");
   const pending = paymentList.filter((p: { status: string }) => p.status === "pending");
-  const totalRevenue = completed.reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
+  // Admin test payments are not real revenue.
+  const totalRevenue = completed
+    .filter((p: { plan: string }) => p.plan !== PLANS.test.id)
+    .reduce((sum: number, p: { amount: number }) => sum + p.amount, 0);
 
   const stats = [
     {
@@ -81,6 +86,24 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
         ))}
       </div>
 
+      {/* Test payment */}
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-gray-900 dark:text-white">{PLANS.test.name}</h2>
+              <Badge variant="default">{PLANS.test.badge}</Badge>
+            </div>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Pay {PLANS.test.price.toLocaleString()} {PLANS.test.currency} through AfriPay to confirm checkout and activation work. It appears in the table below and is excluded from Total Revenue.
+            </p>
+          </div>
+          <div className="w-full sm:w-56 sm:shrink-0">
+            <PaymentButtons plan={PLANS.test} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <form className="flex flex-wrap gap-3">
         <select
@@ -99,9 +122,9 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
           className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
         >
           <option value="">All Plans</option>
+          <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
-          <option value="trial">Trial</option>
+          <option value="test">Test</option>
         </select>
         <button
           type="submit"

@@ -8,7 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
 import { PaymentSuccessBanner } from "@/components/dashboard/PaymentSuccessBanner";
 import { PlanCard, PremiumFeatureList } from "@/components/pricing/PlanCard";
-import { PLAN_LIST, PLANS, getPlan } from "@/lib/plans";
+import { PLAN_LIST, getPlan } from "@/lib/plans";
 
 interface Props { searchParams: Promise<{ paid?: string; success?: string; payment?: string }> }
 
@@ -89,7 +89,7 @@ export default async function SubscriptionPage({ searchParams }: Props) {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-            {[...PLAN_LIST, ...(session!.user.role === "ADMIN" ? [PLANS.test] : [])].map((plan) => (
+            {PLAN_LIST.map((plan) => (
               <PlanCard key={plan.id} plan={plan} action={<PaymentButtons plan={plan} />} />
             ))}
           </div>

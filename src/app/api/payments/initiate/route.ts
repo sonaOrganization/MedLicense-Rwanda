@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
   }).select("id").single();
   if (error || !payment) return NextResponse.json({ error: "Could not create payment record" }, { status: 500 });
   const origin = appUrl.endsWith("/") ? appUrl.slice(0, -1) : appUrl;
+  // Admins cannot open /subscription, so admin-only test payments return to the admin Payments page.
+  const returnUrl = origin + (plan.adminOnly ? "/admin/payments?payment=" : "/subscription?payment=") + encodeURIComponent(payment.id);
   if (!useRelay) {
     return NextResponse.json({
       paymentId: payment.id,
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
       fields: {
         amount: String(plan.price), currency: plan.currency, comment: plan.checkoutLabel,
         client_token: "ML_" + payment.id,
-        return_url: origin + "/subscription?payment=" + encodeURIComponent(payment.id),
+        return_url: returnUrl,
         app_id: afripayAppId, app_secret: afripayAppSecret,
       },
     }, { headers: { "Cache-Control": "no-store" } });
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         amount: plan.price, currency: plan.currency, comment: plan.checkoutLabel,
         client_token: "ML_" + payment.id, plan: plan.id,
-        return_url: origin + "/subscription?payment=" + encodeURIComponent(payment.id),
+        return_url: returnUrl,
         webhook_url: origin + "/api/payments/webhook",
       }),
       signal: AbortSignal.timeout(15000),
