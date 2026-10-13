@@ -45,7 +45,7 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "test",
     name: "Test Payment",
     tagline: "Admin only: confirms AfriPay checkout and activation work end to end.",
-    price: 200,
+    price: 500,
     currency: "RWF",
     durationDays: 1,
     periodLabel: "day",

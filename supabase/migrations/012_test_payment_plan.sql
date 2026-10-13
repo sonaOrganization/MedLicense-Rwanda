@@ -1,4 +1,4 @@
--- Apply after 011. Adds the admin-only 200 RWF "test" plan (1 day of access) to payment activation.
+-- Apply after 011. Adds the admin-only 500 RWF "test" plan (1 day of access) to payment activation.
 BEGIN;
 
 CREATE OR REPLACE FUNCTION activate_verified_payment(p_payment_id TEXT, p_transaction_id TEXT, p_amount NUMERIC, p_currency TEXT)
