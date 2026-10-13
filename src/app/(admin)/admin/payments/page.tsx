@@ -7,6 +7,25 @@ import { PaymentButtons } from "@/components/dashboard/PaymentButtons";
 import { ActivatePaymentButton } from "@/components/admin/ActivatePaymentButton";
 import { PLANS } from "@/lib/plans";
 
+interface TrackedCallback { at: string; source: string; outcome: string; missing?: string[] }
+
+const OUTCOME_LABELS: Record<string, string> = {
+  activated: "Activated",
+  already_activated: "Already activated",
+  status_not_paid: "Not paid (status)",
+  invalid_settlement_details: "Rejected: incomplete details",
+  payment_details_mismatch: "Rejected: amount/currency differ",
+  transaction_mismatch: "Rejected: different transaction",
+  payment_not_pending: "Rejected: payment not pending",
+  activation_error: "Failed: database error",
+};
+
+/** The most recent provider callback recorded on this payment by the webhook. */
+function lastCallback(metadata: unknown): TrackedCallback | null {
+  const callbacks = (metadata as { callbacks?: TrackedCallback[] } | null)?.callbacks;
+  return Array.isArray(callbacks) && callbacks.length > 0 ? callbacks[callbacks.length - 1] : null;
+}
+
 interface Props {
   searchParams: Promise<{ status?: string; plan?: string }>;
 }
@@ -147,6 +166,7 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Provider</th>
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Status</th>
                 <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">Date</th>
+                <th className="text-left p-4 text-gray-500 dark:text-gray-400 font-medium">AfriPay callback</th>
                 <th className="p-4"></th>
               </tr>
             </thead>
@@ -159,8 +179,11 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                 provider: string;
                 status: string;
                 created_at: string;
+                metadata: unknown;
                 user: { name?: string; email: string };
-              }) => (
+              }) => {
+                const callback = lastCallback(p.metadata);
+                return (
                 <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30">
                   <td className="p-4">
                     <p className="font-medium text-gray-900 dark:text-white">{p.user?.name ?? "—"}</p>
@@ -180,6 +203,25 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                     </Badge>
                   </td>
                   <td className="p-4 text-xs text-gray-400">{formatDate(new Date(p.created_at))}</td>
+                  <td className="p-4 text-xs">
+                    {callback ? (
+                      <div className="space-y-0.5">
+                        <p className={callback.outcome === "activated" || callback.outcome === "already_activated"
+                          ? "font-medium text-emerald-600 dark:text-emerald-400"
+                          : "font-medium text-red-600 dark:text-red-400"}>
+                          {OUTCOME_LABELS[callback.outcome] ?? callback.outcome}
+                        </p>
+                        <p className="text-gray-400">
+                          {new Date(callback.at).toLocaleString("en-GB", { timeZone: "Africa/Kigali", dateStyle: "short", timeStyle: "short" })} · {callback.source}
+                        </p>
+                        {callback.missing && callback.missing.length > 0 && (
+                          <p className="text-gray-400">Missing: {callback.missing.join(", ")}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">{p.status === "completed" ? "—" : "None received"}</span>
+                    )}
+                  </td>
                   <td className="p-4">
                     {p.status === "pending" && (
                       <ActivatePaymentButton
@@ -189,7 +231,8 @@ export default async function AdminPaymentsPage({ searchParams }: Props) {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           {paymentList.length === 0 && (
