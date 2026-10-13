@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await req.json().catch(() => null);
   const plan = getPlan(body?.planId);
-  if (!plan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+  if (!plan || (plan.adminOnly && session.user.role !== "ADMIN")) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   const relayUrl = process.env.PAYMENT_CHECKOUT_URL;
   const relaySecret = process.env.PAYMENT_CHECKOUT_SECRET;
   const afripayAppId = process.env.AFRIPAY_APP_ID ?? process.env.AFRIPAY_PUBLIC_KEY;

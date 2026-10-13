@@ -1,4 +1,4 @@
-export type PlanId = "weekly" | "monthly";
+export type PlanId = "weekly" | "monthly" | "test";
 
 export interface Plan {
   id: PlanId;
@@ -14,6 +14,8 @@ export interface Plan {
   checkoutLabel: string;
   badge?: string;
   highlighted?: boolean;
+  /** Only admins can see and buy it; used to check payments end to end cheaply. */
+  adminOnly?: boolean;
 }
 
 export const PLANS: Record<PlanId, Plan> = {
@@ -38,6 +40,18 @@ export const PLANS: Record<PlanId, Plan> = {
     checkoutLabel: "MedLicense Monthly Plan (30 days)",
     badge: "Best value",
     highlighted: true,
+  },
+  test: {
+    id: "test",
+    name: "Test Payment",
+    tagline: "Admin only: confirms AfriPay checkout and activation work end to end.",
+    price: 200,
+    currency: "RWF",
+    durationDays: 1,
+    periodLabel: "day",
+    checkoutLabel: "MedLicense Test Payment (1 day)",
+    badge: "Admin only",
+    adminOnly: true,
   },
 };
 
@@ -84,10 +98,10 @@ export function pricePerDay(plan: Plan): number {
   return Math.round(plan.price / plan.durationDays);
 }
 
-/** Whole-percent saving per day against the weekly plan; 0 for the weekly plan itself. */
+/** Whole-percent saving per day against the weekly plan; 0 for the weekly plan itself and admin-only plans. */
 export function savingsVsWeekly(plan: Plan): number {
   const { weekly } = PLANS;
-  if (plan.id === weekly.id) return 0;
+  if (plan.id === weekly.id || plan.adminOnly) return 0;
   return Math.round((1 - pricePerDay(plan) / pricePerDay(weekly)) * 100);
 }
 
