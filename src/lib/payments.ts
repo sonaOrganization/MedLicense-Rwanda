@@ -68,6 +68,9 @@ export interface PaymentPayload {
   transactionId: string | null;
   amount: number | null;
   currency: string | null;
+  /** Field names the caller sent and the raw amount text, for diagnosing rejected callbacks. */
+  fields: string[];
+  rawAmount: string | null;
 }
 
 function pick(source: Record<string, unknown>, ...keys: string[]): string | null {
@@ -100,6 +103,8 @@ export function parsePaymentPayload(rawBody: string, contentType: string): Payme
   const amountText = pick(source, "amount", "paid_amount", "paidAmount");
   const amount = amountText && /^\d+(?:\.\d{1,2})?$/.test(amountText) ? Number(amountText) : null;
   return {
+    fields: Object.keys(source),
+    rawAmount: amountText,
     amount: amount !== null && Number.isFinite(amount) && amount > 0 ? amount : null,
     currency: pick(source, "currency")?.toUpperCase() ?? null,
     clientToken:   pick(source, "client_token", "clientToken", "token", "reference") ?? "",
